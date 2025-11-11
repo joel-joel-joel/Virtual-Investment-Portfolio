@@ -1,4 +1,5 @@
 package com.joelcode.personalinvestmentportfoliotracker.entities;
 
-public class stocks {
+public class Dividends {
+
 }
