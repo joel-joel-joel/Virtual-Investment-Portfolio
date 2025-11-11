@@ -47,6 +47,10 @@ public class Transaction {
     @JoinColumn(name = "stockId", nullable = false)
     private Stock stock;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accountId", nullable = false)
+    private Account account;
+
     // Transaction type
 
     public enum type {
@@ -111,6 +115,14 @@ public class Transaction {
 
     public void setTransactionId(Long transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     // Helper Functions
