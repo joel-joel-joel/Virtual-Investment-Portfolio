@@ -1,7 +1,9 @@
 package com.joelcode.personalinvestmentportfoliotracker.entities;
 
 import jakarta.persistence.*;
+import net.minidev.json.annotate.JsonIgnore;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +33,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -40,9 +43,18 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @Column(updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Account> accounts = new ArrayList<>();
-
 
     // Getters and Setters
 
@@ -97,6 +109,8 @@ public class User {
         accounts.remove(account);
         account.setUser(null);
     }
+
+
 
 
 }

@@ -12,24 +12,25 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-    // Find specific Id
+    // Find specific id
     Optional<User> findByUserId(UUID userId);
 
     Optional<User> findByUsername(String username);
 
     Optional<User> findByEmail(String email);
 
-    boolean existsByUserID(UUID userid);
+    List<User> findByUsernameContainingIgnoreCase(String usernameFragment);
+
+    // Existence checks
+    boolean existsByUserID(UUID userId);
 
     boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
 
 
-    // Filter list of users
+    // Filter by date
     List<User> findByCreatedAtAfter(LocalDateTime createdAtAfter);
 
-    List<User> findByUsernameContainingIgnoreCase(String usernameFragment);
-
-    List<User> findWithinDateRange(LocalDateTime start, LocalDateTime end);
+    List<User> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

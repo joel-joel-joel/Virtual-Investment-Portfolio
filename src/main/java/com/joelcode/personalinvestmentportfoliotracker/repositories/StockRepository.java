@@ -17,6 +17,8 @@ public interface StockRepository  extends JpaRepository<Stock, Long> {
 
     Optional<Stock> findByCompanyName(String companyName);
 
+
+    // Filter lists of stocks
     @Query("SELECT s FROM Stock s WHERE CAST(s.stockId AS string) LIKE %?1%")
     List<Stock> findByStockIdLike(Long stockId);
 
@@ -25,6 +27,12 @@ public interface StockRepository  extends JpaRepository<Stock, Long> {
 
     List<Stock> findByCompanyNameContainingIgnoreCase(String companyName);
 
+    // Existence checks
+    boolean existsByStockCode(String stockCode);
+
+    boolean existsByCompanyName(String companyName);
+
+    boolean existsByStockId(Long stockId);
 
     // Filter by date
     @Query("SELECT s FROM Stock s WHERE s.createdAt > ?1")
@@ -43,8 +51,5 @@ public interface StockRepository  extends JpaRepository<Stock, Long> {
     List<Stock> findByStockValueGreaterThan(Double stockValue);
 
     List<Stock> findByStockValueLessThan(Double stockValue);
-
-
-
 
 }
