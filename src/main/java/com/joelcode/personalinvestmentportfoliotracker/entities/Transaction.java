@@ -6,6 +6,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table (name = "transactions")
@@ -13,11 +14,12 @@ public class Transaction {
 
     // Constructor
 
-    public Transaction(BigDecimal shareQuantity, BigDecimal pricePerShare, BigDecimal commission, Stock stock) {
+    public Transaction(BigDecimal shareQuantity, BigDecimal pricePerShare, BigDecimal commission, Stock stock, Account account) {
         this.stock = stock;
         this.shareQuantity = shareQuantity;
         this.pricePerShare = pricePerShare;
         this.commission = commission;
+        this.account = account;
     }
 
     public Transaction() {}
@@ -25,8 +27,8 @@ public class Transaction {
     // Key fields
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long transactionId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID transactionId;
 
     @Column (nullable = false)
     private BigDecimal shareQuantity;
@@ -69,17 +71,13 @@ public class Transaction {
         this.stock = stock;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+    public LocalDateTime getUpdatedAt() {return updatedAt;}
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public LocalDateTime getCreatedAt() {return createdAt;}
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
@@ -109,21 +107,17 @@ public class Transaction {
         this.shareQuantity = shareQuantity;
     }
 
-    public Long getTransactionId() {
+    public UUID getTransactionId() {
         return transactionId;
     }
 
-    public void setTransactionId(Long transactionId) {
+    public void setTransactionId(UUID transactionId) {
         this.transactionId = transactionId;
     }
 
-    public Account getAccount() {
-        return account;
-    }
+    public Account getAccount() {return account;}
 
-    public void setAccount(Account account) {
-        this.account = account;
-    }
+    public void setAccount(Account account) {this.account = account;}
 
     // Helper Functions
 

@@ -7,6 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "stock")
@@ -25,8 +26,8 @@ public class Stock {
     // Key fields
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long stockId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID stockId;
 
     @Column(nullable = false, unique = true, length = 20)
     private String stockCode;
@@ -62,9 +63,9 @@ public class Stock {
 
     // Getters and setters
 
-    public Long getStockId() {return stockId;}
+    public UUID getStockId() {return stockId;}
 
-    public void setStockId(Long stockId) {this.stockId = stockId;}
+    public void setStockId(UUID stockId) {this.stockId = stockId;}
 
     public String getStockCode() {return stockCode;}
 

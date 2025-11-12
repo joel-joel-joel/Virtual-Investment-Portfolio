@@ -10,21 +10,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface StockRepository  extends JpaRepository<Stock, Long> {
+public interface StockRepository  extends JpaRepository<Stock, UUID> {
 
     // Finding specific stocks
+    Optional<Stock> findByStockId(UUID stockId);
+
     Optional<Stock> findByCode(String code);
 
     Optional<Stock> findByCompanyName(String companyName);
 
 
     // Filter lists of stocks
-    @Query("SELECT s FROM Stock s WHERE CAST(s.stockId AS string) LIKE %?1%")
-    List<Stock> findByStockIdLike(Long stockId);
-
-    @Query ("SELECT s FROM Stock s WHERE s.stockCode LIKE %?1%")
-    List<Stock> findByStockCodeLike(String stockCode);
-
     List<Stock> findByCompanyNameContainingIgnoreCase(String companyName);
 
     // Existence checks
@@ -32,19 +28,19 @@ public interface StockRepository  extends JpaRepository<Stock, Long> {
 
     boolean existsByCompanyName(String companyName);
 
-    boolean existsByStockId(Long stockId);
+    boolean existsByStockId(UUID stockId);
 
     // Filter by date
-    @Query("SELECT s FROM Stock s WHERE s.createdAt > ?1")
     List<Stock> findByCreatedAtAfter(LocalDateTime date);
 
-    @Query ("SELECT s FROM Stock s WHERE s.createdAt < ?1")
     List<Stock> findByCreatedAtBefore(LocalDateTime date);
+
+    List<Stock> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
 
     // Finding by ID
-    @Query ("SELECT s FROM Stock s WHERE s.account.accountId = ?1")
-    List<Stock> findByAccountId(UUID accountId);
+    List<Stock> findByAccount_AccountId(UUID accountId);
+
 
 
     // Filter by stock value

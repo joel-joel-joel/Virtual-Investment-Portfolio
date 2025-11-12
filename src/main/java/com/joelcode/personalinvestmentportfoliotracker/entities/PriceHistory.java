@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table (name = "price_history")
@@ -22,8 +23,8 @@ public class PriceHistory {
     // Key fields
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long priceHistoryId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID priceHistoryId;
 
     @Column (nullable = false)
     private LocalDateTime closeDate;
@@ -39,11 +40,11 @@ public class PriceHistory {
 
     // Getters and setters
 
-    public Long getPriceHistoryId() {
+    public UUID getPriceHistoryId() {
         return priceHistoryId;
     }
 
-    public void setPriceHistoryId(Long priceHistoryId) {
+    public void setPriceHistoryId(UUID priceHistoryId) {
         this.priceHistoryId = priceHistoryId;
     }
 

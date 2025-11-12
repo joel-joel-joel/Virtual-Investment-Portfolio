@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table (name = "dividends")
@@ -22,8 +23,8 @@ public class Dividend {
     // Key fields
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long dividendId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID dividendId;
 
     @Column (nullable = false)
     private BigDecimal amountPerShare;
@@ -38,11 +39,11 @@ public class Dividend {
 
     // Getters and setters
 
-    public Long getDividendId() {
+    public UUID getDividendId() {
         return dividendId;
     }
 
-    public void setDividendId(Long dividendId) {
+    public void setDividendId(UUID dividendId) {
         this.dividendId = dividendId;
     }
 
@@ -71,7 +72,6 @@ public class Dividend {
     }
 
     // Helper functions
-
     public BigDecimal getTotalDividend(BigDecimal sharesOwned) {
         return amountPerShare.multiply(sharesOwned);
     }
