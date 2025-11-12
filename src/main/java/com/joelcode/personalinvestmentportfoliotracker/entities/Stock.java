@@ -44,7 +44,8 @@ public class Stock {
     private LocalDateTime updatedAt;
 
 
-    // Mapping to other entities (single stock to multiple dividends, transactions and histories)
+    // Mapping to other entities (single stock to multiple dividends, transactions and histories,
+    // multiple stocks to multiple users and accounts)
 
     @OneToMany(mappedBy = "stock", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Transaction> transactions = new ArrayList<>();
@@ -55,6 +56,9 @@ public class Stock {
     @OneToMany(mappedBy = "stock", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<PriceHistory> priceHistories = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     // Getters and setters
 

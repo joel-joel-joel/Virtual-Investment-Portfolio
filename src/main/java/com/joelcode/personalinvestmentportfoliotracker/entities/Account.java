@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "accounts")
@@ -12,7 +13,7 @@ public class Account {
 
     // Constructor
 
-    public Account(Long accountId, String accountName, BigDecimal accountBalance, User user) {
+    public Account(UUID accountId, String accountName, BigDecimal accountBalance, User user) {
         this.accountId = accountId;
         this.accountName = accountName;
         this.accountBalance = accountBalance;
@@ -22,8 +23,8 @@ public class Account {
     public Account() {}
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long accountId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID accountId;
 
     @Column(nullable = false)
     private String accountName;
@@ -41,11 +42,11 @@ public class Account {
 
     // Getters and Setters
 
-    public Long getAccountId() {
+    public UUID getAccountId() {
         return accountId;
     }
 
-    public void setAccountId(Long accountId) {
+    public void setAccountId(UUID accountId) {
         this.accountId = accountId;
     }
 

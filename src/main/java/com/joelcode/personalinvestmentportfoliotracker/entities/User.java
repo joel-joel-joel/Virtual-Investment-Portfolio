@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -11,7 +12,7 @@ public class User {
 
     // Constructor
 
-    public User (Long userId, String email, String password, String fullName) {
+    public User (UUID userId, String email, String password, String fullName) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -23,8 +24,8 @@ public class User {
     // Key fields
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID userId;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -41,13 +42,9 @@ public class User {
 
     // Getters and Setters
 
-    public Long getUserId() {
-        return userId;
-    }
+    public UUID getUserId() {return userId;}
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+    public void setUserId(UUID userId) {this.userId = userId;}
 
     public String getEmail() {
         return email;
