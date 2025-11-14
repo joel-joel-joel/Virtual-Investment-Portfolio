@@ -1,0 +1,44 @@
+package com.joelcode.personalinvestmentportfoliotracker.dto.dividend;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public class DividendCreateRequest {
+
+    // Dividend creation request DTO (input)
+
+    @NotNull (message = "Stock ID is required")
+    private final UUID stockId;
+
+    @NotNull (message = "Amount per share is required")
+    @PositiveOrZero (message = "Amount per share must be positive or zero")
+    private final BigDecimal amountPerShare;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private final LocalDateTime payDate;
+
+    // Jackson-compatible constructor
+    @JsonCreator
+    public DividendCreateRequest (
+            @JsonProperty ("stockId") UUID stockId,
+            @JsonProperty ("amountPerShare") BigDecimal amountPerShare,
+            @JsonProperty ("payDare") LocalDateTime payDate) {
+        this.stockId = stockId;
+        this.amountPerShare = amountPerShare;
+        this.payDate = payDate;
+    }
+
+    // Getters
+    public UUID getStocId() {return stockId;}
+
+    public BigDecimal getAmountPerShare() {return amountPerShare;}
+
+    public LocalDateTime getPayDate() {return payDate;}
+}
