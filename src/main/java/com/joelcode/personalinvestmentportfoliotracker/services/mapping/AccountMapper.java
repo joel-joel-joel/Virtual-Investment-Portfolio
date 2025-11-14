@@ -1,4 +1,4 @@
-package com.joelcode.personalinvestmentportfoliotracker.mapping;
+package com.joelcode.personalinvestmentportfoliotracker.services.mapping;
 
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;

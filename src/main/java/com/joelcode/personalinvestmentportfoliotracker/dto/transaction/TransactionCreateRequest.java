@@ -41,7 +41,7 @@ public class TransactionCreateRequest {
     }
 
     // Getters
-    public UUID getStockCode() {return stockId;}
+    public UUID getStockId() {return stockId;}
 
     public UUID getAccountId() {return accountId;}
 

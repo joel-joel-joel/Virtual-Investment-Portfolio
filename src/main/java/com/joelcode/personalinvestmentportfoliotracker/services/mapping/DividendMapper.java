@@ -1,4 +1,4 @@
-package com.joelcode.personalinvestmentportfoliotracker.mapping;
+package com.joelcode.personalinvestmentportfoliotracker.services.mapping;
 
 import com.joelcode.personalinvestmentportfoliotracker.dto.dividend.DividendCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.dividend.DividendDTO;
@@ -15,7 +15,7 @@ public class DividendMapper {
         return dividend;
     }
 
-    // Convert dividend entity to response account DTO
+    // Convert dividend entity to dividend response DTO
     public static DividendDTO toDTO(Dividend dividend) {
         if (dividend == null) return null;
         return new DividendDTO(

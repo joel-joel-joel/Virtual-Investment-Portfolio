@@ -119,6 +119,18 @@ public class Transaction {
 
     public void setAccount(Account account) {this.account = account;}
 
+    public void setStockId(UUID stockId) {this.stock.setStockId(stockId);}
+
+    public void setAccountId(UUID accountId) {this.account.setAccountId(accountId);}
+
+    public type getType() {
+        if (shareQuantity.compareTo(BigDecimal.ZERO) > 0) {
+            return type.BUY;
+        } else {
+            return type.SELL;
+        }
+    }
+
     // Helper Functions
 
     public BigDecimal getTotalCost() {

@@ -38,7 +38,7 @@ public class PriceHistoryCreateRequest {
     // Getters
     public LocalDateTime getCloseDate() {return closeDate;}
 
-    public UUID getStockCode() {return stockId;}
+    public UUID getStockId() {return stockId;}
 
     public BigDecimal getClosePrice() {return closePrice;}
 

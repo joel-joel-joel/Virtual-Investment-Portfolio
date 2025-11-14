@@ -72,6 +72,10 @@ public class PriceHistory {
         this.stock = stock;
     }
 
+    public UUID getStockId() {return stock.getStockId();}
+
+    public void setStockId(UUID stockId) {this.stock.setStockId(stockId);}
+
     // Helper functions (For filtering)
 
     public boolean isAbove(BigDecimal threshold) {
