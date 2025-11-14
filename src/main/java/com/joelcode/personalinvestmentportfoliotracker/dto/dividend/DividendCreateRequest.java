@@ -36,7 +36,7 @@ public class DividendCreateRequest {
     }
 
     // Getters
-    public UUID getStocId() {return stockId;}
+    public UUID getStockId() {return stockId;}
 
     public BigDecimal getAmountPerShare() {return amountPerShare;}
 

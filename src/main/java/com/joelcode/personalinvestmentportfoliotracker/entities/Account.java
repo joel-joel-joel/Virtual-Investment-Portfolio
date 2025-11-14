@@ -81,6 +81,10 @@ public class Account {
         this.user = user;
     }
 
+    public void setUserId(UUID userId){
+        this.user.setUserId(userId);
+    }
+
     public List<Transaction> getTransactions() {
         return transactions;
     }
