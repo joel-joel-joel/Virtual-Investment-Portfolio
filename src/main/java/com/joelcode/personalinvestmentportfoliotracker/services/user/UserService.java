@@ -1,5 +1,6 @@
 package com.joelcode.personalinvestmentportfoliotracker.services.user;
 
+import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserUpdateRequest;
 
@@ -8,7 +9,7 @@ import java.util.UUID;
 
 public interface UserService {
 
-    UserDTO createUser(UserDTO userDTO);
+    UserDTO createUser(UserCreateRequest request)       ;
 
     UserDTO getUserById(UUID userId);
 
