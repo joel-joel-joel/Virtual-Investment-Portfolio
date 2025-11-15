@@ -13,6 +13,8 @@ import java.util.UUID;
 @Table(name = "stock")
 public class Stock {
 
+    // This entity stores information of the stock including the ticker, company and current value
+
     // Constructor
 
     public Stock(String stockCode, String companyName, Double stockValue) {

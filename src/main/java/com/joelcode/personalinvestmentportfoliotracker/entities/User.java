@@ -12,6 +12,8 @@ import java.util.UUID;
 @Table(name = "users")
 public class User {
 
+    // This entity stores is the overarching account for the app that can store different investing accounts
+
     // Constructor
 
     public User (UUID userId, String email, String username, String password, String fullName) {

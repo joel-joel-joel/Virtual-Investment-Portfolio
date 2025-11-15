@@ -12,6 +12,9 @@ import java.util.UUID;
 @Table (name = "transactions")
 public class Transaction {
 
+    // This entity stores the transaction of an account, inclusive of information regarding how many shares are bought
+    // and for how much
+
     // Constructor
 
     public Transaction(BigDecimal shareQuantity, BigDecimal pricePerShare, BigDecimal commission, Stock stock, Account account) {

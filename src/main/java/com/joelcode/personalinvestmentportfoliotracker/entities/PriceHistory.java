@@ -10,6 +10,8 @@ import java.util.UUID;
 @Table (name = "price_history")
 public class PriceHistory {
 
+    // This entity stores the price movement history of a stock from a certain point in time
+
     // Constructor
 
     public PriceHistory(LocalDateTime closeDate, BigDecimal closePrice, Stock stock) {

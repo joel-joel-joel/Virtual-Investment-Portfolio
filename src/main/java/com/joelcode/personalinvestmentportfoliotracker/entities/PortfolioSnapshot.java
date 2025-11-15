@@ -11,6 +11,9 @@ import java.util.UUID;
 @Table(name = "portfolio_snapshots")
 public class PortfolioSnapshot {
 
+    // This entity is a snapshot of the state of a portfolio at a certain point in time. Storing performance metrics,
+    // values, investments etc...
+
     // Constructor
 
     public PortfolioSnapshot(UUID snapshotId, Account account, LocalDate snapshotDate, BigDecimal totalValue, BigDecimal cashBalance, BigDecimal totalInvested, BigDecimal totalGainLoss, BigDecimal dayChange, BigDecimal dayChangePercent) {

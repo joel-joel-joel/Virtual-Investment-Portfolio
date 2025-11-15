@@ -10,6 +10,8 @@ import java.util.UUID;
 @Table (name = "dividends")
 public class Dividend {
 
+    // This entity represents the dividend payout for a particular stock
+
     // Constructor
 
     public Dividend(BigDecimal amountPerShare, LocalDateTime payDate, Stock stock) {

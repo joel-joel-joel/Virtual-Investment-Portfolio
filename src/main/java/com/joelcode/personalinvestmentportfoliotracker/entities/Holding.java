@@ -10,16 +10,20 @@ import java.util.UUID;
 @Table(name = "holdings")
 public class Holding {
 
+    // This entity tracks the current position for each stock in an account inclusive of current quantity, gains/losses
+    // and cost basis (price paid for share0
+
     // Constructor
 
-    public Holding(UUID holdingId, Account account, Stock stock, BigDecimal quantity, BigDecimal averageCostBasis, BigDecimal totalCostBasis, BigDecimal realizedGainLoss, LocalDateTime firstPurchaseDate) {
+    public Holding(UUID holdingId, Account account, Stock stock, BigDecimal quantity, BigDecimal averageCostBasis,
+                   BigDecimal totalCostBasis, BigDecimal realizedGain, LocalDateTime firstPurchaseDate) {
         this.holdingId = holdingId;
         this.account = account;
         this.stock = stock;
         this.quantity = quantity;
         this.averageCostBasis = averageCostBasis;
         this.totalCostBasis = totalCostBasis;
-        this.realizedGainLoss = realizedGainLoss;
+        this.realizedGain = realizedGain;
         this.firstPurchaseDate = firstPurchaseDate;
     }
 
@@ -49,7 +53,7 @@ public class Holding {
     private BigDecimal totalCostBasis;
 
     @Column(precision = 19, scale = 2)
-    private BigDecimal realizedGainLoss = BigDecimal.ZERO;
+    private BigDecimal realizedGain = BigDecimal.ZERO;
 
     private LocalDateTime firstPurchaseDate;
 
@@ -114,11 +118,11 @@ public class Holding {
     }
 
     public BigDecimal getRealizedGainLoss() {
-        return realizedGainLoss;
+        return realizedGain;
     }
 
-    public void setRealizedGainLoss(BigDecimal realizedGainLoss) {
-        this.realizedGainLoss = realizedGainLoss;
+    public void setRealizedGainLoss(BigDecimal realizedGain) {
+        this.realizedGain = realizedGain;
     }
 
     public LocalDateTime getFirstPurchaseDate() {
@@ -151,20 +155,20 @@ public class Holding {
         return quantity.multiply(currentPrice);
     }
 
-    public BigDecimal getUnrealizedGainLoss(BigDecimal currentPrice) {
+    public BigDecimal getUnrealizedGain(BigDecimal currentPrice) {
         return getCurrentValue(currentPrice).subtract(totalCostBasis);
     }
 
-    public BigDecimal getUnrealizedGainLossPercent(BigDecimal currentPrice) {
+    public BigDecimal getUnrealizedGainPercent(BigDecimal currentPrice) {
         if (totalCostBasis.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
-        return getUnrealizedGainLoss(currentPrice)
+        return getUnrealizedGain(currentPrice)
                 .divide(totalCostBasis, 4, BigDecimal.ROUND_HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
     }
 
     public BigDecimal getTotalGainLoss(BigDecimal currentPrice) {
-        return getUnrealizedGainLoss(currentPrice).add(realizedGainLoss);
+        return getUnrealizedGain(currentPrice).add(realizedGain);
     }
 }

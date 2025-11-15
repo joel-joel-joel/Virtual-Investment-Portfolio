@@ -13,6 +13,9 @@ import java.util.UUID;
 @Table(name = "accounts")
 public class Account {
 
+    // This entity represents the investment account for the user, storing the account balance and portofolio.
+    // A user can have multiple accounts
+
     // Constructor
 
     public Account(UUID accountId, String accountName, BigDecimal accountBalance, User user) {

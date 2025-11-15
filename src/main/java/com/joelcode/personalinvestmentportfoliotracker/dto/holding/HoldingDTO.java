@@ -16,15 +16,18 @@ public class HoldingDTO {
     private final BigDecimal quantity;
     private final BigDecimal averageCostBasis;
     private final BigDecimal totalCostBasis;
-    private final BigDecimal realizedGainLoss;
+    private final BigDecimal realizedGain;
     private final LocalDateTime firstPurchaseDate;
     private final BigDecimal currentPrice;
     private final BigDecimal currentValue;
-    private final BigDecimal unrealizedGainLoss;
-    private final BigDecimal unrealizedGainLossPercent;
+    private final BigDecimal unrealizedGain;
+    private final BigDecimal unrealizedGainPercent;
 
     // Constructor
-    public HoldingDTO(UUID holdingId, UUID accountId, UUID stockId, String stockSymbol, BigDecimal quantity, BigDecimal averageCostBasis, BigDecimal totalCostBasis, BigDecimal realizedGainLoss, LocalDateTime firstPurchaseDate, BigDecimal currentPrice, BigDecimal currentValue, BigDecimal unrealizedGainLoss, BigDecimal unrealizedGainLossPercent) {
+    public HoldingDTO(UUID holdingId, UUID accountId, UUID stockId, String stockSymbol, BigDecimal quantity,
+                      BigDecimal averageCostBasis, BigDecimal totalCostBasis, BigDecimal realizedGain,
+                      LocalDateTime firstPurchaseDate, BigDecimal currentPrice, BigDecimal currentValue,
+                      BigDecimal unrealizedGain, BigDecimal unrealizedGainPercent) {
         this.holdingId = holdingId;
         this.accountId = accountId;
         this.stockId = stockId;
@@ -32,12 +35,12 @@ public class HoldingDTO {
         this.quantity = quantity;
         this.averageCostBasis = averageCostBasis;
         this.totalCostBasis = totalCostBasis;
-        this.realizedGainLoss = realizedGainLoss;
+        this.realizedGain = realizedGain;
         this.firstPurchaseDate = firstPurchaseDate;
         this.currentPrice = currentPrice;
         this.currentValue = currentValue;
-        this.unrealizedGainLoss = unrealizedGainLoss;
-        this.unrealizedGainLossPercent = unrealizedGainLossPercent;
+        this.unrealizedGain = unrealizedGain;
+        this.unrealizedGainPercent = unrealizedGainPercent;
     }
 
     public HoldingDTO(Holding holding, BigDecimal currentPrice) {
@@ -48,12 +51,12 @@ public class HoldingDTO {
         this.quantity = holding.getQuantity();
         this.averageCostBasis = holding.getAverageCostBasis();
         this.totalCostBasis = holding.getTotalCostBasis();
-        this.realizedGainLoss = holding.getRealizedGainLoss();
+        this.realizedGain = holding.getRealizedGainLoss();
         this.firstPurchaseDate = holding.getFirstPurchaseDate();
         this.currentPrice = currentPrice;
         this.currentValue = holding.getCurrentValue(currentPrice);
-        this.unrealizedGainLoss = holding.getUnrealizedGainLoss(currentPrice);
-        this.unrealizedGainLossPercent = holding.getUnrealizedGainLossPercent(currentPrice);
+        this.unrealizedGain = holding.getUnrealizedGain(currentPrice);
+        this.unrealizedGainPercent = holding.getUnrealizedGainPercent(currentPrice);
     }
 
     // Getters
@@ -85,8 +88,8 @@ public class HoldingDTO {
         return totalCostBasis;
     }
 
-    public BigDecimal getRealizedGainLoss() {
-        return realizedGainLoss;
+    public BigDecimal getRealizedGain() {
+        return realizedGain;
     }
 
     public LocalDateTime getFirstPurchaseDate() {
@@ -101,11 +104,11 @@ public class HoldingDTO {
         return currentValue;
     }
 
-    public BigDecimal getUnrealizedGainLoss() {
-        return unrealizedGainLoss;
+    public BigDecimal getUnrealizedGain() {
+        return unrealizedGain;
     }
 
-    public BigDecimal getUnrealizedGainLossPercent() {
-        return unrealizedGainLossPercent;
+    public BigDecimal getUnrealizedGainPercent() {
+        return unrealizedGainPercent;
     }
 }
