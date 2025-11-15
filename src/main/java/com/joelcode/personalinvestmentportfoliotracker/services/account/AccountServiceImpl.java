@@ -6,10 +6,12 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountUpdate
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.AccountMapper;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@Service
 public class AccountServiceImpl implements AccountService {
 
     // Define key fields
@@ -29,7 +31,7 @@ public class AccountServiceImpl implements AccountService {
     public AccountDTO createAccount(AccountCreateRequest request) {
         accountValidationService.validateAccountExists(request.getUserId());
 
-        // Map creation request to entity
+        // Map accuont creation request to entity
         Account account = AccountMapper.toEntity(request);
 
         // Save account to db
@@ -42,13 +44,12 @@ public class AccountServiceImpl implements AccountService {
     // Find account by ID
     @Override
     public AccountDTO getAccountById(UUID accountId) {
-
         Account account = accountValidationService.validateAccountExists(accountId);
 
         return AccountMapper.toDTO(account);
     }
 
-    // Generate a list of all the users inclusive of their information
+    // Generate a list of all the accounts inclusive of their information
     @Override
     public List<AccountDTO> getAllAccounts() {
         return accountRepository.findAll().stream()
@@ -68,9 +69,12 @@ public class AccountServiceImpl implements AccountService {
         return AccountMapper.toDTO(account);
     }
 
+    // Delete account
     @Override
     public void deleteAccount(UUID accountId) {
         Account account = accountValidationService.validateAccountExists(accountId);
+
+        accountRepository.delete(account);
     }
 }
 

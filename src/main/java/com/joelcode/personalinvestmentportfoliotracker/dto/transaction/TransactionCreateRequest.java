@@ -2,10 +2,10 @@ package com.joelcode.personalinvestmentportfoliotracker.dto.transaction;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.joelcode.personalinvestmentportfoliotracker.entities.Transaction;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -27,17 +27,24 @@ public class TransactionCreateRequest {
     @Positive(message = "Price per share must be positive or zero")
     private final BigDecimal pricePerShare;
 
+    @NotNull (message = "Transaction type is required")
+    private final Transaction.type transactionType;
+
+
+
     // Jackson-compatible constructor
     @JsonCreator
     public TransactionCreateRequest(
             @JsonProperty ("stockId") UUID stockId,
             @JsonProperty ("accountId") UUID accountId,
             @JsonProperty ("shareQuantity") BigDecimal shareQuantity,
-            @JsonProperty ("pricePerShare") BigDecimal pricePerShare) {
+            @JsonProperty ("pricePerShare") BigDecimal pricePerShare,
+            @JsonProperty ("transactionType") Transaction.type transactionType) {
         this.stockId = stockId;
         this.accountId = accountId;
         this.shareQuantity = shareQuantity;
         this.pricePerShare = pricePerShare;
+        this.transactionType = transactionType;
     }
 
     // Getters
@@ -48,4 +55,6 @@ public class TransactionCreateRequest {
     public BigDecimal getShareQuantity() {return shareQuantity;}
 
     public BigDecimal getPricePerShare() {return pricePerShare;}
+
+    public Transaction.type getTransactionType() {return transactionType;}
 }
