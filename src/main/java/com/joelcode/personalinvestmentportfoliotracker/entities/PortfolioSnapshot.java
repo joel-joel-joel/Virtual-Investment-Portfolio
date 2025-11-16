@@ -10,20 +10,27 @@ import java.util.UUID;
 @Entity
 @Table(name = "portfolio_snapshots")
 public class PortfolioSnapshot {
-
     // This entity is a snapshot of the state of a portfolio at a certain point in time. Storing performance metrics,
     // values, investments etc...
 
     // Constructor
 
-    public PortfolioSnapshot(UUID snapshotId, Account account, LocalDate snapshotDate, BigDecimal totalValue, BigDecimal cashBalance, BigDecimal totalInvested, BigDecimal totalGainLoss, BigDecimal dayChange, BigDecimal dayChangePercent) {
+    public PortfolioSnapshot(UUID snapshotId, Account account, LocalDate snapshotDate, BigDecimal totalValue,
+                             BigDecimal cashBalance, BigDecimal totalInvested, BigDecimal totalGain,
+                             BigDecimal realizedGain, BigDecimal unrealizedGain,
+                             BigDecimal totalDividends, BigDecimal roiPercentage,
+                             BigDecimal dayChange, BigDecimal dayChangePercent) {
         this.snapshotId = snapshotId;
         this.account = account;
         this.snapshotDate = snapshotDate;
         this.totalValue = totalValue;
         this.cashBalance = cashBalance;
         this.totalInvested = totalInvested;
-        this.totalGainLoss = totalGainLoss;
+        this.totalGain = totalGain;
+        this.realizedGain = realizedGain;
+        this.unrealizedGain = unrealizedGain;
+        this.totalDividends = totalDividends;
+        this.roiPercentage = roiPercentage;
         this.dayChange = dayChange;
         this.dayChangePercent = dayChangePercent;
     }
@@ -49,13 +56,25 @@ public class PortfolioSnapshot {
     private BigDecimal totalInvested;
 
     @Column(precision = 19, scale = 2)
-    private BigDecimal totalGainLoss;
+    private BigDecimal totalGain;
 
     @Column(precision = 19, scale = 2)
     private BigDecimal dayChange;
 
     @Column(precision = 10, scale = 4)
     private BigDecimal dayChangePercent;
+
+    @Column(precision = 19, scale = 2)
+    private BigDecimal realizedGain = BigDecimal.ZERO;
+
+    @Column(precision = 19, scale = 2)
+    private BigDecimal unrealizedGain = BigDecimal.ZERO;
+
+    @Column(precision = 19, scale = 2)
+    private BigDecimal totalDividends = BigDecimal.ZERO;
+
+    @Column(precision = 10, scale = 4)
+    private BigDecimal roiPercentage = BigDecimal.ZERO;
 
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -121,12 +140,12 @@ public class PortfolioSnapshot {
         this.totalInvested = totalInvested;
     }
 
-    public BigDecimal getTotalGainLoss() {
-        return totalGainLoss;
+    public BigDecimal getTotalGain() {
+        return totalGain;
     }
 
-    public void setTotalGainLoss(BigDecimal totalGainLoss) {
-        this.totalGainLoss = totalGainLoss;
+    public void setTotalGain(BigDecimal totalGain) {
+        this.totalGain = totalGain;
     }
 
     public BigDecimal getDayChange() {
@@ -161,13 +180,29 @@ public class PortfolioSnapshot {
         this.updatedAt = updatedAt;
     }
 
+    public BigDecimal getRealizedGain() {return realizedGain;}
+
+    public void setRealizedGain(BigDecimal realizedGain) {this.realizedGain = realizedGain;}
+
+    public BigDecimal getUnrealizedGain() {return unrealizedGain;}
+
+    public void setUnrealizedGain(BigDecimal unrealizedGain) {this.unrealizedGain = unrealizedGain;}
+
+    public BigDecimal getTotalDividends() {return totalDividends;}
+
+    public void setTotalDividends(BigDecimal totalDividends) {this.totalDividends = totalDividends;}
+
+    public BigDecimal getRoiPercentage() {return roiPercentage;}
+
+    public void setRoiPercentage(BigDecimal roiPercentage) {this.roiPercentage = roiPercentage;}
+
     // Helper Functions
 
-    public BigDecimal getTotalGainLossPercent() {
+    public BigDecimal getTotalGainPercent() {
         if (totalInvested.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
-        return totalGainLoss
+        return totalGain
                 .divide(totalInvested, 4, BigDecimal.ROUND_HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
     }

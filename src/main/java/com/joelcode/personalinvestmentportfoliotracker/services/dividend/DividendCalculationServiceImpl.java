@@ -22,17 +22,15 @@ public class DividendCalculationServiceImpl implements DividendCalculationServic
     // Define key fields
     private final TransactionRepository transactionRepository;
     private final DividendRepository dividendRepository;
-    private final AccountService accountService;
-    private final HoldingService holdingService;
     private final AccountRepository accountRepository;
     private final HoldingRepository holdingRepository;
 
     // Constructor
-    public DividendCalculationServiceImpl(TransactionRepository transactionRepository, DividendRepository dividendRepository, AccountService accountService, HoldingService holdingService, AccountRepository accountRepository, HoldingRepository holdingRepository) {
+    public DividendCalculationServiceImpl(TransactionRepository transactionRepository,
+                                          DividendRepository dividendRepository,
+                                          AccountRepository accountRepository, HoldingRepository holdingRepository) {
         this.transactionRepository = transactionRepository;
         this.dividendRepository = dividendRepository;
-        this.accountService = accountService;
-        this.holdingService = holdingService;
         this.accountRepository = accountRepository;
         this.holdingRepository = holdingRepository;
     }

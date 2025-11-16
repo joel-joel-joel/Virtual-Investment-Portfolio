@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public interface PortfolioPerformanceService {
 
-    PortfolioPerformanceDTO getPortfolioPerformance(UUID accountId);
+    PortfolioPerformanceDTO calculatePortfolioPerformance(UUID accountId);
 
     void createPortfolioSnapshot(UUID accountId);
 }
