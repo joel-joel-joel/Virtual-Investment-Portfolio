@@ -20,7 +20,7 @@ public class HoldingMapper {
         holding.setQuantity(request.getQuantity());
         holding.setAverageCostBasis(request.getAverageCostBasis());
         holding.setTotalCostBasis(request.getTotalCostBasis());
-        holding.setRealizedGainLoss(BigDecimal.ZERO);
+        holding.setRealizedGain(BigDecimal.ZERO);
         holding.setFirstPurchaseDate(LocalDateTime.now());
         return holding;
     }
@@ -30,7 +30,7 @@ public class HoldingMapper {
         if (request.getQuantity() != null) {holding.setQuantity(request.getQuantity());}
         if (request.getAverageCostBasis() != null) {holding.setAverageCostBasis(request.getAverageCostBasis());}
         if (request.getTotalCostBasis() != null) {holding.setTotalCostBasis(request.getTotalCostBasis());}
-        if (request.getRealizedGainLoss() != null) {holding.setRealizedGainLoss(request.getRealizedGainLoss());}
+        if (request.getRealizedGain() != null) {holding.setRealizedGain(request.getRealizedGain());}
     }
 
     // Convert holding entity to holding response DTO
@@ -44,12 +44,12 @@ public class HoldingMapper {
                 holding.getQuantity(),
                 holding.getAverageCostBasis(),
                 holding.getTotalCostBasis(),
-                holding.getRealizedGainLoss(),
+                holding.getRealizedGain(),
                 holding.getFirstPurchaseDate(),
                 currentPrice,
                 holding.getCurrentValue(currentPrice),
-                holding.getUnrealizedGainLoss(currentPrice),
-                holding.getUnrealizedGainLossPercent(currentPrice)
+                holding.getUnrealizedGain(currentPrice),
+                holding.getUnrealizedGainPercent(currentPrice)
         );
     }
 }

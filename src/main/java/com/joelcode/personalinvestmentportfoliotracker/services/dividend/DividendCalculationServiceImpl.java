@@ -4,7 +4,9 @@ import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Dividend;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Transaction;
+import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.DividendRepository;
+import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepository;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.TransactionRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
@@ -22,13 +24,17 @@ public class DividendCalculationServiceImpl implements DividendCalculationServic
     private final DividendRepository dividendRepository;
     private final AccountService accountService;
     private final HoldingService holdingService;
+    private final AccountRepository accountRepository;
+    private final HoldingRepository holdingRepository;
 
     // Constructor
-    public DividendCalculationServiceImpl(TransactionRepository transactionRepository, DividendRepository dividendRepository, AccountService accountService, HoldingService holdingService) {
+    public DividendCalculationServiceImpl(TransactionRepository transactionRepository, DividendRepository dividendRepository, AccountService accountService, HoldingService holdingService, AccountRepository accountRepository, HoldingRepository holdingRepository) {
         this.transactionRepository = transactionRepository;
         this.dividendRepository = dividendRepository;
         this.accountService = accountService;
         this.holdingService = holdingService;
+        this.accountRepository = accountRepository;
+        this.holdingRepository = holdingRepository;
     }
 
     // Calculating the total dividend for an account
@@ -87,13 +93,13 @@ public class DividendCalculationServiceImpl implements DividendCalculationServic
 
     @Override
     @Transactional
-    public void recalculateDividends(java.util.UUID accountId) {
+    public void recalculateDividends(UUID accountId) {
 
-        // 1. Fetch account and holdings
-        Account account = accountService.getAccountEntityById(accountId);
-        List<Holding> holdings = holdingService.getHoldingsEntitiesByAccount(accountId);
+        // Fetch account and holdings
+        Account account = accountRepository.findByAccountId(accountId);
+        List<Holding> holdings = holdingRepository.getHoldingsEntitiesByAccount(accountId);
 
-        // 2. Iterate holdings and update/create dividends
+        // Iterate holdings and update/create dividends
         for (Holding h : holdings) {
             BigDecimal dividendPerShare = h.getStock().getDividendPerShare(); // assume stock has dividend info
             BigDecimal totalDividend = dividendPerShare.multiply(h.getQuantity());

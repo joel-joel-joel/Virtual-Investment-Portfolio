@@ -51,7 +51,7 @@ public class HoldingDTO {
         this.quantity = holding.getQuantity();
         this.averageCostBasis = holding.getAverageCostBasis();
         this.totalCostBasis = holding.getTotalCostBasis();
-        this.realizedGain = holding.getRealizedGainLoss();
+        this.realizedGain = holding.getRealizedGain();
         this.firstPurchaseDate = holding.getFirstPurchaseDate();
         this.currentPrice = currentPrice;
         this.currentValue = holding.getCurrentValue(currentPrice);

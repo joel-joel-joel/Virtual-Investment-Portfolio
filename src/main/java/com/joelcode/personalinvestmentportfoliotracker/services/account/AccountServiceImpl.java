@@ -78,14 +78,6 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.delete(account);
     }
 
-    // Fetch an account
-    @Override
-    public Account getAccountEntityById(UUID accountId) {
-        return accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-    }
-
-
     // Transactional related methods
 
     @Override

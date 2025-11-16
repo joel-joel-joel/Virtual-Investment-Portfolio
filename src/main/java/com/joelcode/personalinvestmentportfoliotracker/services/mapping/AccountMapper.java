@@ -26,6 +26,7 @@ public class AccountMapper {
         if (account == null) return null;
         return new AccountDTO(account.getAccountName(),
                 account.getAccountId(),
-                UserMapper.toDTO(account.getUser()));
+                UserMapper.toDTO(account.getUser()),
+                account.getAccountBalance());
     }
 }

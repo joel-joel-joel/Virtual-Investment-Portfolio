@@ -1,6 +1,7 @@
 package com.joelcode.personalinvestmentportfoliotracker.repositories;
 
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
+import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     // Find transactions
     List<Transaction> findByAccount_AccountId(UUID accountId);
 
-    List<Transaction> findByStock_StockId(Long stockId);
+    List<Transaction> findByAccount(Account account);
+
+    List<Transaction> findByAccountOrderByTransactionDateDesc(Account account);
+
+    List<Transaction> findByStock(Stock stock);
+
+    List<Transaction> findByStock_StockId(UUID stockId);
 
     List<Transaction> findByStock_StockCode(String stockCode);
 
@@ -50,5 +57,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     List<Transaction> findByCreatedAtBefore(LocalDateTime createdAtBefore);
 
     List<Transaction> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    List<Transaction> findByAccount_AccountIdAndCreatedAtBetween(UUID accountId, LocalDateTime start, LocalDateTime end);
+
+    List<Transaction> findByStock_StockIdAndCreatedAtBetween(Long stockId, LocalDateTime start, LocalDateTime end);
 
 }

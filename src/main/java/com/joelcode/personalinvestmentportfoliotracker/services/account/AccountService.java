@@ -21,8 +21,6 @@ public interface AccountService {
 
     void deleteAccount(UUID accountId);
 
-    Account getAccountEntityById(UUID accountId);
-
     void updateAccountBalance(Account account, BigDecimal amount);
 
 }

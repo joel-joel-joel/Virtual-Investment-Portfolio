@@ -20,15 +20,11 @@ public interface HoldingService {
 
     List<HoldingDTO> getHoldingsByAccount(UUID accountId);
 
-    List<Holding> getHoldingsEntitiesByAccount(UUID accountId);
-
     HoldingDTO updateHolding(UUID id, HoldingUpdateRequest request);
-
-    void deleteHolding(UUID id);
-
-    Holding getHoldingByAccountIdAndStockId(UUID accountId, UUID stockId);
 
     void updateHoldingAfterSale(Holding holding, BigDecimal quantitySold, BigDecimal salePrice);
 
     void updateOrCreateHoldingFromTransaction(TransactionCreateRequest request);
+
+    void deleteHolding(UUID id);
 }

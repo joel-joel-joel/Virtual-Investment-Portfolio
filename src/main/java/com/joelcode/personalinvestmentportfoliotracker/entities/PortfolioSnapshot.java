@@ -36,10 +36,6 @@ public class PortfolioSnapshot {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID snapshotId;
 
-    @ManyToOne
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
-
     @Column(nullable = false)
     private LocalDate snapshotDate;
 
@@ -65,6 +61,10 @@ public class PortfolioSnapshot {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @ManyToOne
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 
     @PreUpdate
     public void preUpdate() {

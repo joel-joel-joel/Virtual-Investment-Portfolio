@@ -83,11 +83,6 @@ public class HoldingServiceImpl implements HoldingService {
     }
 
     @Override
-    public List<Holding> getHoldingsEntitiesByAccount(UUID accountId) {
-        return holdingRepository.findAllByAccountId(accountId);
-    }
-
-    @Override
     public HoldingDTO updateHolding(UUID holdingId, HoldingUpdateRequest request) {
 
         // Validate holding exists
@@ -121,22 +116,7 @@ public class HoldingServiceImpl implements HoldingService {
         return HoldingMapper.toDTO(holding, BigDecimal.valueOf(holding.getStock().getStockValue()));
     }
 
-    @Override
-    public void deleteHolding(UUID holdingId) {
-        Holding holding = holdingValidationService.validateHoldingExists(holdingId);
-        holdingRepository.delete(holding);
-    }
-
     // Transactional type methods
-
-    @Override
-    public Holding getHoldingByAccountIdAndStockId(UUID accountId, UUID stockId) {
-        Account account = holdingValidationService.validateAccountExists(accountId);
-        Stock stock = holdingValidationService.validateStockExists(stockId);
-        Holding holding = holdingRepository.findByAccountAndStock(account, stock)
-                .orElseThrow(() -> new RuntimeException("No holding found for account ID: " + accountId + " and stock ID: " + stockId));
-        return holding;
-    }
 
     @Override
     public void updateHoldingAfterSale(Holding holding, BigDecimal quantitySold, BigDecimal salePrice) {
@@ -160,9 +140,10 @@ public class HoldingServiceImpl implements HoldingService {
         BigDecimal pricePerShare = request.getPricePerShare();
 
         // Try to fetch existing holding
-        Holding holding = holdingService.getHoldingByAccountIdAndStockId(request.getAccountId(), request.getStockId());
+        Optional<Holding> holdingOpt = holdingRepository.getHoldingByAccountIdAndStockId(request.getAccountId(), request.getStockId());
 
-        if (holding != null) {
+        if (holdingOpt.isPresent()) {
+            Holding holding = holdingOpt.get();
 
             if (request.getTransactionType().name().equalsIgnoreCase("BUY")) {
                 // Recalculate average cost basis
@@ -200,6 +181,12 @@ public class HoldingServiceImpl implements HoldingService {
                 throw new IllegalArgumentException("Cannot sell stock you don't hold");
             }
         }
+    }
+
+    @Override
+    public void deleteHolding(UUID id) {
+        Holding holding = holdingValidationService.validateHoldingExists(id);
+        holdingRepository.delete(holding);
     }
 
 }

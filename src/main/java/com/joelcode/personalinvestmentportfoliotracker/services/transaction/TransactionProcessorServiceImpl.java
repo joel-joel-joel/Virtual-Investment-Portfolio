@@ -4,12 +4,16 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.transaction.Transacti
 import com.joelcode.personalinvestmentportfoliotracker.dto.transaction.TransactionDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
+import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
+import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountService;
 import com.joelcode.personalinvestmentportfoliotracker.services.dividend.DividendCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 
 @Service
@@ -21,19 +25,22 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
     private final HoldingCalculationService holdingCalculationService;
     private final AccountService accountService;
     private final DividendCalculationService dividendCalculationService;
-
+    private final AccountRepository accountRepository;
+    private final HoldingRepository holdingRepository;
 
 
     // Constructor
     public TransactionProcessorServiceImpl (TransactionService transactionService, HoldingService holdingService,
                                             HoldingCalculationService holdingCalculationService,
                                             AccountService accountService,
-                                            DividendCalculationService dividendCalculationService) {
+                                            DividendCalculationService dividendCalculationService, AccountRepository accountRepository, HoldingRepository holdingRepository) {
         this.transactionService = transactionService;
         this.holdingService = holdingService;
         this.holdingCalculationService = holdingCalculationService;
         this.accountService = accountService;
         this.dividendCalculationService = dividendCalculationService;
+        this.accountRepository = accountRepository;
+        this.holdingRepository = holdingRepository;
     }
 
     // Interface function
@@ -42,7 +49,7 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
     public TransactionDTO processTransaction(TransactionCreateRequest request){
 
         // Retrieve account related to transaction
-        Account account = accountService.getAccountEntityById(request.getAccountId());
+        Account account = accountRepository.findByAccountId(request.getAccountId());
 
         // If it is a buy transaction
         if (request.getTransactionType().name().equalsIgnoreCase("BUY")) {
@@ -58,12 +65,13 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
         // If it is a sell transaction
         else if (request.getTransactionType().name().equalsIgnoreCase("SELL")) {
             // Retrieve the requested holding for a sale
-            Holding holding = holdingService.getHoldingByAccountIdAndStockId(request.getAccountId(), request.getStockId());
+            Optional<Holding> holdingOpt = holdingRepository.getHoldingByAccountIdAndStockId(request.getAccountId(), request.getStockId());
 
             // Check if the holding exists
-            if (holding == null){
+            if (holdingOpt == null){
                 throw new IllegalArgumentException("No holding found for account and stock");
             } else {
+                Holding holding = holdingOpt.get();
                 // Check account has sufficient shares
                 if (holding.getQuantity().doubleValue() < request.getShareQuantity().doubleValue()) {
                     throw new IllegalArgumentException("Insufficient holding quantity");
@@ -78,7 +86,7 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
         }
 
         // Save account balance
-        accountService.updateAccountBalance(accountService.getAccountEntityById(request.getAccountId()), account.getAccountBalance());
+        accountService.updateAccountBalance(accountRepository.findByAccountId(request.getAccountId()), account.getAccountBalance());
 
         // Update or create holding
         holdingService.updateOrCreateHoldingFromTransaction(request);

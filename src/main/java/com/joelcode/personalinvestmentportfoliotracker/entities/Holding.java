@@ -21,9 +21,9 @@ public class Holding {
         this.account = account;
         this.stock = stock;
         this.quantity = quantity;
-        this.averageCostBasis = averageCostBasis;
-        this.totalCostBasis = totalCostBasis;
-        this.realizedGain = realizedGain;
+        this.averageCostBasis = averageCostBasis; // Average cost you paid for all the assets you have
+        this.totalCostBasis = totalCostBasis; // Total invested into the stock
+        this.realizedGain = realizedGain; // Profit upon selling shares
         this.firstPurchaseDate = firstPurchaseDate;
     }
 
@@ -34,14 +34,6 @@ public class Holding {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID holdingId;
-
-    @ManyToOne
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
-
-    @ManyToOne
-    @JoinColumn(name = "stock_id", nullable = false)
-    private Stock stock;
 
     @Column(nullable = false, precision = 19, scale = 8)
     private BigDecimal quantity;
@@ -61,6 +53,14 @@ public class Holding {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @ManyToOne
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
+
+    @ManyToOne
+    @JoinColumn(name = "stock_id", nullable = false)
+    private Stock stock;
 
     @PreUpdate
     public void preUpdate() {
