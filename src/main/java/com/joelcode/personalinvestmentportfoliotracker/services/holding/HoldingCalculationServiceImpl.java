@@ -57,9 +57,9 @@ public class HoldingCalculationServiceImpl implements HoldingCalculationService 
         return totalCostBasis != null ? totalCostBasis : BigDecimal.ZERO;
     }
 
-    // Calculate total unrealized gain/loss for an account
+    // Calculate total unrealized gain for an account
     @Override
-    public BigDecimal calculateTotalUnrealizedGainLoss(UUID accountId) {
+    public BigDecimal calculateTotalUnrealizedGain(UUID accountId) {
 
         // Validate account exists
         Account account = holdingValidationService.validateAccountExists(accountId);
@@ -67,20 +67,20 @@ public class HoldingCalculationServiceImpl implements HoldingCalculationService 
         // Get all holdings for account
         List<Holding> holdings = holdingRepository.findByAccount(account);
 
-        BigDecimal totalUnrealizedGainLoss = BigDecimal.ZERO;
+        BigDecimal totalUnrealizedGain = BigDecimal.ZERO;
 
         for (Holding holding : holdings) {
             BigDecimal currentPrice = BigDecimal.valueOf(holding.getStock().getStockValue());
-            BigDecimal unrealizedGainLoss = holding.getUnrealizedGainLoss(currentPrice);
-            totalUnrealizedGainLoss = totalUnrealizedGainLoss.add(unrealizedGainLoss);
+            BigDecimal unrealizedGain = holding.getUnrealizedGain(currentPrice);
+            totalUnrealizedGain = totalUnrealizedGain.add(unrealizedGain);
         }
 
-        return totalUnrealizedGainLoss;
+        return totalUnrealizedGain;
     }
 
-    // Calculate total realized gain/loss for an account
+    // Calculate total realized gain for an account
     @Override
-    public BigDecimal calculateTotalRealizedGainLoss(UUID accountId) {
+    public BigDecimal calculateTotalRealizedGain(UUID accountId) {
 
         // Validate account exists
         Account account = holdingValidationService.validateAccountExists(accountId);
@@ -88,13 +88,13 @@ public class HoldingCalculationServiceImpl implements HoldingCalculationService 
         // Get all holdings for account
         List<Holding> holdings = holdingRepository.findByAccount(account);
 
-        BigDecimal totalRealizedGainLoss = BigDecimal.ZERO;
+        BigDecimal totalRealizedGain = BigDecimal.ZERO;
 
         for (Holding holding : holdings) {
-            BigDecimal realizedGainLoss = holding.getRealizedGainLoss();
-            totalRealizedGainLoss = totalRealizedGainLoss.add(realizedGainLoss);
+            BigDecimal realizedGain = holding.getRealizedGain();
+            totalRealizedGain = totalRealizedGain.add(realizedGain);
         }
 
-        return totalRealizedGainLoss;
+        return totalRealizedGain;
     }
 }

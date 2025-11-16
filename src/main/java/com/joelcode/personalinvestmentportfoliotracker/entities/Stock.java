@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +18,11 @@ public class Stock {
 
     // Constructor
 
-    public Stock(String stockCode, String companyName, Double stockValue) {
+    public Stock(String stockCode, String companyName, Double stockValue, BigDecimal dividendPerShare) {
         this.stockCode = stockCode;
         this.companyName = companyName;
         this.stockValue = stockValue;
+        this.dividendPerShare = dividendPerShare;
     }
 
     public Stock() {}
@@ -39,6 +41,9 @@ public class Stock {
 
     @Column (nullable = false)
     private Double stockValue;
+
+    @Column (nullable = false)
+    private BigDecimal dividendPerShare;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -102,6 +107,10 @@ public class Stock {
     public LocalDateTime getUpdatedAt() {return updatedAt;}
 
     public void setUpdatedAt(LocalDateTime updatedAt) {this.updatedAt = updatedAt;}
+
+    public BigDecimal getDividendPerShare() {return dividendPerShare;}
+
+    public void setDividendPerShare(BigDecimal dividendPerShare) {this.dividendPerShare = dividendPerShare;}
 
     // Helper Functions
 

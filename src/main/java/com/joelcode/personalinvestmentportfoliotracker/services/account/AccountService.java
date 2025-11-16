@@ -3,7 +3,9 @@ package com.joelcode.personalinvestmentportfoliotracker.services.account;
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountUpdateRequest;
+import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,5 +20,10 @@ public interface AccountService {
     AccountDTO updateAccount(UUID acccountId, AccountUpdateRequest request);
 
     void deleteAccount(UUID accountId);
+
+    Account getAccountEntityById(UUID accountId);
+
+    void updateAccountBalance(Account account, BigDecimal amount);
+
 }
 

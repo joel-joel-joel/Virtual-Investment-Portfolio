@@ -2,6 +2,7 @@ package com.joelcode.personalinvestmentportfoliotracker.services.portfolio.aggre
 
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.holding.HoldingDTO;
+import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountService;
 import com.joelcode.personalinvestmentportfoliotracker.services.dividend.DividendCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingCalculationService;

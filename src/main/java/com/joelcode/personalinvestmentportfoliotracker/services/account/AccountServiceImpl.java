@@ -8,6 +8,7 @@ import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepos
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.AccountMapper;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,6 +76,24 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountValidationService.validateAccountExists(accountId);
 
         accountRepository.delete(account);
+    }
+
+    // Fetch an account
+    @Override
+    public Account getAccountEntityById(UUID accountId) {
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+    }
+
+
+    // Transactional related methods
+
+    @Override
+    public void updateAccountBalance(Account account, BigDecimal amount){
+        BigDecimal currentBalance = account.getAccountBalance();
+        BigDecimal newBalance = currentBalance.add(amount);
+        account.setAccountBalance(newBalance);
+        accountRepository.save(account);
     }
 }
 

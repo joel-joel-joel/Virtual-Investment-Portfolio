@@ -7,4 +7,6 @@ public interface DividendCalculationService {
 
     BigDecimal calculateTotalDividends(UUID accountId);
 
+    void recalculateDividends(java.util.UUID accountId);
+
 }

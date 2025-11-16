@@ -9,7 +9,7 @@ public interface HoldingCalculationService {
 
     BigDecimal calculateTotalCostBasis(UUID accountId);
 
-    BigDecimal calculateTotalUnrealizedGainLoss(UUID accountId);
+    BigDecimal calculateTotalUnrealizedGain(UUID accountId);
 
-    BigDecimal calculateTotalRealizedGainLoss(UUID accountId);
+    BigDecimal calculateTotalRealizedGain(UUID accountId);
 }

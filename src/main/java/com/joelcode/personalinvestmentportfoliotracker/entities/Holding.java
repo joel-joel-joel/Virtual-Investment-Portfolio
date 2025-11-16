@@ -11,7 +11,7 @@ import java.util.UUID;
 public class Holding {
 
     // This entity tracks the current position for each stock in an account inclusive of current quantity, gains/losses
-    // and cost basis (price paid for share0
+    // and cost basis (price paid for share)
 
     // Constructor
 
