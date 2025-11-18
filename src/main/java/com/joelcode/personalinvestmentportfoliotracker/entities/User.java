@@ -1,5 +1,6 @@
 package com.joelcode.personalinvestmentportfoliotracker.entities;
 
+import io.micrometer.common.KeyValues;
 import jakarta.persistence.*;
 import net.minidev.json.annotate.JsonIgnore;
 
@@ -48,7 +49,12 @@ public class User {
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(updatable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role roles;
 
     @PreUpdate
     public void preUpdate() {
@@ -57,6 +63,12 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Account> accounts = new ArrayList<>();
+
+
+    public enum Role {
+        ROLE_USER,
+        ROLE_ADMIN
+    }
 
     // Getters and Setters
 
@@ -100,6 +112,10 @@ public class User {
 
     public void setUsername(String username) {this.username = username;}
 
+    public Role getRoles() {return roles;}
+
+    public void setRoles(Role role) {this.roles = role;}
+
     // Helper Functions
 
     public void addAccount(Account account) {
@@ -112,8 +128,7 @@ public class User {
         account.setUser(null);
     }
 
-
-
+    public String getRoleNames() {return roles.name();}
 
 }
 
