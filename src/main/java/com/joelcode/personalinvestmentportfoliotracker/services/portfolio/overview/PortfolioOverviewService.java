@@ -5,5 +5,8 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.PortfolioOv
 import java.util.UUID;
 
 public interface PortfolioOverviewService {
+
+    PortfolioOverviewDTO getPortfolioOverviewForUser(UUID userId);
+
     PortfolioOverviewDTO getPortfolioOverviewForAccount(UUID accountId);
 }

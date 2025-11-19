@@ -22,6 +22,8 @@ public interface StockRepository  extends JpaRepository<Stock, UUID> {
     // Filter lists of stocks
     List<Stock> findByCompanyNameContainingIgnoreCase(String companyName);
 
+    List<Stock> findByNameContainingIgnoreCase(String name);
+
     // Existence checks
     boolean existsByStockCode(String stockCode);
 

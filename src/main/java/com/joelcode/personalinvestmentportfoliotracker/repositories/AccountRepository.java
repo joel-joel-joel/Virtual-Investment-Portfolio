@@ -33,6 +33,10 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 
     List<Account> findByUser_UserIdAndAccountNameContainingIgnoreCase(UUID userId, String accountNameFragment);
 
+    List<Account> findByUser_UserIdAndNameContainingIgnoreCase(UUID userId, String accountNameFragment);
+
+    List<Account> findByNameContainingIgnoreCase(String name);
+
     // Filter by value
     List<Account> findByAccountBalanceGreaterThan(BigDecimal accountBalance);
 
