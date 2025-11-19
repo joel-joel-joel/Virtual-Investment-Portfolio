@@ -1,17 +1,162 @@
+# ==================== APPLICATION CONFIGURATION ====================
 spring:
+  application:
+    name: Personal Investment Portfolio Tracker
+
+  # ==================== DATABASE CONFIGURATION ====================
   datasource:
     url: jdbc:postgresql://localhost:5432/mydatabase
     username: myuser
     password: secret
+    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update  # Change to 'validate' in production
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
   sql:
     init:
       mode: always
+
+  # ==================== JACKSON CONFIGURATION ====================
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+    default-property-inclusion: non_null
+
+# ==================== SERVER CONFIGURATION ====================
 server:
   port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param  # Show stacktrace only with ?trace=true
+    include-exception: false
+
+# ==================== JWT CONFIGURATION ====================
+app:
+  jwt:
+    secret: ${JWT_SECRET:your-super-secret-jwt-key-change-this-in-production-min-256-bits}
+    expiration: 86400000  # 24 hours in milliseconds
+
+# ==================== CORS CONFIGURATION ====================
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS,HEAD,PATCH
+  max-age: 3600
+
+# ==================== LOGGING CONFIGURATION ====================
+logging:
+  level:
+    root: INFO
+    com.joelcode.personalinvestmentportfoliotracker: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 30
+
+# ==================== ACTUATOR (Health Check) ====================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+---
+# ==================== DEVELOPMENT PROFILE ====================
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/portfolio_dev
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173,http://localhost:8081
+
+logging:
+  level:
+    com.joelcode.personalinvestmentportfoliotracker: DEBUG
+
+---
+# ==================== PRODUCTION PROFILE ====================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate  # Never auto-update schema in production
+
+cors:
+  allowed-origins: https://your-frontend-domain.com
+  max-age: 7200
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}  # Must be set as environment variable
+    expiration: 3600000  # 1 hour in production
+
+logging:
+  level:
+    root: WARN
+    com.joelcode.personalinvestmentportfoliotracker: INFO
+    org.springframework.security: WARN
+
+server:
+  error:
+    include-stacktrace: never  # Never expose stack traces in production
+
+---
+# ==================== TEST PROFILE ====================
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    root: WARN
+    com.joelcode.personalinvestmentportfoliotracker: DEBUG

@@ -1,0 +1,50 @@
+2025-11-19 15:17:22 [restartedMain] INFO  c.j.p.PersonalInvestmentPortfolioTrackerApplication - Starting PersonalInvestmentPortfolioTrackerApplication using Java 24.0.2 with PID 97222 (/Users/joelong/Documents/SWE Projects/Personal Investment Portfolio Tracker/target/classes started by joelong in /Users/joelong/Documents/SWE Projects/Personal Investment Portfolio Tracker)
+2025-11-19 15:17:22 [restartedMain] DEBUG c.j.p.PersonalInvestmentPortfolioTrackerApplication - Running with Spring Boot v3.5.6, Spring v6.2.11
+2025-11-19 15:17:22 [restartedMain] INFO  c.j.p.PersonalInvestmentPortfolioTrackerApplication - No active profile set, falling back to 1 default profile: "default"
+2025-11-19 15:17:22 [restartedMain] INFO  o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-11-19 15:17:22 [restartedMain] INFO  o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-11-19 15:17:22 [restartedMain] INFO  o.s.b.d.c.l.DockerComposeLifecycleManager - Using Docker Compose file /Users/joelong/Documents/SWE Projects/Personal Investment Portfolio Tracker/compose.yaml
+2025-11-19 15:17:22 [restartedMain] ERROR o.s.boot.SpringApplication - Application run failed
+org.springframework.boot.docker.compose.core.DockerNotRunningException: Docker is not running
+	at org.springframework.boot.docker.compose.core.DockerCli$DockerCommands.getDockerCommand(DockerCli.java:157)
+	at org.springframework.boot.docker.compose.core.DockerCli$DockerCommands.<init>(DockerCli.java:140)
+	at org.springframework.boot.docker.compose.core.DockerCli.lambda$new$0(DockerCli.java:66)
+	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1229)
+	at org.springframework.boot.docker.compose.core.DockerCli.<init>(DockerCli.java:65)
+	at org.springframework.boot.docker.compose.core.DockerCompose.get(DockerCompose.java:145)
+	at org.springframework.boot.docker.compose.lifecycle.DockerComposeLifecycleManager.getDockerCompose(DockerComposeLifecycleManager.java:166)
+	at org.springframework.boot.docker.compose.lifecycle.DockerComposeLifecycleManager.start(DockerComposeLifecycleManager.java:114)
+	at org.springframework.boot.docker.compose.lifecycle.DockerComposeListener.onApplicationEvent(DockerComposeListener.java:53)
+	at org.springframework.boot.docker.compose.lifecycle.DockerComposeListener.onApplicationEvent(DockerComposeListener.java:35)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.doInvokeListener(SimpleApplicationEventMulticaster.java:185)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:178)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:156)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:138)
+	at org.springframework.boot.context.event.EventPublishingRunListener.multicastInitialEvent(EventPublishingRunListener.java:136)
+	at org.springframework.boot.context.event.EventPublishingRunListener.contextLoaded(EventPublishingRunListener.java:98)
+	at org.springframework.boot.SpringApplicationRunListeners.lambda$contextLoaded$4(SpringApplicationRunListeners.java:72)
+	at java.base/java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:118)
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:112)
+	at org.springframework.boot.SpringApplicationRunListeners.contextLoaded(SpringApplicationRunListeners.java:72)
+	at org.springframework.boot.SpringApplication.prepareContext(SpringApplication.java:416)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:317)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1361)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1350)
+	at com.joelcode.personalinvestmentportfoliotracker.PersonalInvestmentPortfolioTrackerApplication.main(PersonalInvestmentPortfolioTrackerApplication.java:16)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50)
+Caused by: org.springframework.boot.docker.compose.core.ProcessExitException: 'docker version --format {{.Client.Version}}' failed with exit code 1.
+
+Stdout:
+28.3.2
+
+
+Stderr:
+Cannot connect to the Docker daemon at unix:///Users/joelong/.docker/run/docker.sock. Is the docker daemon running?
+
+	at org.springframework.boot.docker.compose.core.ProcessRunner.run(ProcessRunner.java:97)
+	at org.springframework.boot.docker.compose.core.ProcessRunner.run(ProcessRunner.java:75)
+	at org.springframework.boot.docker.compose.core.DockerCli$DockerCommands.getDockerCommand(DockerCli.java:146)
+	... 28 common frames omitted
