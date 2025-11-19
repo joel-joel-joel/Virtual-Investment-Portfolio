@@ -6,7 +6,9 @@ import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Dividend;
 import com.joelcode.personalinvestmentportfoliotracker.entities.DividendPayment;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DividendPaymentMapper {
 
     public static DividendPaymentDTO toDTO(DividendPayment payment) {

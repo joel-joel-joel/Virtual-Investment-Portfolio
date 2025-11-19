@@ -40,7 +40,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
 
     @Override
     @Transactional
-    public DividendPaymentDTO createPayment(DividendPaymentCreateRequest request) {
+    public DividendPaymentDTO createDividendPayment(DividendPaymentCreateRequest request) {
 
         // Validate request
         validationService.validateCreateRequest(request);
@@ -69,13 +69,13 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
     }
 
     @Override
-    public DividendPaymentDTO getPaymentById(UUID paymentId) {
+    public DividendPaymentDTO getDividendPaymentById(UUID paymentId) {
         DividendPayment payment = validationService.validatePaymentExists(paymentId);
         return DividendPaymentMapper.toDTO(payment);
     }
 
     @Override
-    public List<DividendPaymentDTO> getPaymentsByAccount(UUID accountId) {
+    public List<DividendPaymentDTO> getDividendPaymentsByAccount(UUID accountId) {
         validationService.validateAccountExists(accountId);
 
         List<DividendPayment> payments = paymentRepository.findPaymentsByAccountOrderByDate(accountId);
@@ -86,7 +86,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
     }
 
     @Override
-    public List<DividendPaymentDTO> getPaymentsByAccountAndStock(UUID accountId, UUID stockId) {
+    public List<DividendPaymentDTO> getDividendPaymentsByAccountAndStock(UUID accountId, UUID stockId) {
         validationService.validateAccountExists(accountId);
 
         List<DividendPayment> payments = paymentRepository.findPaymentsByAccountAndStock(accountId, stockId);
@@ -97,7 +97,28 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
     }
 
     @Override
-    public List<DividendPaymentDTO> getPaymentsByAccountInDateRange(UUID accountId,
+    public List<DividendPaymentDTO> getDividendPaymentsForAccount(UUID accountId) {
+        List<DividendPayment> payments = paymentRepository.findPaymentsByAccountAndStock(accountId, null);
+
+        // Map to DTOs
+        return payments.stream()
+                .map(DividendPaymentMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DividendPaymentDTO> getDividendPaymentsForStock(UUID stockId) {
+        List<DividendPayment> payments = paymentRepository.findPaymentsByAccountAndStock(null, stockId);
+
+        // Map to DTOs
+        return payments.stream()
+                .map(DividendPaymentMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<DividendPaymentDTO> getDividendPaymentsByAccountInDateRange(UUID accountId,
                                                                     LocalDateTime start,
                                                                     LocalDateTime end) {
         validationService.validateAccountExists(accountId);
@@ -174,7 +195,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
 
     @Override
     @Transactional
-    public void deletePayment(UUID paymentId) {
+    public void deleteDividendPayment(UUID paymentId) {
         DividendPayment payment = validationService.validatePaymentExists(paymentId);
         paymentRepository.delete(payment);
     }

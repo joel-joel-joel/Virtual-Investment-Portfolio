@@ -27,4 +27,6 @@ public interface HoldingService {
     void updateOrCreateHoldingFromTransaction(TransactionCreateRequest request);
 
     void deleteHolding(UUID id);
+
+    List<HoldingDTO> getHoldingsForAccount(UUID accountId);
 }

@@ -4,15 +4,18 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.HoldingSumm
 import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.AccountSummaryDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
+import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.dividend.DividendCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
+import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidationService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class AccountSummaryServiceImpl implements AccountSummaryService{
 
@@ -21,13 +24,17 @@ public class AccountSummaryServiceImpl implements AccountSummaryService{
     private final HoldingRepository holdingRepository;
     private final StockService stockService;
     private final DividendCalculationService dividendCalculationService;
+    private final UserValidationService userValidationService;
 
     // Constructor
-    public AccountSummaryServiceImpl (AccountRepository accountRepository, HoldingRepository holdingRepository, StockService stockService, DividendCalculationService dividendCalculationService) {
+    public AccountSummaryServiceImpl (AccountRepository accountRepository, HoldingRepository holdingRepository,
+                                      StockService stockService, DividendCalculationService dividendCalculationService,
+                                      UserValidationService userValidationService) {
         this.accountRepository = accountRepository;
         this.holdingRepository = holdingRepository;
         this.stockService = stockService;
         this.dividendCalculationService = dividendCalculationService;
+        this.userValidationService = userValidationService;
     }
 
     // Interface functions
@@ -84,5 +91,16 @@ public class AccountSummaryServiceImpl implements AccountSummaryService{
 
         return summary;
     }
+
+    public List<AccountSummaryDTO> getAccountSummariesForUser(UUID userId) {
+        // Validate user exists
+        User user = userValidationService.validateUserExists(userId);
+
+        // Stream through each account and get its summary
+        return user.getAccounts().stream()
+                .map(account -> getAccountSummary(account.getAccountId()))
+                .collect(Collectors.toList());
+    }
+
 
 }

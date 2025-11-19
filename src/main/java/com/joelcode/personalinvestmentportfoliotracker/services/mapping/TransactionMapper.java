@@ -3,7 +3,9 @@ package com.joelcode.personalinvestmentportfoliotracker.services.mapping;
 import com.joelcode.personalinvestmentportfoliotracker.dto.transaction.TransactionCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.transaction.TransactionDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Transaction;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TransactionMapper {
 
     // Convert transaction creation request DTO to entity

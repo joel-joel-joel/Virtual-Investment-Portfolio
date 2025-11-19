@@ -5,7 +5,7 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.AllocationB
 import java.util.List;
 import java.util.UUID;
 
-public interface AllocationService {
+public interface AllocationBreakdownService {
     List<AllocationBreakdownDTO> getAllocationForAccount(UUID accountId);
 }
 

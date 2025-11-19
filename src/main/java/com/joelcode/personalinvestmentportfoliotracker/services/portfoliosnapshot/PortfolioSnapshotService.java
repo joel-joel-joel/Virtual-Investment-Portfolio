@@ -11,7 +11,7 @@ public interface PortfolioSnapshotService {
 
     PortfolioSnapshotDTO createSnapshot(PortfolioSnapshotCreateRequest request);
 
-    PortfolioSnapshotDTO getSnapshotById(UUID id);
+    PortfolioSnapshotDTO getSnapshotById(UUID snapshotId);
 
     List<PortfolioSnapshotDTO> getAllSnapshots();
 
@@ -22,4 +22,8 @@ public interface PortfolioSnapshotService {
     PortfolioSnapshotDTO getLatestSnapshot(UUID accountId);
 
     void deleteSnapshot(UUID id);
+
+    List<PortfolioSnapshotDTO> getSnapshotsForUser(UUID userId);
+
+    List<PortfolioSnapshotDTO> getSnapshotsForAccount(UUID accountId);
 }

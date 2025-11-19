@@ -3,14 +3,23 @@ package com.joelcode.personalinvestmentportfoliotracker.services.account;
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountUpdateRequest;
+import com.joelcode.personalinvestmentportfoliotracker.dto.holding.HoldingDTO;
+import com.joelcode.personalinvestmentportfoliotracker.dto.transaction.TransactionDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
+import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
+import com.joelcode.personalinvestmentportfoliotracker.entities.Transaction;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.AccountMapper;
+import com.joelcode.personalinvestmentportfoliotracker.services.mapping.HoldingMapper;
+import com.joelcode.personalinvestmentportfoliotracker.services.mapping.TransactionMapper;
+import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryService;
+import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -18,11 +27,19 @@ public class AccountServiceImpl implements AccountService {
     // Define key fields
     private final AccountRepository accountRepository;
     private final AccountValidationService accountValidationService;
+    private final TransactionMapper transactionMapper;
+    private final HoldingMapper holdingMapper;
+    private final PriceHistoryService priceHistoryService;
 
     // Constructor
-    public AccountServiceImpl(AccountRepository accountRepository, AccountValidationService accountValidationService){
+    public AccountServiceImpl(AccountRepository accountRepository, AccountValidationService accountValidationService,
+                              TransactionMapper transactionMapper, HoldingMapper holdingMapper,
+                              PriceHistoryServiceImpl priceHistoryService) {
         this.accountRepository = accountRepository;
         this.accountValidationService = accountValidationService;
+        this.transactionMapper = transactionMapper;
+        this.holdingMapper = holdingMapper;
+        this.priceHistoryService = priceHistoryService;
     }
 
     // Interface functions
@@ -86,6 +103,43 @@ public class AccountServiceImpl implements AccountService {
         BigDecimal newBalance = currentBalance.add(amount);
         account.setAccountBalance(newBalance);
         accountRepository.save(account);
+
     }
+
+    @Override
+    public List<TransactionDTO> getTransactionsForAccount(UUID accountId) {
+        // Validate account exists
+        Account account = accountValidationService.validateAccountExists(accountId);
+
+        // Get transactions from account entity
+        List<Transaction> transactions = account.getTransactions(); // assuming OneToMany
+
+        // Map to DTOs
+        List<TransactionDTO> transactionDTOs = transactions.stream()
+                .map(TransactionMapper::toDTO)
+                .collect(Collectors.toList());
+
+        return transactionDTOs;
+    }
+
+    @Override
+    public List<HoldingDTO> getHoldingsForAccount(UUID accountId) {
+        // Validate the account exists
+        Account account = accountValidationService.validateAccountExists(accountId);
+
+        // Stream through holdings and map to DTOs with current price
+        List<HoldingDTO> holdingDTOs = account.getHoldings().stream()
+                .map(h -> {
+                    BigDecimal currentPrice = priceHistoryService.getCurrentPrice(h.getStock().getStockId());
+                    return HoldingMapper.toDTO(h, currentPrice);
+                })
+                .collect(Collectors.toList());
+
+        return holdingDTOs;
+    }
+
 }
+
+
+
 

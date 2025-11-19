@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class AllocationServiceImpl implements AllocationService {
+public class AllocationBreakdownServiceImpl implements AllocationBreakdownService {
 
     // Define key fields
     private final HoldingService holdingService;
@@ -21,9 +21,9 @@ public class AllocationServiceImpl implements AllocationService {
     private final HoldingRepository holdingRepository;
 
     // Constructor
-    public AllocationServiceImpl(HoldingService holdingService,
-                                 HoldingCalculationService holdingCalcService,
-                                 HoldingRepository holdingRepository) {
+    public AllocationBreakdownServiceImpl(HoldingService holdingService,
+                                          HoldingCalculationService holdingCalcService,
+                                          HoldingRepository holdingRepository) {
         this.holdingService = holdingService;
         this.holdingCalcService = holdingCalcService;
         this.holdingRepository = holdingRepository;

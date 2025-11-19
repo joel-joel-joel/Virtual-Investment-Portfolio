@@ -8,7 +8,9 @@ import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepository;
+import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountValidationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.HoldingMapper;
+import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -24,12 +26,18 @@ public class HoldingServiceImpl implements HoldingService {
     // Define key fields
     private final HoldingRepository holdingRepository;
     private final HoldingValidationService holdingValidationService;
+    private final AccountValidationService accountValidationService;
+    private final PriceHistoryServiceImpl priceHistoryService;
 
     // Constructor
     public HoldingServiceImpl(HoldingRepository holdingRepository,
-                              HoldingValidationService holdingValidationService) {
+                              HoldingValidationService holdingValidationService,
+                              AccountValidationService accountValidationService,
+                              PriceHistoryServiceImpl priceHistoryService) {
         this.holdingRepository = holdingRepository;
         this.holdingValidationService = holdingValidationService;
+        this.accountValidationService = accountValidationService;
+        this.priceHistoryService = priceHistoryService;
     }
 
     // Create holding entity from request dto
@@ -192,5 +200,22 @@ public class HoldingServiceImpl implements HoldingService {
         Holding holding = holdingValidationService.validateHoldingExists(id);
         holdingRepository.delete(holding);
     }
+
+    @Override
+    public List<HoldingDTO> getHoldingsForAccount(UUID accountId) {
+        // Validate account exists
+        Account account = accountValidationService.validateAccountExists(accountId);
+
+        // Stream through holdings and map to DTOs with current price
+        List<HoldingDTO> holdingDTOs = account.getHoldings().stream()
+                .map(h -> {
+                    BigDecimal currentPrice = priceHistoryService.getCurrentPrice(h.getStock().getStockId());
+                    return HoldingMapper.toDTO(h, currentPrice);
+                })
+                .collect(Collectors.toList());
+
+        return holdingDTOs;
+    }
+
 
 }

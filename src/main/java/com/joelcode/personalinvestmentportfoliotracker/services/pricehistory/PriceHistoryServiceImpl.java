@@ -3,11 +3,14 @@ package com.joelcode.personalinvestmentportfoliotracker.services.pricehistory;
 import com.joelcode.personalinvestmentportfoliotracker.dto.pricehistory.PriceHistoryCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.pricehistory.PriceHistoryDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.PriceHistory;
+import com.joelcode.personalinvestmentportfoliotracker.exceptions.CustomAuthenticationException;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.PriceHistoryRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.PriceHistoryMapper;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -61,4 +64,35 @@ public class PriceHistoryServiceImpl implements PriceHistoryService{
         PriceHistory priceHistory = validationService.validatePriceHistoryExists(priceHistoryId);
         priceHistoryRepository.delete(priceHistory);
     }
+
+    @Override
+    public BigDecimal getCurrentPrice(UUID stockId) {
+        return priceHistoryRepository.findLatestPriceByStockId(stockId)
+                .orElseThrow(() -> new CustomAuthenticationException("No price found for stock " + stockId));
+    }
+
+    @Override
+    public List<PriceHistoryDTO> getPriceHistoryForStock(UUID stockId) {
+        // Fetch all price history records for the stock
+        List<PriceHistory> historyList = priceHistoryRepository.findByStock_IdOrderByDateAsc(stockId);
+
+        // Map to DTOs
+        List<PriceHistoryDTO> dtos = historyList.stream()
+                .map(PriceHistoryMapper::toDTO)
+                .collect(Collectors.toList());
+
+        return dtos;
+    }
+
+    @Override
+    public PriceHistoryDTO getLatestPriceForStock(UUID stockId) {
+        // Fetch latest price (order by date descending, get first)
+        Optional<PriceHistory> latest = priceHistoryRepository
+                .findTopByStock_IdOrderByDateDesc(stockId);
+
+        return latest.map(PriceHistoryMapper::toDTO)
+                .orElse(null); // returns null if no price exists
+    }
+
+
 }

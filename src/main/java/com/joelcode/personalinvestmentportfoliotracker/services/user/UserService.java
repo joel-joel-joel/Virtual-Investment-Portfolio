@@ -1,5 +1,6 @@
 package com.joelcode.personalinvestmentportfoliotracker.services.user;
 
+import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserUpdateRequest;
@@ -18,4 +19,6 @@ public interface UserService {
     UserDTO updateUser(UUID userId, UserUpdateRequest request);
 
     void deleteUser(UUID userId);
+
+    List<AccountDTO> getAllAccountsForUser(UUID userId);
 }

@@ -10,17 +10,15 @@ import java.util.UUID;
 
 public interface DividendPaymentService {
 
-    DividendPaymentDTO createPayment(DividendPaymentCreateRequest request);
+    DividendPaymentDTO createDividendPayment(DividendPaymentCreateRequest request);
 
-    DividendPaymentDTO getPaymentById(UUID paymentId);
+    DividendPaymentDTO getDividendPaymentById(UUID paymentId);
 
-    List<DividendPaymentDTO> getPaymentsByAccount(UUID accountId);
+    List<DividendPaymentDTO> getDividendPaymentsByAccount(UUID accountId);
 
-    List<DividendPaymentDTO> getPaymentsByAccountAndStock(UUID accountId, UUID stockId);
+    List<DividendPaymentDTO> getDividendPaymentsByAccountAndStock(UUID accountId, UUID stockId);
 
-    List<DividendPaymentDTO> getPaymentsByAccountInDateRange(UUID accountId,
-                                                             LocalDateTime start,
-                                                             LocalDateTime end);
+    List<DividendPaymentDTO> getDividendPaymentsByAccountInDateRange(UUID accountId, LocalDateTime start, LocalDateTime end);
 
     BigDecimal calculateTotalDividendsByAccount(UUID accountId);
 
@@ -30,5 +28,9 @@ public interface DividendPaymentService {
 
     void processPaymentsForDividend(UUID dividendId);
 
-    void deletePayment(UUID paymentId);
+    void deleteDividendPayment(UUID paymentId);
+
+    List<DividendPaymentDTO> getDividendPaymentsForAccount(UUID accountId);
+
+    List<DividendPaymentDTO> getDividendPaymentsForStock(UUID stockId);
 }

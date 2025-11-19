@@ -6,10 +6,12 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.holding.HoldingUpdate
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Component
 public class HoldingMapper {
 
     // Convert holding creation request DTO to entity

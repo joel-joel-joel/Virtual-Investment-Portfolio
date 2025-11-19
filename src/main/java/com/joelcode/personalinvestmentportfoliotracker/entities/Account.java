@@ -102,6 +102,14 @@ public class Account {
         this.transactions = transactions;
     }
 
+    public List<Holding> getHoldings() {
+        return holdings;
+    }
+
+    public void setHoldings(List<Holding> holdings) {
+        this.holdings = holdings;
+    }
+
     // Helper Methods
     public void addTransaction(Transaction transaction) {
         transactions.add(transaction);

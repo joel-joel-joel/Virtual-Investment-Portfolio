@@ -4,7 +4,9 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserCreateReques
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserUpdateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserMapper {
 
     // Convert user creation request DTO to entity

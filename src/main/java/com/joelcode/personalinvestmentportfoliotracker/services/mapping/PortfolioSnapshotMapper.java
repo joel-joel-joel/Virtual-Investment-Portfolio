@@ -4,9 +4,11 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.portfoliosnapshot.Por
 import com.joelcode.personalinvestmentportfoliotracker.dto.portfoliosnapshot.PortfolioSnapshotDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.PortfolioSnapshot;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+@Component
 public class PortfolioSnapshotMapper {
 
     // Convert portfolio snapshot creation request DTO to entity

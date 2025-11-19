@@ -3,6 +3,8 @@ package com.joelcode.personalinvestmentportfoliotracker.repositories;
 import com.joelcode.personalinvestmentportfoliotracker.entities.PriceHistory;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -17,9 +19,22 @@ public interface PriceHistoryRepository extends JpaRepository<PriceHistory, UUID
     // Find price history
     List<PriceHistory> findByStock_StockId(UUID stockId);
 
+    List<PriceHistory> findByStock(Stock stock);
+
+    List<PriceHistory> findByStock_IdOrderByDateAsc(UUID stockId);
+
+    List<PriceHistory> findByStock_IdOrderByDateDesc(UUID stockId);
+
+    Optional<PriceHistory> findTopByStock_IdOrderByDateDesc(UUID stockId);
+
+    List<PriceHistory> findByStock_IdAndDateBetween(UUID stockId, LocalDateTime start, LocalDateTime end);
+
     List<PriceHistory> findByStock_CompanyName(String companyName);
 
     List<PriceHistory> findByStock_StockCode(String stockCode);
+
+    @Query("SELECT p.closePrice FROM PriceHistory p WHERE p.stock.stockId = :stockId ORDER BY p.closeDate DESC")
+    Optional<BigDecimal> findLatestPriceByStockId(@Param("stockId") UUID stockId);
 
     // Filter by closing date
     List<PriceHistory> findByCloseDateGreaterThan(LocalDateTime closeDate);
@@ -38,4 +53,6 @@ public interface PriceHistoryRepository extends JpaRepository<PriceHistory, UUID
     List<PriceHistory> findByClosePriceGreaterThan(BigDecimal closePrice);
 
     List<PriceHistory> findByClosePriceLessThan(BigDecimal closePrice);
+
+
 }

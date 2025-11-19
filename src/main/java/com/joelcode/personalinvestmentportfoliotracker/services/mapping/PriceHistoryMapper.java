@@ -3,7 +3,9 @@ package com.joelcode.personalinvestmentportfoliotracker.services.mapping;
 import com.joelcode.personalinvestmentportfoliotracker.dto.pricehistory.PriceHistoryCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.pricehistory.PriceHistoryDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.PriceHistory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PriceHistoryMapper {
 
     // Convert price history creation request DTO to entity

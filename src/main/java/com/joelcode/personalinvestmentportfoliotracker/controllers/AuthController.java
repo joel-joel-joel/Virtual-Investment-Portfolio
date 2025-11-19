@@ -1,29 +1,21 @@
 package com.joelcode.personalinvestmentportfoliotracker.controllers;
 
-import com.joelcode.personalinvestmentportfoliotracker.dto.auth.AuthResponseDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.auth.LoginRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.auth.LoginResponseDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.auth.RegistrationRequest;
-import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserCreateRequest;
-import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 import com.joelcode.personalinvestmentportfoliotracker.jwt.JwtTokenProvider;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.UserRepository;
-import com.joelcode.personalinvestmentportfoliotracker.services.user.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")

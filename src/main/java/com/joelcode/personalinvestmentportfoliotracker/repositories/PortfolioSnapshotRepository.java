@@ -17,12 +17,18 @@ import java.util.UUID;
 @Repository
 public interface PortfolioSnapshotRepository extends JpaRepository<PortfolioSnapshot, UUID> {
 
+
+    // Find by user
+    List<PortfolioSnapshot> findByUser_IdOrderByDateDesc(UUID userId);
+
     // Find by account
     List<PortfolioSnapshot> findByAccount(Account account);
 
     List<PortfolioSnapshot> findByAccountOrderBySnapshotDateDesc(Account account);
 
     List<PortfolioSnapshot> findByAccountOrderBySnapshotDateAsc(Account account);
+
+    List<PortfolioSnapshot> findByAccount_IdOrderByDateDesc(UUID accountId);
 
     // Find by date
     Optional<PortfolioSnapshot> findByAccountAndSnapshotDate(Account account, LocalDate snapshotDate);

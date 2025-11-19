@@ -4,7 +4,9 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.stock.StockCreateRequ
 import com.joelcode.personalinvestmentportfoliotracker.dto.stock.StockDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.stock.StockUpdateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
+import org.springframework.stereotype.Component;
 
+@Component
 public class StockMapper {
 
     // Convert stock creation request DTO to entity

@@ -4,7 +4,9 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountCreate
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountUpdateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AccountMapper {
 
     // Convert account creation request DTO to entity

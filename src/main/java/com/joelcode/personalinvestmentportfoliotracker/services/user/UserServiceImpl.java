@@ -1,10 +1,13 @@
 package com.joelcode.personalinvestmentportfoliotracker.services.user;
 
+import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserUpdateRequest;
+import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.UserRepository;
+import com.joelcode.personalinvestmentportfoliotracker.services.mapping.AccountMapper;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.UserMapper;
 import org.springframework.stereotype.Service;
 
@@ -90,5 +93,21 @@ public class UserServiceImpl implements UserService{
 
         userRepository.delete(user);
     }
+
+    // Get all accounts by user
+    public List<AccountDTO> getAllAccountsForUser(UUID userId) {
+        // Validate user exists
+        User user = userValidationService.validateUserExists(userId);
+
+        // Get accounts from user entity
+        List<Account> accounts = user.getAccounts(); // assuming a OneToMany relationship
+
+        // Map to DTOs
+        List<AccountDTO> accountDTOs = accounts.stream()
+                .map(AccountMapper::toDTO)  // use your mapper
+                .collect(Collectors.toList());
+        return accountDTOs;
+    }
+
 
 }
