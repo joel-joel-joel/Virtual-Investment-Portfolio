@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/search")
 public class SearchController {
@@ -19,7 +21,7 @@ public class SearchController {
     @GetMapping
     public ResponseEntity<SearchDTO> search(
             @RequestParam("query") String query,
-            @RequestParam(value = "userId", required = false) String userId
+            @RequestParam(value = "userId", required = false) UUID userId
     ) {
         SearchDTO results = searchService.search(query, userId);
         return ResponseEntity.ok(results);
