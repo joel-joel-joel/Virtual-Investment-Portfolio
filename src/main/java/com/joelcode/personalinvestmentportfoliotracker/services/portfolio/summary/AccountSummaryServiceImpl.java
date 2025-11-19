@@ -40,7 +40,8 @@ public class AccountSummaryServiceImpl implements AccountSummaryService{
     // Interface functions
 
     public AccountSummaryDTO getAccountSummary(UUID accountId) {
-        Account account = accountRepository.findByAccountId(accountId);
+        Account account = accountRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
         List<Holding> holdings = holdingRepository.getHoldingsEntitiesByAccount(accountId);
 

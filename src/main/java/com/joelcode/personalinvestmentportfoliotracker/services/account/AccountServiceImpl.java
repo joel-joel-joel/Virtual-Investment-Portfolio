@@ -6,7 +6,6 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountUpdate
 import com.joelcode.personalinvestmentportfoliotracker.dto.holding.HoldingDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.transaction.TransactionDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
-import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Transaction;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.AccountMapper;
@@ -47,7 +46,7 @@ public class AccountServiceImpl implements AccountService {
     // Create a new account and show essential information
     @Override
     public AccountDTO createAccount(AccountCreateRequest request) {
-        accountValidationService.validateAccountExists(request.getAccountId());
+        accountValidationService.validateAccountExistsByName(request.getAccountName());
 
         // Map accuont creation request to entity
         Account account = AccountMapper.toEntity(request);
@@ -62,7 +61,7 @@ public class AccountServiceImpl implements AccountService {
     // Find account by ID
     @Override
     public AccountDTO getAccountById(UUID accountId) {
-        Account account = accountValidationService.validateAccountExists(accountId);
+        Account account = accountValidationService.validateAccountExistsById(accountId);
 
         return AccountMapper.toDTO(account);
     }
@@ -78,7 +77,7 @@ public class AccountServiceImpl implements AccountService {
     // Update user entity by given userId
     @Override
     public AccountDTO updateAccount(UUID accountId, AccountUpdateRequest request) {
-        Account account = accountValidationService.validateAccountExists(accountId);
+        Account account = accountValidationService.validateAccountExistsById(accountId);
 
         AccountMapper.updateEntity(account, request);
 
@@ -90,7 +89,7 @@ public class AccountServiceImpl implements AccountService {
     // Delete account
     @Override
     public void deleteAccount(UUID accountId) {
-        Account account = accountValidationService.validateAccountExists(accountId);
+        Account account = accountValidationService.validateAccountExistsById(accountId);
 
         accountRepository.delete(account);
     }
@@ -109,7 +108,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<TransactionDTO> getTransactionsForAccount(UUID accountId) {
         // Validate account exists
-        Account account = accountValidationService.validateAccountExists(accountId);
+        Account account = accountValidationService.validateAccountExistsById(accountId);
 
         // Get transactions from account entity
         List<Transaction> transactions = account.getTransactions(); // assuming OneToMany
@@ -125,7 +124,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<HoldingDTO> getHoldingsForAccount(UUID accountId) {
         // Validate the account exists
-        Account account = accountValidationService.validateAccountExists(accountId);
+        Account account = accountValidationService.validateAccountExistsById(accountId);
 
         // Stream through holdings and map to DTOs with current price
         List<HoldingDTO> holdingDTOs = account.getHoldings().stream()

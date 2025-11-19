@@ -13,7 +13,6 @@ public class AccountMapper {
     public static Account toEntity(AccountCreateRequest request) {
         Account account = new Account();
         account.setAccountName(request.getAccountName());
-        account.setAccountId(request.getAccountId());
         return account;
     }
 

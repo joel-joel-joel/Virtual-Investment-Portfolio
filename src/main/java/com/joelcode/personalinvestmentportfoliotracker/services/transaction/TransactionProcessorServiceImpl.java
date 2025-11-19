@@ -49,7 +49,8 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
     public TransactionDTO processTransaction(TransactionCreateRequest request){
 
         // Retrieve account related to transaction
-        Account account = accountRepository.findByAccountId(request.getAccountId());
+        Account account = accountRepository.findByAccountId(request.getAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
         // If it is a buy transaction
         if (request.getTransactionType().name().equalsIgnoreCase("BUY")) {
@@ -86,7 +87,8 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
         }
 
         // Save account balance
-        accountService.updateAccountBalance(accountRepository.findByAccountId(request.getAccountId()), account.getAccountBalance());
+        accountService.updateAccountBalance(accountRepository.findByAccountId(request.getAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("Account not found")), account.getAccountBalance());
 
         // Update or create holding
         holdingService.updateOrCreateHoldingFromTransaction(request);

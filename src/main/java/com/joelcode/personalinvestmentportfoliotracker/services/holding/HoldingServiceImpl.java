@@ -204,7 +204,7 @@ public class HoldingServiceImpl implements HoldingService {
     @Override
     public List<HoldingDTO> getHoldingsForAccount(UUID accountId) {
         // Validate account exists
-        Account account = accountValidationService.validateAccountExists(accountId);
+        Account account = accountValidationService.validateAccountExistsById(accountId);
 
         // Stream through holdings and map to DTOs with current price
         List<HoldingDTO> holdingDTOs = account.getHoldings().stream()

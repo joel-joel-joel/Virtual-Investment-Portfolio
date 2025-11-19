@@ -150,7 +150,7 @@ public class PortfolioAggregationServiceImpl implements PortfolioAggregationServ
     // Aggregate portfolio for an account
     public PortfolioAggregationDTO aggregateForAccount(UUID accountId) {
         // Validate account exists
-        Account account = accountValidationService.validateAccountExists(accountId);
+        Account account = accountValidationService.validateAccountExistsById(accountId);
 
         // Calculate total value of holdings
         BigDecimal totalValue = account.getHoldings().stream()

@@ -1,4 +1,4 @@
-package com.joelcode.personalinvestmentportfoliotracker.dto.common;
+package com.joelcode.personalinvestmentportfoliotracker.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

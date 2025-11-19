@@ -18,10 +18,17 @@ public class AccountValidationService {
     }
 
     // Check account exists
-    public Account validateAccountExists(UUID accountId){
-        return accountRepository.findById(accountId)
+    public Account validateAccountExistsByName(String accountName){
+        return accountRepository.findByAccountName(accountName)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
     }
+
+    // Check account exists
+    public Account validateAccountExistsById(UUID accountId){
+        return accountRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+    }
+
 
     // Check if account has sufficient balance before operation
     public void validateSufficientBalance(Account account, double amount){

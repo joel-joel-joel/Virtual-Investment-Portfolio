@@ -62,7 +62,8 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
     public PortfolioPerformanceDTO calculatePortfolioPerformance(UUID accountId){
 
         // Find account and retrieve holdings
-        Account account = accountRepository.findByAccountId(accountId);
+        Account account = accountRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
         List<Holding> holdings = holdingRepository.getHoldingsEntitiesByAccount(accountId);
 
         BigDecimal totalInvested = BigDecimal.ZERO;
@@ -118,7 +119,8 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         PortfolioPerformanceDTO performance = calculatePortfolioPerformance(accountId);
 
         PortfolioSnapshot snapshot = new PortfolioSnapshot();
-        snapshot.setAccount(accountRepository.findByAccountId(accountId));
+        snapshot.setAccount(accountRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found")));
         snapshot.setTotalValue(performance.getTotalPortfolioValue());
         snapshot.setCashBalance(performance.getCashBalance());
         snapshot.setTotalInvested(performance.getTotalInvested());
@@ -135,7 +137,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
     @Override
     public PortfolioPerformanceDTO getPerformanceForAccount(UUID accountId) {
         // Validate account exists
-        Account account = accountValidationService.validateAccountExists(accountId);
+        Account account = accountValidationService.validateAccountExistsById(accountId);
 
         // Get holdings as DTOs
         List<HoldingDTO> holdings = holdingService.getHoldingsForAccount(accountId);

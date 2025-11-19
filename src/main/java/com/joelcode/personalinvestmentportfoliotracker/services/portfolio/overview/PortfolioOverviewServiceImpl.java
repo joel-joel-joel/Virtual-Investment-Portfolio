@@ -8,7 +8,6 @@ import com.joelcode.personalinvestmentportfoliotracker.services.portfolio.alloca
 import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountValidationService;
-import com.joelcode.personalinvestmentportfoliotracker.services.portfolio.overview.PortfolioOverviewService;
 import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,7 +49,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
     @Override
     public PortfolioOverviewDTO getPortfolioOverviewForAccount(java.util.UUID accountId) {
         // Validate account exists
-        Account account = accountValidationService.validateAccountExists(accountId);
+        Account account = accountValidationService.validateAccountExistsById(accountId);
 
         // Get holdings as DTOs
         List<HoldingDTO> holdings = holdingService.getHoldingsForAccount(accountId);

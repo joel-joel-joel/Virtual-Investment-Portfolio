@@ -18,7 +18,7 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
     // Find account
     Optional<Account> findByAccountName(String accountName);
 
-    Account findByAccountId(UUID accountId);
+    Optional<Account> findByAccountId(UUID accountId);
 
     // Filter by date
     List<Account> findByCreatedAtAfter(LocalDateTime createdAtAfter);
