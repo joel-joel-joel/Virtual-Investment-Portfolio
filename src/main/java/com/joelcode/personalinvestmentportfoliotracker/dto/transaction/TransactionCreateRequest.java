@@ -3,6 +3,7 @@ package com.joelcode.personalinvestmentportfoliotracker.dto.transaction;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Transaction;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -57,4 +58,12 @@ public class TransactionCreateRequest {
     public BigDecimal getPricePerShare() {return pricePerShare;}
 
     public Transaction.TransactionType getTransactionType() {return transactionType;}
+
+    @AssertTrue(message = "Transaction amount must be positive")
+    public boolean isValidAmount() {
+        return shareQuantity != null &&
+                pricePerShare != null &&
+                shareQuantity.compareTo(BigDecimal.ZERO) > 0 &&
+                pricePerShare.compareTo(BigDecimal.ZERO) > 0;
+    }
 }

@@ -94,9 +94,6 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
         // Convert request to dto
         TransactionDTO dto = transactionService.createTransaction(request);
 
-        // Recalculate dividends due for new share amount
-        dividendCalculationService.recalculateDividends(request.getAccountId());
-
         return dto;
     }
 

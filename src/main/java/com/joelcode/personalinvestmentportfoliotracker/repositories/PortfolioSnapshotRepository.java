@@ -28,7 +28,7 @@ public interface PortfolioSnapshotRepository extends JpaRepository<PortfolioSnap
 
     List<PortfolioSnapshot> findByAccountOrderBySnapshotDateAsc(Account account);
 
-    List<PortfolioSnapshot> findByAccount_IdOrderByDateDesc(UUID accountId);
+    List<PortfolioSnapshot> findByAccount_IdOrderBySnapshotDateDesc(UUID accountId);
 
     // Find by date
     Optional<PortfolioSnapshot> findByAccountAndSnapshotDate(Account account, LocalDate snapshotDate);

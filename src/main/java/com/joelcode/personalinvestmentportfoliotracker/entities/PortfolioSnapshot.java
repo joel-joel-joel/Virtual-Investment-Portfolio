@@ -3,6 +3,7 @@ package com.joelcode.personalinvestmentportfoliotracker.entities;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -199,15 +200,30 @@ public class PortfolioSnapshot {
     // Helper Functions
 
     public BigDecimal getTotalGainPercent() {
-        if (totalInvested.compareTo(BigDecimal.ZERO) == 0) {
+        // EDGE CASE: Division by zero check
+        if (totalInvested == null || totalInvested.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
+
+        // EDGE CASE: Null total gain check
+        if (totalGain == null) {
+            return BigDecimal.ZERO;
+        }
+
         return totalGain
-                .divide(totalInvested, 4, BigDecimal.ROUND_HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
+                .divide(totalInvested, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getMarketValue() {
-        return totalValue.subtract(cashBalance);
+        // EDGE CASE: Null checks
+        if (totalValue == null) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal cash = cashBalance != null ? cashBalance : BigDecimal.ZERO;
+
+        return totalValue.subtract(cash).setScale(2, RoundingMode.HALF_UP);
     }
 }

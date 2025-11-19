@@ -18,7 +18,6 @@ public class DividendCalculationServiceImpl implements DividendCalculationServic
 
     @Override
     public BigDecimal calculateTotalDividends(UUID accountId) {
-        // Simple - just sum all paid dividend payments for this account
         return paymentRepository.calculateTotalDividendsByAccount(accountId);
     }
 

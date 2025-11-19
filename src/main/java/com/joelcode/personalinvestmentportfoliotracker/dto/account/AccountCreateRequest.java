@@ -16,15 +16,15 @@ public class AccountCreateRequest {
     private final String accountName;
 
     @NotNull(message = "User id is required")
-    private final UUID accountId;
+    private final UUID userId;
 
     // Jackson-compatible constructor
     @JsonCreator
     public AccountCreateRequest(
             @JsonProperty("accountName") String accountName,
-            @JsonProperty("accountId") UUID accountId) {
+            @JsonProperty("userId") UUID userId) {
         this.accountName = accountName;
-        this.accountId = accountId;
+        this.userId = userId;
     }
 
     // Getters
@@ -32,7 +32,7 @@ public class AccountCreateRequest {
         return accountName;
     }
 
-    public UUID getAccountId() {
-        return accountId;
+    public UUID getUserId() {
+        return userId;
     }
 }

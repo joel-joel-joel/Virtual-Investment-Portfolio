@@ -8,7 +8,6 @@ import com.joelcode.personalinvestmentportfoliotracker.repositories.PortfolioSna
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.PortfolioSnapshotMapper;
 import org.springframework.stereotype.Service;
 
-import javax.sound.sampled.Port;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -120,7 +119,7 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
     @Override
     public List<PortfolioSnapshotDTO> getSnapshotsForAccount(UUID accountId) {
         // Fetch all snapshots for the account
-        List<PortfolioSnapshot> snapshots = portfolioSnapshotRepository.findByAccount_IdOrderByDateDesc(accountId);
+        List<PortfolioSnapshot> snapshots = portfolioSnapshotRepository.findByAccount_IdOrderBySnapshotDateDesc(accountId);
 
         // Map to DTOs
         List<PortfolioSnapshotDTO> snapshotDTOs = snapshots.stream()

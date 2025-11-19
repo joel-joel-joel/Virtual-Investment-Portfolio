@@ -1,5 +1,6 @@
 package com.joelcode.personalinvestmentportfoliotracker.services.portfolio.performance;
 
+import com.joelcode.personalinvestmentportfoliotracker.dto.dividendpayment.DividendPaymentDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.holding.HoldingDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
@@ -19,6 +20,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -138,51 +140,104 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         // Get holdings as DTOs
         List<HoldingDTO> holdings = holdingService.getHoldingsForAccount(accountId);
 
+        // EDGE CASE: Empty holdings
+        if (holdings == null || holdings.isEmpty()) {
+            BigDecimal cashBalance = account.getAccountBalance() != null ?
+                    account.getAccountBalance() : BigDecimal.ZERO;
+
+            return new PortfolioPerformanceDTO(
+                    account.getAccountId(),
+                    cashBalance,           // totalPortfolioValue = just cash
+                    BigDecimal.ZERO,       // totalInvested
+                    BigDecimal.ZERO,       // totalRealizedGain
+                    BigDecimal.ZERO,       // totalUnrealizedGain
+                    BigDecimal.ZERO,       // totalDividends
+                    cashBalance,           // cashBalance
+                    BigDecimal.ZERO,       // roiPercentage
+                    BigDecimal.ZERO,       // dailyGain
+                    BigDecimal.ZERO        // monthlyGain
+            );
+        }
+
         // Calculate total invested
-        BigDecimal totalInvested = holdings.stream()
-                .map(h -> h.getAverageCostBasis().multiply(h.getQuantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalInvested = BigDecimal.ZERO;
+        for (HoldingDTO h : holdings) {
+            if (h != null && h.getAverageCostBasis() != null && h.getQuantity() != null) {
+                totalInvested = totalInvested.add(
+                        h.getAverageCostBasis().multiply(h.getQuantity())
+                );
+            }
+        }
 
         // Calculate total current value
-        BigDecimal totalPortfolioValue = holdings.stream()
-                .map(h -> h.getCurrentPrice().multiply(h.getQuantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalPortfolioValue = BigDecimal.ZERO;
+        for (HoldingDTO h : holdings) {
+            if (h != null && h.getCurrentPrice() != null && h.getQuantity() != null) {
+                totalPortfolioValue = totalPortfolioValue.add(
+                        h.getCurrentPrice().multiply(h.getQuantity())
+                );
+            }
+        }
 
         // Unrealized gain
         BigDecimal totalUnrealizedGain = totalPortfolioValue.subtract(totalInvested);
 
-        // Realized gain (placeholder, replace with transactions logic)
+        // Realized gain (placeholder)
         BigDecimal totalRealizedGain = BigDecimal.ZERO;
+        for (HoldingDTO h : holdings) {
+            if (h != null && h.getRealizedGain() != null) {
+                totalRealizedGain = totalRealizedGain.add(h.getRealizedGain());
+            }
+        }
 
         // Total dividends
-        BigDecimal totalDividends = dividendPaymentService.getDividendPaymentsForAccount(accountId).stream()
-                .map(dto -> dto.getAmountPerShare())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalDividends = BigDecimal.ZERO;
+        try {
+            List<DividendPaymentDTO> payments = dividendPaymentService.getDividendPaymentsForAccount(accountId);
+            if (payments != null) {
+                for (DividendPaymentDTO dto : payments) {
+                    if (dto != null && dto.getTotalAmount() != null) {
+                        totalDividends = totalDividends.add(dto.getTotalAmount());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // If dividend calculation fails, continue with zero
+            totalDividends = BigDecimal.ZERO;
+        }
 
         // Cash balance
-        BigDecimal cashBalance = account.getAccountBalance() != null ? account.getAccountBalance() : BigDecimal.ZERO;
+        BigDecimal cashBalance = account.getAccountBalance() != null ?
+                account.getAccountBalance() : BigDecimal.ZERO;
 
-        // ROI % = (Total Return / Total Invested) * 100
+        // ROI calculation with EDGE CASE handling
         BigDecimal totalReturn = totalUnrealizedGain.add(totalRealizedGain).add(totalDividends);
-        BigDecimal roiPercentage = totalInvested.compareTo(BigDecimal.ZERO) > 0
-                ? totalReturn.multiply(BigDecimal.valueOf(100)).divide(totalInvested, 2, BigDecimal.ROUND_HALF_UP)
-                : BigDecimal.ZERO;
+        BigDecimal roiPercentage;
+
+        // EDGE CASE: Division by zero
+        if (totalInvested.compareTo(BigDecimal.ZERO) == 0) {
+            roiPercentage = BigDecimal.ZERO;
+        } else {
+            roiPercentage = totalReturn
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(totalInvested, 2, RoundingMode.HALF_UP);
+        }
 
         // Daily and monthly gain placeholders
-        BigDecimal dailyGain = BigDecimal.ZERO;   // Replace with actual calculation
-        BigDecimal monthlyGain = BigDecimal.ZERO; // Replace with actual calculation
+        BigDecimal dailyGain = BigDecimal.ZERO;
+        BigDecimal monthlyGain = BigDecimal.ZERO;
 
         return new PortfolioPerformanceDTO(
-                account.getAccountId(),    // accountId
-                totalPortfolioValue,       // totalPortfolioValue
-                totalInvested,             // totalInvested
-                totalRealizedGain,         // totalRealizedGain
-                totalUnrealizedGain,       // totalUnrealizedGain
-                totalDividends,            // totalDividends
-                cashBalance,               // cashBalance
-                roiPercentage,             // roiPercentage
-                dailyGain,                 // dailyGain
-                monthlyGain                // monthlyGain
+                account.getAccountId(),
+                totalPortfolioValue,
+                totalInvested,
+                totalRealizedGain,
+                totalUnrealizedGain,
+                totalDividends,
+                cashBalance,
+                roiPercentage,
+                dailyGain,
+                monthlyGain
         );
     }
 
