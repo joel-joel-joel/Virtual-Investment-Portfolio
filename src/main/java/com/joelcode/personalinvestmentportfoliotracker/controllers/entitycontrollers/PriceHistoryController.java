@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/pricehistory")
+@RequestMapping("/api/pricehistory")
 public class PriceHistoryController {
 
     @Autowired

@@ -3,6 +3,7 @@ package com.joelcode.personalinvestmentportfoliotracker.entities;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -152,23 +153,43 @@ public class Holding {
     // Helper Functions
 
     public BigDecimal getCurrentValue(BigDecimal currentPrice) {
-        return quantity.multiply(currentPrice);
+        // EDGE CASE: Null checks
+        if (currentPrice == null || quantity == null) {
+            return BigDecimal.ZERO;
+        }
+        return quantity.multiply(currentPrice).setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getUnrealizedGain(BigDecimal currentPrice) {
-        return getCurrentValue(currentPrice).subtract(totalCostBasis);
+        // EDGE CASE: Null checks
+        if (currentPrice == null || totalCostBasis == null) {
+            return BigDecimal.ZERO;
+        }
+        return getCurrentValue(currentPrice).subtract(totalCostBasis).setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getUnrealizedGainPercent(BigDecimal currentPrice) {
-        if (totalCostBasis.compareTo(BigDecimal.ZERO) == 0) {
+        // EDGE CASE: Division by zero check
+        if (totalCostBasis == null || totalCostBasis.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
+
+        // EDGE CASE: Null price check
+        if (currentPrice == null) {
+            return BigDecimal.ZERO;
+        }
+
         return getUnrealizedGain(currentPrice)
-                .divide(totalCostBasis, 4, BigDecimal.ROUND_HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
+                .divide(totalCostBasis, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getTotalGain(BigDecimal currentPrice) {
-        return getUnrealizedGain(currentPrice).add(realizedGain);
+        // EDGE CASE: Null checks
+        BigDecimal unrealized = getUnrealizedGain(currentPrice);
+        BigDecimal realized = realizedGain != null ? realizedGain : BigDecimal.ZERO;
+
+        return unrealized.add(realized).setScale(2, RoundingMode.HALF_UP);
     }
 }

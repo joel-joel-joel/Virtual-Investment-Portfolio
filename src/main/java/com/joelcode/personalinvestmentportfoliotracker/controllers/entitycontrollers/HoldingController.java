@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/holdings")
+@RequestMapping("/api/holdings")
 public class HoldingController {
 
     @Autowired

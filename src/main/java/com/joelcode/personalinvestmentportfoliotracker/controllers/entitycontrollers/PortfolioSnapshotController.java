@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/snapshots")
+@RequestMapping("/api/snapshots")
 public class PortfolioSnapshotController {
 
     @Autowired

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/dividends")
+@RequestMapping("/api/dividends")
 public class DividendController {
 
     @Autowired
