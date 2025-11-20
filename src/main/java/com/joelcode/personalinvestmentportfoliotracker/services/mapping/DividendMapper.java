@@ -4,7 +4,6 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.dividend.DividendCrea
 import com.joelcode.personalinvestmentportfoliotracker.dto.dividend.DividendDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Dividend;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
-import com.joelcode.personalinvestmentportfoliotracker.repositories.StockRepository;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,7 +22,7 @@ public class DividendMapper {
         }
 
         return new Dividend(
-                request.getAmountPerShare(),
+                request.getDividendPerShare(),
                 request.getPayDate(),
                 stock
         );

@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -137,7 +136,7 @@ public class PortfolioAggregationServiceImpl implements PortfolioAggregationServ
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalDividends = dividendPaymentService.getDividendPaymentsForAccount(accountId).stream()
-                .map(dto -> safe(dto.getAmountPerShare()))
+                .map(dto -> safe(dto.getDividendPerShare()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         int numberOfHoldings = account.getHoldings().size();

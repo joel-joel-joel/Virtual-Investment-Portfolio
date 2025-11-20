@@ -13,18 +13,18 @@ public class DividendDTO {
     private final UUID dividendId;
     private final UUID stockId;
     private final String stockCode;  // Added for convenience
-    private final BigDecimal amountPerShare;
+    private final BigDecimal dividendPerShare;
     private final LocalDateTime payDate;
     private final LocalDateTime announcementDate;
 
     // Constructors
     public DividendDTO(UUID dividendId, UUID stockId, String stockCode,
-                       BigDecimal amountPerShare, LocalDateTime payDate,
+                       BigDecimal dividendPerShare, LocalDateTime payDate,
                        LocalDateTime announcementDate) {
         this.dividendId = dividendId;
         this.stockId = stockId;
         this.stockCode = stockCode;
-        this.amountPerShare = amountPerShare;
+        this.dividendPerShare = dividendPerShare;
         this.payDate = payDate;
         this.announcementDate = announcementDate;
     }
@@ -33,7 +33,7 @@ public class DividendDTO {
         this.dividendId = dividend.getDividendId();
         this.stockId = dividend.getStockId();
         this.stockCode = dividend.getStock() != null ? dividend.getStock().getStockCode() : null;
-        this.amountPerShare = dividend.getAmountPerShare();
+        this.dividendPerShare = dividend.getAmountPerShare();
         this.payDate = dividend.getPayDate();
         this.announcementDate = dividend.getAnnouncementDate();
     }
@@ -45,7 +45,7 @@ public class DividendDTO {
 
     public String getStockCode() {return stockCode;}
 
-    public BigDecimal getAmountPerShare() {return amountPerShare;}
+    public BigDecimal getDividendPerShare() {return dividendPerShare;}
 
     public LocalDateTime getPayDate() {return payDate;}
 

@@ -97,7 +97,7 @@ public class DividendServiceImplTest {
         // Ensure that the dto is not empty
         assertNotNull(result);
         // Ensure that the amount matches
-        assertEquals(BigDecimal.valueOf(0.25), result.getAmountPerShare());
+        assertEquals(BigDecimal.valueOf(0.25), result.getDividendPerShare());
         // Ensure that the repository saved once
         verify(dividendRepository, times(1)).save(any(Dividend.class));
         // Verify payment processing was triggered

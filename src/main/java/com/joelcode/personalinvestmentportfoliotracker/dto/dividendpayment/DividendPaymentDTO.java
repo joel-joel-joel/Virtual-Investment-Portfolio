@@ -16,7 +16,7 @@ public class DividendPaymentDTO {
     private final UUID stockId;
     private final String stockCode;
     private final UUID dividendId;
-    private final BigDecimal amountPerShare;
+    private final BigDecimal dividendPerShare;
     private final BigDecimal shareQuantity;
     private final BigDecimal totalAmount;
     private final LocalDateTime paymentDate;
@@ -26,7 +26,7 @@ public class DividendPaymentDTO {
     // Constructor
     public DividendPaymentDTO(UUID paymentId, UUID accountId, String accountName,
                               UUID stockId, String stockCode, UUID dividendId,
-                              BigDecimal amountPerShare, BigDecimal shareQuantity,
+                              BigDecimal dividendPerShare, BigDecimal shareQuantity,
                               BigDecimal totalAmount, LocalDateTime paymentDate,
                               LocalDateTime recordedAt, DividendPayment.PaymentStatus status) {
         this.paymentId = paymentId;
@@ -35,7 +35,7 @@ public class DividendPaymentDTO {
         this.stockId = stockId;
         this.stockCode = stockCode;
         this.dividendId = dividendId;
-        this.amountPerShare = amountPerShare;
+        this.dividendPerShare = dividendPerShare;
         this.shareQuantity = shareQuantity;
         this.totalAmount = totalAmount;
         this.paymentDate = paymentDate;
@@ -50,7 +50,7 @@ public class DividendPaymentDTO {
         this.stockId = payment.getStockId();
         this.stockCode = payment.getStock() != null ? payment.getStock().getStockCode() : null;
         this.dividendId = payment.getDividendId();
-        this.amountPerShare = payment.getDividend() != null ? payment.getDividend().getAmountPerShare() : null;
+        this.dividendPerShare = payment.getDividend() != null ? payment.getDividend().getAmountPerShare() : null;
         this.shareQuantity = payment.getShareQuantity();
         this.totalAmount = payment.getTotalAmount();
         this.paymentDate = payment.getPaymentDate();
@@ -65,7 +65,7 @@ public class DividendPaymentDTO {
         this.stockId = null;
         this.stockCode = null;
         this.dividendId = null;
-        this.amountPerShare = null;
+        this.dividendPerShare = null;
         this.shareQuantity = null;
         this.totalAmount = payment;
         this.paymentDate = null;
@@ -87,7 +87,7 @@ public class DividendPaymentDTO {
 
     public UUID getDividendId() {return dividendId;}
 
-    public BigDecimal getAmountPerShare() {return amountPerShare;}
+    public BigDecimal getDividendPerShare() {return dividendPerShare;}
 
     public BigDecimal getShareQuantity() {return shareQuantity;}
 

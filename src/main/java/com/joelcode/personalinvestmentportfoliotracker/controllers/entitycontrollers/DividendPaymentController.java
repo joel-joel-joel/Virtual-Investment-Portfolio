@@ -15,7 +15,7 @@ import java.util.UUID;
 public class DividendPaymentController {
 
     @Autowired
-    private DividendPaymentService dividendPaymentService;
+    public DividendPaymentService dividendPaymentService;
 
     // Get all dividend payments
     @GetMapping

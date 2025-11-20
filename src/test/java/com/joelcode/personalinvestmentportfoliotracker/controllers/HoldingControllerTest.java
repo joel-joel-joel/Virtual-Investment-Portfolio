@@ -32,13 +32,15 @@ class HoldingControllerTest {
 
     @BeforeEach
     void setUp() {
+        // Initialize controller and inject mocked service
         holdingController = new HoldingController();
         holdingController.holdingService = holdingService;
     }
 
+    // Test retrieving all holdings when records exist
     @Test
     void testGetAllHoldings_Success() {
-        // Arrange
+        // Setup holdings list with sample data
         List<HoldingDTO> holdings = new ArrayList<>();
         holdings.add(new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(20), null ,null, null, LocalDateTime.now(),
@@ -46,78 +48,85 @@ class HoldingControllerTest {
         holdings.add(new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(50), null ,null, null, LocalDateTime.now(),
                 BigDecimal.valueOf(20), BigDecimal.valueOf(1500), null, null));
+
         when(holdingService.getAllHoldings()).thenReturn(holdings);
 
-        // Act
+        // Run method
         ResponseEntity<List<HoldingDTO>> response = holdingController.getAllHoldings();
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, response.getBody().size());
         verify(holdingService, times(1)).getAllHoldings();
     }
 
+    // Test retrieving all holdings when no records exist
     @Test
     void testGetAllHoldings_Empty() {
-        // Arrange
+        // Setup empty holdings list
         when(holdingService.getAllHoldings()).thenReturn(new ArrayList<>());
 
-        // Act
+        // Run method
         ResponseEntity<List<HoldingDTO>> response = holdingController.getAllHoldings();
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(0, response.getBody().size());
         verify(holdingService, times(1)).getAllHoldings();
     }
 
+    // Test retrieving a single holding by ID when record exists
     @Test
     void testGetHoldingById_Success() {
-        // Arrange
+        // Setup holding DTO with sample data
         UUID holdingId = UUID.randomUUID();
         HoldingDTO holding = new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(100), null ,null, null, LocalDateTime.now(),
                 BigDecimal.valueOf(150), BigDecimal.valueOf(1200), null, null);
+
         when(holdingService.getHoldingById(holdingId)).thenReturn(holding);
 
-        // Act
+        // Run method
         ResponseEntity<HoldingDTO> response = holdingController.getHoldingById(holdingId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(BigDecimal.valueOf(100), response.getBody().getQuantity());
         verify(holdingService, times(1)).getHoldingById(holdingId);
     }
 
+    // Test retrieving a single holding by ID when record does not exist
     @Test
     void testGetHoldingById_NotFound() {
-        // Arrange
+        // Setup holding ID with null return
         UUID holdingId = UUID.randomUUID();
         when(holdingService.getHoldingById(holdingId)).thenReturn(null);
 
-        // Act
+        // Run method
         ResponseEntity<HoldingDTO> response = holdingController.getHoldingById(holdingId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         verify(holdingService, times(1)).getHoldingById(holdingId);
     }
 
+    // Test creating a holding record successfully
     @Test
     void testCreateHolding_Success() {
-        // Arrange
+        // Setup create request and expected DTO
         UUID holdingId = UUID.randomUUID();
         HoldingCreateRequest request = new HoldingCreateRequest(UUID.randomUUID(), UUID.randomUUID(),
                 BigDecimal.valueOf(100), BigDecimal.valueOf(20) ,BigDecimal.valueOf(1000));
         HoldingDTO created = new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(100), BigDecimal.valueOf(20) ,BigDecimal.valueOf(1000), null, LocalDateTime.now(),
                 BigDecimal.valueOf(10), BigDecimal.valueOf(1000), null, null);
+
         when(holdingService.createHolding(request)).thenReturn(created);
 
-        // Act
+        // Run method
         ResponseEntity<HoldingDTO> response = holdingController.createHolding(request);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(BigDecimal.valueOf(100), response.getBody().getQuantity());
         assertEquals(BigDecimal.valueOf(20), response.getBody().getAverageCostBasis());
@@ -125,22 +134,23 @@ class HoldingControllerTest {
         verify(holdingService, times(1)).createHolding(request);
     }
 
+    // Test updating a holding record successfully
     @Test
     void testUpdateHolding_Success() {
-        // Arrange
+        // Setup update request and mocked updated DTO
         UUID holdingId = UUID.randomUUID();
         HoldingUpdateRequest request = new HoldingUpdateRequest(BigDecimal.valueOf(150), BigDecimal.valueOf(20),
                 BigDecimal.valueOf(1000), BigDecimal.valueOf(100));
-
         HoldingDTO updated = new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(150), BigDecimal.valueOf(20) ,BigDecimal.valueOf(1000), BigDecimal.valueOf(100), LocalDateTime.now(),
                 BigDecimal.valueOf(10), BigDecimal.valueOf(1000), null, null);
+
         when(holdingService.updateHolding(holdingId, request)).thenReturn(updated);
 
-        // Act
+        // Run method
         ResponseEntity<HoldingDTO> response = holdingController.updateHolding(holdingId, request);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(BigDecimal.valueOf(150), response.getBody().getQuantity());
         assertEquals(BigDecimal.valueOf(20), response.getBody().getAverageCostBasis());
@@ -149,39 +159,42 @@ class HoldingControllerTest {
         verify(holdingService, times(1)).updateHolding(holdingId, request);
     }
 
+    // Test updating a holding record when it does not exist
     @Test
     void testUpdateHolding_NotFound() {
-        // Arrange
+        // Setup update request with null return
         UUID holdingId = UUID.randomUUID();
         HoldingUpdateRequest request = new HoldingUpdateRequest(BigDecimal.valueOf(150), BigDecimal.valueOf(20),
                 BigDecimal.valueOf(1000), BigDecimal.valueOf(100));
         when(holdingService.updateHolding(holdingId, request)).thenReturn(null);
 
-        // Act
+        // Run method
         ResponseEntity<HoldingDTO> response = holdingController.updateHolding(holdingId, request);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         verify(holdingService, times(1)).updateHolding(holdingId, request);
     }
 
+    // Test deleting a holding record successfully
     @Test
     void testDeleteHolding_Success() {
-        // Arrange
+        // Setup holding ID and mock void service
         UUID holdingId = UUID.randomUUID();
         doNothing().when(holdingService).deleteHolding(holdingId);
 
-        // Act
+        // Run method
         ResponseEntity<Void> response = holdingController.deleteHolding(holdingId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(holdingService, times(1)).deleteHolding(holdingId);
     }
 
+    // Test retrieving holdings for a specific account when records exist
     @Test
     void testGetHoldingsForAccount_Success() {
-        // Arrange
+        // Setup account ID and sample holdings list
         UUID accountId = UUID.randomUUID();
         List<HoldingDTO> holdings = new ArrayList<>();
         holdings.add(new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
@@ -189,25 +202,26 @@ class HoldingControllerTest {
                 BigDecimal.valueOf(10), BigDecimal.valueOf(1000), null, null));
         when(holdingService.getHoldingsForAccount(accountId)).thenReturn(holdings);
 
-        // Act
+        // Run method
         ResponseEntity<List<HoldingDTO>> response = holdingController.getHoldingsForAccount(accountId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
         verify(holdingService, times(1)).getHoldingsForAccount(accountId);
     }
 
+    // Test retrieving holdings for a specific account when no records exist
     @Test
     void testGetHoldingsForAccount_Empty() {
-        // Arrange
+        // Setup account ID with empty list
         UUID accountId = UUID.randomUUID();
         when(holdingService.getHoldingsForAccount(accountId)).thenReturn(new ArrayList<>());
 
-        // Act
+        // Run method
         ResponseEntity<List<HoldingDTO>> response = holdingController.getHoldingsForAccount(accountId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(0, response.getBody().size());
         verify(holdingService, times(1)).getHoldingsForAccount(accountId);

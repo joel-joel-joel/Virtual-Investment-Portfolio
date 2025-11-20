@@ -49,7 +49,7 @@ public class DividendServiceImpl implements DividendService {
 
         // Validate fields
         dividendValidationService.validateCreateRequest(
-                request.getAmountPerShare(),
+                request.getDividendPerShare(),
                 request.getPayDate()
         );
 
@@ -64,7 +64,7 @@ public class DividendServiceImpl implements DividendService {
 
         // Create dividend entity
         Dividend dividend = new Dividend(
-                request.getAmountPerShare(),
+                request.getDividendPerShare(),
                 request.getPayDate(),
                 stock
         );

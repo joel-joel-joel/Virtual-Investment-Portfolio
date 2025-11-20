@@ -73,7 +73,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
 
         // Calculate total dividends
         BigDecimal totalDividends = dividendPaymentService.getDividendPaymentsForAccount(accountId).stream()
-                .map(dto -> dto.getAmountPerShare() != null ? dto.getAmountPerShare() : BigDecimal.ZERO)
+                .map(dto -> dto.getDividendPerShare() != null ? dto.getDividendPerShare() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
 

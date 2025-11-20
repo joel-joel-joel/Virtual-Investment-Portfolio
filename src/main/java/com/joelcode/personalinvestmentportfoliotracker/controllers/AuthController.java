@@ -77,7 +77,7 @@ public class AuthController {
     public ResponseEntity<?> register(@Valid @RequestBody RegistrationRequest request) {
 
         // Check whether username is available
-        if (userRepository.existsByUsername(request.getUsername())) {
+        if (userRepository.existsByUsername(request.getUsername().describeConstable().orElseThrow(() -> new RuntimeException("Username not found")))) {
             return ResponseEntity.badRequest().body("Username already exists");
         }
 

@@ -31,81 +31,92 @@ class PortfolioSnapshotControllerTest {
 
     @BeforeEach
     void setUp() {
+        // Initialize controller and inject mocked service
         snapshotController = new PortfolioSnapshotController();
         snapshotController.snapshotService = snapshotService;
     }
 
+    // Test retrieving all snapshots when records exist
     @Test
     void testGetAllSnapshots_Success() {
-        // Arrange
+        // Setup snapshot list with sample data
         List<PortfolioSnapshotDTO> snapshots = new ArrayList<>();
         snapshots.add(new PortfolioSnapshotDTO(UUID.randomUUID(), UUID.randomUUID(), LocalDate.now(),
                 BigDecimal.valueOf(10000), BigDecimal.valueOf(7000), BigDecimal.valueOf(4000), BigDecimal.valueOf(3939),
                 BigDecimal.valueOf(38), BigDecimal.valueOf(38.3), BigDecimal.valueOf(3.2)));
-        snapshots.add(new PortfolioSnapshotDTO(UUID.randomUUID(), UUID.randomUUID(), LocalDate.now().minusDays(1) ,
+
+        snapshots.add(new PortfolioSnapshotDTO(UUID.randomUUID(), UUID.randomUUID(), LocalDate.now().minusDays(1),
                 BigDecimal.valueOf(20000), BigDecimal.valueOf(8000), BigDecimal.valueOf(3000), BigDecimal.valueOf(3639),
                 BigDecimal.valueOf(22), BigDecimal.valueOf(32.3), BigDecimal.valueOf(1.2)));
+
+        // Map method return value to setup
         when(snapshotService.getAllSnapshots()).thenReturn(snapshots);
 
-        // Act
+        // Run method
         ResponseEntity<List<PortfolioSnapshotDTO>> response = snapshotController.getAllSnapshots();
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, response.getBody().size());
         verify(snapshotService, times(1)).getAllSnapshots();
     }
 
+    // Test retrieving all snapshots when no records exist
     @Test
     void testGetAllSnapshots_Empty() {
-        // Arrange
+        // Setup empty snapshot list
         when(snapshotService.getAllSnapshots()).thenReturn(new ArrayList<>());
 
-        // Act
+        // Run method
         ResponseEntity<List<PortfolioSnapshotDTO>> response = snapshotController.getAllSnapshots();
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(0, response.getBody().size());
         verify(snapshotService, times(1)).getAllSnapshots();
     }
 
+    // Test retrieving a single snapshot by ID when record exists
     @Test
     void testGetSnapshotById_Success() {
-        // Arrange
+        // Setup snapshot DTO with sample data
         UUID snapshotId = UUID.randomUUID();
         PortfolioSnapshotDTO snapshot = new PortfolioSnapshotDTO(snapshotId, UUID.randomUUID(), LocalDate.now(),
                 BigDecimal.valueOf(10000), BigDecimal.valueOf(7000), BigDecimal.valueOf(4000), BigDecimal.valueOf(3939),
                 BigDecimal.valueOf(38), BigDecimal.valueOf(38.3), BigDecimal.valueOf(3.2));
+
+        // Map method return value to setup
         when(snapshotService.getSnapshotById(snapshotId)).thenReturn(snapshot);
 
-        // Act
+        // Run method
         ResponseEntity<PortfolioSnapshotDTO> response = snapshotController.getSnapshotById(snapshotId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(BigDecimal.valueOf(10000), response.getBody().getTotalValue());
         assertEquals(snapshotId, response.getBody().getSnapshotId());
         verify(snapshotService, times(1)).getSnapshotById(snapshotId);
     }
 
+    // Test retrieving a single snapshot by ID when record does not exist
     @Test
     void testGetSnapshotById_NotFound() {
-        // Arrange
+        // Setup snapshot ID with null return
         UUID snapshotId = UUID.randomUUID();
         when(snapshotService.getSnapshotById(snapshotId)).thenReturn(null);
 
-        // Act
+        // Run method
         ResponseEntity<PortfolioSnapshotDTO> response = snapshotController.getSnapshotById(snapshotId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         verify(snapshotService, times(1)).getSnapshotById(snapshotId);
     }
 
+    // Test creating a snapshot successfully
     @Test
     void testCreateSnapshot_Success() {
-        // Arrange
+        // Setup create request and expected DTO
         UUID snapshotId = UUID.randomUUID();
         PortfolioSnapshotCreateRequest request = new PortfolioSnapshotCreateRequest(UUID.randomUUID(), LocalDate.now(),
                 BigDecimal.valueOf(10000), BigDecimal.valueOf(7000), BigDecimal.valueOf(4000), BigDecimal.valueOf(3939),
@@ -114,12 +125,14 @@ class PortfolioSnapshotControllerTest {
         PortfolioSnapshotDTO created = new PortfolioSnapshotDTO(snapshotId, UUID.randomUUID(), LocalDate.now(),
                 BigDecimal.valueOf(10000), BigDecimal.valueOf(7000), BigDecimal.valueOf(4000), BigDecimal.valueOf(3939),
                 BigDecimal.valueOf(38), BigDecimal.valueOf(38.3), BigDecimal.valueOf(3.2));
+
+        // Map method return value to setup
         when(snapshotService.createSnapshot(request)).thenReturn(created);
 
-        // Act
+        // Run method
         ResponseEntity<PortfolioSnapshotDTO> response = snapshotController.createSnapshot(request);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(BigDecimal.valueOf(10000), response.getBody().getTotalValue());
         assertEquals(snapshotId, response.getBody().getSnapshotId());
@@ -127,49 +140,54 @@ class PortfolioSnapshotControllerTest {
         verify(snapshotService, times(1)).createSnapshot(request);
     }
 
+    // Test deleting a snapshot successfully
     @Test
     void testDeleteSnapshot_Success() {
-        // Arrange
+        // Setup snapshot ID and mock void service
         UUID snapshotId = UUID.randomUUID();
         doNothing().when(snapshotService).deleteSnapshot(snapshotId);
 
-        // Act
+        // Run method
         ResponseEntity<Void> response = snapshotController.deleteSnapshot(snapshotId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(snapshotService, times(1)).deleteSnapshot(snapshotId);
     }
 
+    // Test retrieving snapshots for a specific account when records exist
     @Test
     void testGetSnapshotsForAccount_Success() {
-        // Arrange
+        // Setup account ID and snapshot list
         UUID accountId = UUID.randomUUID();
         List<PortfolioSnapshotDTO> snapshots = new ArrayList<>();
         snapshots.add(new PortfolioSnapshotDTO(UUID.randomUUID(), accountId, LocalDate.now(),
                 BigDecimal.valueOf(10000), BigDecimal.valueOf(7000), BigDecimal.valueOf(4000), BigDecimal.valueOf(3939),
                 BigDecimal.valueOf(38), BigDecimal.valueOf(38.3), BigDecimal.valueOf(3.2)));
+
+        // Map method return value to setup
         when(snapshotService.getSnapshotsForAccount(accountId)).thenReturn(snapshots);
 
-        // Act
+        // Run method
         ResponseEntity<List<PortfolioSnapshotDTO>> response = snapshotController.getSnapshotsForAccount(accountId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
         verify(snapshotService, times(1)).getSnapshotsForAccount(accountId);
     }
 
+    // Test retrieving snapshots for a specific account when no records exist
     @Test
     void testGetSnapshotsForAccount_Empty() {
-        // Arrange
+        // Setup empty result for account
         UUID accountId = UUID.randomUUID();
         when(snapshotService.getSnapshotsForAccount(accountId)).thenReturn(new ArrayList<>());
 
-        // Act
+        // Run method
         ResponseEntity<List<PortfolioSnapshotDTO>> response = snapshotController.getSnapshotsForAccount(accountId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(0, response.getBody().size());
         verify(snapshotService, times(1)).getSnapshotsForAccount(accountId);
