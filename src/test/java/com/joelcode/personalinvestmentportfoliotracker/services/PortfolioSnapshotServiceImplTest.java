@@ -62,7 +62,7 @@ public class PortfolioSnapshotServiceImplTest {
         testSnapshot.setAccount(testAccount);
         testSnapshot.setTotalValue(BigDecimal.valueOf(1000));
         testSnapshot.setCashBalance(BigDecimal.valueOf(200));
-        testSnapshot.setTotalInvested(BigDecimal.valueOf(800));
+        testSnapshot.setTotalCostBasis(BigDecimal.valueOf(800));
         testSnapshot.setSnapshotDate(LocalDate.now());
     }
 
@@ -73,12 +73,12 @@ public class PortfolioSnapshotServiceImplTest {
         request.setAccountId(accountId);
         request.setTotalValue(BigDecimal.valueOf(1000));
         request.setCashBalance(BigDecimal.valueOf(200));
-        request.setTotalInvested(BigDecimal.valueOf(800));
+        request.setTotalCostBasis(BigDecimal.valueOf(800));
         request.setSnapshotDate(LocalDate.now());
 
         when(snapshotValidationService.validateAccountExists(accountId)).thenReturn(testAccount);
         doNothing().when(snapshotValidationService).validateCreateRequest(
-                request.getTotalValue(), request.getCashBalance(), request.getTotalInvested(), request.getSnapshotDate()
+                request.getTotalValue(), request.getCashBalance(), request.getTotalCostBasis(), request.getSnapshotDate()
         );
         doNothing().when(snapshotValidationService).validateSnapshotDoesNotExist(testAccount, request.getSnapshotDate());
         when(snapshotRepository.save(any(PortfolioSnapshot.class))).thenReturn(testSnapshot);
@@ -174,19 +174,6 @@ public class PortfolioSnapshotServiceImplTest {
 
             PortfolioSnapshotDTO result = snapshotService.getLatestSnapshot(accountId);
             assertNotNull(result);
-        }
-    }
-
-    // Test getting snapshots for user
-    @Test
-    void testGetSnapshotsForUser_ReturnsCorrectList() {
-        when(portfolioSnapshotRepository.findByUser_IdOrderByDateDesc(userId)).thenReturn(List.of(testSnapshot));
-
-        try (MockedStatic<PortfolioSnapshotMapper> mapperMock = Mockito.mockStatic(PortfolioSnapshotMapper.class)) {
-            mapperMock.when(() -> PortfolioSnapshotMapper.toDTO(testSnapshot)).thenReturn(new PortfolioSnapshotDTO());
-
-            List<PortfolioSnapshotDTO> result = snapshotService.getSnapshotsForUser(userId);
-            assertEquals(1, result.size());
         }
     }
 

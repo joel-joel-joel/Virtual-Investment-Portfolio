@@ -26,7 +26,7 @@ public class PortfolioSnapshotCreateRequest {
 
     @NotNull(message = "Total invested is required")
     @DecimalMin(value = "0.00", message = "Total invested cannot be negative")
-    private BigDecimal totalInvested;
+    private BigDecimal totalCostBasis;
 
     @NotNull(message = "Total gain is required")
     @DecimalMin(value = "0.00", message = "Total gain cannot be negative")
@@ -43,16 +43,15 @@ public class PortfolioSnapshotCreateRequest {
 
     // Constructor
     public PortfolioSnapshotCreateRequest(UUID accountId, LocalDate snapshotDate, BigDecimal totalValue,
-                                          BigDecimal cashBalance, BigDecimal totalInvested, BigDecimal totalGain,
-                                          BigDecimal dayChange, BigDecimal dayChangePercent) {
+                                          BigDecimal cashBalance, BigDecimal totalCostBasis, BigDecimal totalGain,
+                                          BigDecimal dayChange) {
         this.accountId = accountId;
         this.snapshotDate = snapshotDate;
         this.totalValue = totalValue;
         this.cashBalance = cashBalance;
-        this.totalInvested = totalInvested;
+        this.totalCostBasis = totalCostBasis;
         this.totalGain = totalGain;
         this.dayChange = dayChange;
-        this.dayChangePercent = dayChangePercent;
     }
 
     public PortfolioSnapshotCreateRequest() {}
@@ -66,13 +65,11 @@ public class PortfolioSnapshotCreateRequest {
 
     public BigDecimal getCashBalance() {return cashBalance;}
 
-    public BigDecimal getTotalInvested() {return totalInvested;}
+    public BigDecimal getTotalCostBasis() {return totalCostBasis;}
 
     public BigDecimal getTotalGain() {return totalGain;}
 
     public BigDecimal getDayChange() {return dayChange;}
-
-    public BigDecimal getDayChangePercent() {return dayChangePercent;}
 
     public void setAccountId(UUID accountId) {this.accountId = accountId;}
 
@@ -82,11 +79,9 @@ public class PortfolioSnapshotCreateRequest {
 
     public void setCashBalance(BigDecimal cashBalance) {this.cashBalance = cashBalance;}
 
-    public void setTotalInvested(BigDecimal totalInvested) {this.totalInvested = totalInvested;}
+    public void setTotalCostBasis(BigDecimal totalCostBasis) {this.totalCostBasis = totalCostBasis;}
 
     public void setTotalGain(BigDecimal totalGain) {this.totalGain = totalGain;}
 
     public void setDayChangePercent(BigDecimal dayChangePercent) {this.dayChangePercent = dayChangePercent;}
-
-    public void setDayChange(BigDecimal dayChange) {this.dayChange = dayChange;}
 }

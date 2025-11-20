@@ -14,29 +14,26 @@ public class PortfolioSnapshotDTO {
     private LocalDate snapshotDate;
     private BigDecimal totalValue;
     private BigDecimal cashBalance;
-    private BigDecimal totalInvested;
+    private BigDecimal totalCostBasis;
     private BigDecimal totalGain;
     private BigDecimal totalGainPercent;
     private BigDecimal dayChange;
     private BigDecimal dayChangePercent;
-    private BigDecimal marketValue;
 
     // Constructor
     public PortfolioSnapshotDTO(UUID snapshotId, UUID accountId, LocalDate snapshotDate, BigDecimal totalValue,
-                                BigDecimal cashBalance, BigDecimal totalInvested, BigDecimal totalGain,
-                                BigDecimal totalGainPercent, BigDecimal dayChange, BigDecimal dayChangePercent,
-                                BigDecimal marketValue) {
+                                BigDecimal cashBalance, BigDecimal totalCostBasis, BigDecimal totalGain,
+                                BigDecimal totalGainPercent, BigDecimal dayChange, BigDecimal dayChangePercent) {
         this.snapshotId = snapshotId;
         this.accountId = accountId;
         this.snapshotDate = snapshotDate;
         this.totalValue = totalValue;
         this.cashBalance = cashBalance;
-        this.totalInvested = totalInvested;
+        this.totalCostBasis = totalCostBasis;
         this.totalGain = totalGain;
         this.totalGainPercent = totalGainPercent;
         this.dayChange = dayChange;
         this.dayChangePercent = dayChangePercent;
-        this.marketValue = marketValue;
     }
 
     public PortfolioSnapshotDTO(PortfolioSnapshot snapshot) {
@@ -45,12 +42,11 @@ public class PortfolioSnapshotDTO {
         this.snapshotDate = snapshot.getSnapshotDate();
         this.totalValue = snapshot.getTotalValue();
         this.cashBalance = snapshot.getCashBalance();
-        this.totalInvested = snapshot.getTotalInvested();
+        this.totalCostBasis = snapshot.getTotalCostBasis();
         this.totalGain = snapshot.getTotalGain();
         this.totalGainPercent = snapshot.getTotalGainPercent();
         this.dayChange = snapshot.getDayChange();
         this.dayChangePercent = snapshot.getDayChangePercent();
-        this.marketValue = snapshot.getMarketValue();
     }
 
     public PortfolioSnapshotDTO() {}
@@ -66,7 +62,7 @@ public class PortfolioSnapshotDTO {
 
     public BigDecimal getCashBalance() {return cashBalance;}
 
-    public BigDecimal getTotalInvested() {return totalInvested;}
+    public BigDecimal getTotalInvested() {return totalCostBasis;}
 
     public BigDecimal getTotalGain() {return totalGain;}
 
@@ -76,7 +72,6 @@ public class PortfolioSnapshotDTO {
 
     public BigDecimal getDayChangePercent() {return dayChangePercent;}
 
-    public BigDecimal getMarketValue() {return marketValue;}
 
     public void setSnapshotId(UUID snapshotId) {this.snapshotId = snapshotId;}
 
@@ -88,7 +83,7 @@ public class PortfolioSnapshotDTO {
 
     public void setCashBalance(BigDecimal cashBalance) {this.cashBalance = cashBalance;}
 
-    public void setTotalInvested(BigDecimal totalInvested) {this.totalInvested = totalInvested;}
+    public void setTotalInvested(BigDecimal totalCostBasis) {this.totalCostBasis = totalCostBasis;}
 
     public void setTotalGain(BigDecimal totalGain) {this.totalGain = totalGain;}
 
@@ -98,5 +93,4 @@ public class PortfolioSnapshotDTO {
 
     public void setDayChange(BigDecimal dayChange) {this.dayChange = dayChange;}
 
-    public void setMarketValue(BigDecimal marketValue) {this.marketValue = marketValue;}
 }

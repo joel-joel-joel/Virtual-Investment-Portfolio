@@ -35,165 +35,184 @@ class AccountControllerTest {
 
     @BeforeEach
     void setUp() {
+        // Initialize controller and inject mocked service
         accountController = new AccountController();
         accountController.accountService = accountService;
     }
 
+    // Test retrieving all accounts when accounts exist
     @Test
     void testGetAllAccounts_Success() {
-        // Arrange
+        // Setup account list and user
         List<AccountDTO> accounts = new ArrayList<>();
         UserDTO user = new UserDTO(UUID.randomUUID(), "testuser", "<EMAIL>");
         accounts.add(new AccountDTO( "Checking", UUID.randomUUID(), user, BigDecimal.valueOf(5000)));
         accounts.add(new AccountDTO( "Savings", UUID.randomUUID(), user, BigDecimal.valueOf(10000)));
+
+        // Map method return value to setup
         when(accountService.getAllAccounts()).thenReturn(accounts);
 
-        // Act
+        // Run method
         ResponseEntity<List<AccountDTO>> response = accountController.getAllAccounts();
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, response.getBody().size());
         verify(accountService, times(1)).getAllAccounts();
     }
 
+    // Test retrieving all accounts when no accounts exist
     @Test
     void testGetAllAccounts_Empty() {
-        // Arrange
+        // Setup empty account list
         when(accountService.getAllAccounts()).thenReturn(new ArrayList<>());
 
-        // Act
+        // Run method
         ResponseEntity<List<AccountDTO>> response = accountController.getAllAccounts();
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(0, response.getBody().size());
         verify(accountService, times(1)).getAllAccounts();
     }
 
+    // Test retrieving a single account by ID when account exists
     @Test
     void testGetAccountById_Success() {
-        // Arrange
+        // Setup account and user
         UUID accountId = UUID.randomUUID();
         UserDTO user = new UserDTO(UUID.randomUUID(), "testuser", "<EMAIL>");
         AccountDTO account = new AccountDTO( "Checking", accountId, user, BigDecimal.valueOf(5000));
+
+        // Map method return value to setup
         when(accountService.getAccountById(accountId)).thenReturn(account);
 
-        // Act
+        // Run method
         ResponseEntity<AccountDTO> response = accountController.getAccountById(accountId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(accountId, response.getBody().getAccountId());
         verify(accountService, times(1)).getAccountById(accountId);
     }
 
+    // Test retrieving a single account by ID when account does not exist
     @Test
     void testGetAccountById_NotFound() {
-        // Arrange
+        // Setup account ID with null return
         UUID accountId = UUID.randomUUID();
         when(accountService.getAccountById(accountId)).thenReturn(null);
 
-        // Act
+        // Run method
         ResponseEntity<AccountDTO> response = accountController.getAccountById(accountId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         verify(accountService, times(1)).getAccountById(accountId);
     }
 
+    // Test creating an account successfully
     @Test
     void testCreateAccount_Success() {
-        // Arrange
+        // Setup create request and expected account
         UUID accountId = UUID.randomUUID();
         UserDTO user = new UserDTO(UUID.randomUUID(), "testuser", "<EMAIL>");
         AccountCreateRequest request = new AccountCreateRequest("Checking",UUID.randomUUID());
         AccountDTO created = new AccountDTO( "Checking", accountId, user, BigDecimal.valueOf(5000));
+
+        // Map method return value to setup
         when(accountService.createAccount(request)).thenReturn(created);
 
-        // Act
+        // Run method
         ResponseEntity<AccountDTO> response = accountController.createAccount(request);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(accountId, response.getBody().getAccountId());
         verify(accountService, times(1)).createAccount(request);
     }
 
+    // Test updating an account successfully
     @Test
     void testUpdateAccount_Success() {
-        // Arrange
+        // Setup account update request and expected updated account
         UUID accountId = UUID.randomUUID();
         UserDTO user = new UserDTO(UUID.randomUUID(), "testuser", "<EMAIL>");
         AccountUpdateRequest request = new AccountUpdateRequest("Updated");
         AccountDTO updated = new AccountDTO( "Updated", UUID.randomUUID(), user, BigDecimal.valueOf(5000));
+
+        // Map method return value to setup
         when(accountService.updateAccount(accountId, request)).thenReturn(updated);
 
-        // Act
+        // Run method
         ResponseEntity<AccountDTO> response = accountController.updateAccount(accountId, request);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Updated", response.getBody().getAccountName());
         verify(accountService, times(1)).updateAccount(accountId, request);
     }
 
+    // Test updating an account when account does not exist
     @Test
     void testUpdateAccount_NotFound() {
-        // Arrange
+        // Setup update request with null return
         UUID accountId = UUID.randomUUID();
         UserDTO user = new UserDTO(UUID.randomUUID(), "testuser", "<EMAIL>");
         AccountUpdateRequest request = new AccountUpdateRequest("Updated");
         when(accountService.updateAccount(accountId, request)).thenReturn(null);
 
-        // Act
+        // Run method
         ResponseEntity<AccountDTO> response = accountController.updateAccount(accountId, request);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         verify(accountService, times(1)).updateAccount(accountId, request);
     }
 
+    // Test deleting an account successfully
     @Test
     void testDeleteAccount_Success() {
-        // Arrange
+        // Setup account ID and mock void service
         UUID accountId = UUID.randomUUID();
         doNothing().when(accountService).deleteAccount(accountId);
 
-        // Act
+        // Run method
         ResponseEntity<Void> response = accountController.deleteAccount(accountId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(accountService, times(1)).deleteAccount(accountId);
     }
 
+    // Test retrieving transactions for an account successfully
     @Test
     void testGetAccountTransactions_Success() {
-        // Arrange
+        // Setup account ID and empty transaction list
         UUID accountId = UUID.randomUUID();
         List<TransactionDTO> transactions = new ArrayList<>();
         when(accountService.getTransactionsForAccount(accountId)).thenReturn(transactions);
 
-        // Act
+        // Run method
         ResponseEntity<?> response = accountController.getAccountTransactions(accountId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(accountService, times(1)).getTransactionsForAccount(accountId);
     }
 
+    // Test retrieving holdings for an account successfully
     @Test
     void testGetAccountHoldings_Success() {
-        // Arrange
+        // Setup account ID and empty holdings list
         UUID accountId = UUID.randomUUID();
         List<HoldingDTO> holdings = new ArrayList<>();
         when(accountService.getHoldingsForAccount(accountId)).thenReturn(holdings);
 
-        // Act
+        // Run method
         ResponseEntity<?> response = accountController.getAccountHoldings(accountId);
 
-        // Assert
+        // Assert testing variables are correct
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(accountService, times(1)).getHoldingsForAccount(accountId);
     }

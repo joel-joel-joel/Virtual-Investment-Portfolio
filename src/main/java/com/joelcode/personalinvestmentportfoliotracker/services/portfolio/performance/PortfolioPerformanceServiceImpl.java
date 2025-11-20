@@ -87,14 +87,14 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
         List<Holding> holdings = holdingRepository.getHoldingsEntitiesByAccount(accountId);
 
-        BigDecimal totalInvested = BigDecimal.ZERO;
+        BigDecimal totalCostBasis = BigDecimal.ZERO;
         BigDecimal totalUnrealizedGain = BigDecimal.ZERO;
         BigDecimal totalRealizedGain = BigDecimal.ZERO;
         BigDecimal totalHoldingsValue = BigDecimal.ZERO;
 
         // Calculate value from holdings
         for (Holding h : holdings) {
-            totalInvested = totalInvested.add(h.getTotalCostBasis());
+            totalCostBasis = totalCostBasis.add(h.getTotalCostBasis());
             BigDecimal currentValue = h.getCurrentValue(h.getStock().getStockValue());
             // Use current price for unrealized gain, not the multiplied current value
             totalUnrealizedGain = totalUnrealizedGain.add(h.getUnrealizedGain(h.getStock().getStockValue()));
@@ -124,9 +124,9 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
 
         // Calculate roi
         BigDecimal roi = BigDecimal.ZERO;
-        if (totalInvested.compareTo(BigDecimal.ZERO) > 0) {
-            roi = totalPortfolioValue.subtract(totalInvested)
-                    .divide(totalInvested, 4, BigDecimal.ROUND_HALF_UP)
+        if (totalCostBasis.compareTo(BigDecimal.ZERO) > 0) {
+            roi = totalPortfolioValue.subtract(totalCostBasis)
+                    .divide(totalCostBasis, 4, BigDecimal.ROUND_HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
         }
 
@@ -134,7 +134,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         PortfolioPerformanceDTO dto = new PortfolioPerformanceDTO();
         dto.setAccountId(accountId);
         dto.setTotalPortfolioValue(normalize(totalPortfolioValue));
-        dto.setTotalInvested(normalize(totalInvested));
+        dto.setTotalInvested(normalize(totalCostBasis));
         dto.setTotalRealizedGain(normalize(totalRealizedGain));
         dto.setTotalUnrealizedGain(normalize(totalUnrealizedGain));
         dto.setTotalDividends(normalize(totalDividends));
@@ -154,7 +154,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
                 .orElseThrow(() -> new IllegalArgumentException("Account not found")));
         snapshot.setTotalValue(performance.getTotalPortfolioValue());
         snapshot.setCashBalance(performance.getCashBalance());
-        snapshot.setTotalInvested(performance.getTotalInvested());
+        snapshot.setTotalCostBasis(performance.getTotalInvested());
         snapshot.setRealizedGain(performance.getTotalRealizedGain());
         snapshot.setUnrealizedGain(performance.getTotalUnrealizedGain());
         snapshot.setTotalDividends(performance.getTotalDividends());
@@ -194,7 +194,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
             return new PortfolioPerformanceDTO(
                     account.getAccountId(),
                     cashBalance,           // totalPortfolioValue = just cash
-                    BigDecimal.ZERO,       // totalInvested
+                    BigDecimal.ZERO,       // totalCostBasis
                     BigDecimal.ZERO,       // totalRealizedGain
                     BigDecimal.ZERO,       // totalUnrealizedGain
                     BigDecimal.ZERO,       // totalDividends
@@ -206,10 +206,10 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         }
 
         // Calculate total invested
-        BigDecimal totalInvested = BigDecimal.ZERO;
+        BigDecimal totalCostBasis = BigDecimal.ZERO;
         for (HoldingDTO h : holdings) {
             if (h != null && h.getAverageCostBasis() != null && h.getQuantity() != null) {
-                totalInvested = totalInvested.add(
+                totalCostBasis = totalCostBasis.add(
                         h.getAverageCostBasis().multiply(h.getQuantity())
                 );
             }
@@ -226,7 +226,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         }
 
         // Unrealized gain
-        BigDecimal totalUnrealizedGain = totalPortfolioValue.subtract(totalInvested);
+        BigDecimal totalUnrealizedGain = totalPortfolioValue.subtract(totalCostBasis);
 
         // Realized gain (placeholder)
         BigDecimal totalRealizedGain = BigDecimal.ZERO;
@@ -264,12 +264,12 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         BigDecimal roiPercentage;
 
         // EDGE CASE: Division by zero
-        if (totalInvested.compareTo(BigDecimal.ZERO) == 0) {
+        if (totalCostBasis.compareTo(BigDecimal.ZERO) == 0) {
             roiPercentage = BigDecimal.ZERO;
         } else {
             roiPercentage = totalReturn
                     .multiply(BigDecimal.valueOf(100))
-                    .divide(totalInvested, 2, RoundingMode.HALF_UP);
+                    .divide(totalCostBasis, 2, RoundingMode.HALF_UP);
         }
 
         // Daily and monthly gain placeholders
@@ -279,7 +279,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         return new PortfolioPerformanceDTO(
                 account.getAccountId(),
                 totalPortfolioValue,
-                totalInvested,
+                totalCostBasis,
                 totalRealizedGain,
                 totalUnrealizedGain,
                 totalDividends,
@@ -296,7 +296,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         // Validate user exists
         User user = userValidationService.validateUserExists(userId);
 
-        BigDecimal totalInvested = BigDecimal.ZERO;
+        BigDecimal totalCostBasis = BigDecimal.ZERO;
         BigDecimal totalPortfolioValue = BigDecimal.ZERO;
         BigDecimal totalRealizedGain = BigDecimal.ZERO;
         BigDecimal totalUnrealizedGain = BigDecimal.ZERO;
@@ -306,7 +306,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         // Aggregate performance across all accounts
         for (Account account : user.getAccounts()) {
             PortfolioPerformanceDTO accountPerf = getPerformanceForAccount(account.getAccountId());
-            totalInvested = totalInvested.add(accountPerf.getTotalInvested());
+            totalCostBasis = totalCostBasis.add(accountPerf.getTotalInvested());
             totalPortfolioValue = totalPortfolioValue.add(accountPerf.getTotalPortfolioValue());
             totalRealizedGain = totalRealizedGain.add(accountPerf.getTotalRealizedGain());
             totalUnrealizedGain = totalUnrealizedGain.add(accountPerf.getTotalUnrealizedGain());
@@ -318,8 +318,8 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         BigDecimal totalReturn = totalUnrealizedGain.add(totalRealizedGain).add(totalDividends);
 
         // ROI % = (Total Return / Total Invested) * 100
-        BigDecimal roiPercentage = totalInvested.compareTo(BigDecimal.ZERO) > 0
-                ? totalReturn.multiply(BigDecimal.valueOf(100)).divide(totalInvested, 2, BigDecimal.ROUND_HALF_UP)
+        BigDecimal roiPercentage = totalCostBasis.compareTo(BigDecimal.ZERO) > 0
+                ? totalReturn.multiply(BigDecimal.valueOf(100)).divide(totalCostBasis, 2, BigDecimal.ROUND_HALF_UP)
                 : BigDecimal.ZERO;
 
         // Daily and monthly gain placeholders
@@ -329,7 +329,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         return new PortfolioPerformanceDTO(
                 null,                     // No single account for user-level
                 totalPortfolioValue,      // totalPortfolioValue
-                totalInvested,            // totalInvested
+                totalCostBasis,            // totalCostBasis
                 totalRealizedGain,        // totalRealizedGain
                 totalUnrealizedGain,      // totalUnrealizedGain
                 totalDividends,           // totalDividends

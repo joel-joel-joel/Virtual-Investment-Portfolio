@@ -51,10 +51,10 @@ public class PortfolioSnapshotCalculationServiceImpl implements PortfolioSnapsho
 
         // Calculate current portfolio metrics
         BigDecimal totalValue = holdingCalculationService.calculateTotalPortfolioValue(accountId);
-        BigDecimal totalCostBasis = holdingCalculationService.calculateTotalCostBasis(accountId);
+        BigDecimal totalCostBasis= holdingCalculationService.calculateTotalCostBasis(accountId); // NEW
         BigDecimal unrealizedGainLoss = holdingCalculationService.calculateTotalUnrealizedGain(accountId);
         BigDecimal realizedGainLoss = holdingCalculationService.calculateTotalRealizedGain(accountId);
-        BigDecimal totalGainLoss = unrealizedGainLoss.add(realizedGainLoss);
+        BigDecimal totalGain = unrealizedGainLoss.add(realizedGainLoss);
 
         // Calculate day change by comparing to yesterday's snapshot
         BigDecimal dayChange = BigDecimal.ZERO;
@@ -71,21 +71,20 @@ public class PortfolioSnapshotCalculationServiceImpl implements PortfolioSnapsho
             }
         }
 
-        // Create snapshot request
         PortfolioSnapshotCreateRequest request = new PortfolioSnapshotCreateRequest(
                 accountId,
                 today,
                 totalValue,
                 BigDecimal.ZERO, // Cash balance - can be enhanced later
-                totalCostBasis,
-                totalGainLoss,
-                dayChange,
-                dayChangePercent
+                totalCostBasis,  // <-- use totalInvested here
+                totalGain,
+                dayChange
         );
 
         // Create and return snapshot
         return snapshotService.createSnapshot(request);
     }
+
 
     // Calculate time-weighted return (TWR) between two dates
     @Override

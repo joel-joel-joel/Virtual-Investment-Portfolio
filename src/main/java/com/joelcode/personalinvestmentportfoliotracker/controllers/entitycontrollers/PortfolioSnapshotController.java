@@ -15,7 +15,7 @@ import java.util.UUID;
 public class PortfolioSnapshotController {
 
     @Autowired
-    private PortfolioSnapshotService snapshotService;
+    public PortfolioSnapshotService snapshotService;
 
     // Get all snapshots
     @GetMapping
@@ -46,12 +46,6 @@ public class PortfolioSnapshotController {
     public ResponseEntity<Void> deleteSnapshot(@PathVariable UUID id) {
        snapshotService.deleteSnapshot(id);
        return ResponseEntity.noContent().build();
-    }
-
-    // Get all snapshots for a specific user
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<PortfolioSnapshotDTO>> getSnapshotsForUser(@PathVariable UUID userId) {
-        return ResponseEntity.ok(snapshotService.getSnapshotsForUser(userId));
     }
 
     // Get all snapshots for a specific account

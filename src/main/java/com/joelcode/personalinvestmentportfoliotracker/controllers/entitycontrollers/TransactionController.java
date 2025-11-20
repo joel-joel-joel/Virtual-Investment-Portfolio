@@ -19,10 +19,10 @@ import java.util.stream.Collectors;
 public class TransactionController {
 
     @Autowired
-    private TransactionService transactionService;
+    public TransactionService transactionService;
 
     @Autowired
-    private TransactionRepository transactionRepository;
+    public TransactionRepository transactionRepository;
 
     // Get all transactions
     @GetMapping

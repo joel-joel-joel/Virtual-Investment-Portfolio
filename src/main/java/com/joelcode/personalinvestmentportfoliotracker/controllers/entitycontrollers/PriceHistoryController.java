@@ -15,7 +15,7 @@ import java.util.UUID;
 public class PriceHistoryController {
 
     @Autowired
-    private PriceHistoryService priceHistoryService;
+    public PriceHistoryService priceHistoryService;
 
     // Get all price history records
     @GetMapping

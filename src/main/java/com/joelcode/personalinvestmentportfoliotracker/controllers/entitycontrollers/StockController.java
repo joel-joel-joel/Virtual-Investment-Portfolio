@@ -18,7 +18,7 @@ import java.util.UUID;
 public class StockController {
 
     @Autowired
-    private StockService stockService;
+    public StockService stockService;
 
     // Get all stocks
     @GetMapping

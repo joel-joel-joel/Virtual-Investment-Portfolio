@@ -23,7 +23,5 @@ public interface PortfolioSnapshotService {
 
     void deleteSnapshot(UUID id);
 
-    List<PortfolioSnapshotDTO> getSnapshotsForUser(UUID userId);
-
     List<PortfolioSnapshotDTO> getSnapshotsForAccount(UUID accountId);
 }

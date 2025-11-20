@@ -16,7 +16,7 @@ import java.util.UUID;
 public class HoldingController {
 
     @Autowired
-    private HoldingService holdingService;
+    public HoldingService holdingService;
 
     // Get all holdings
     @GetMapping

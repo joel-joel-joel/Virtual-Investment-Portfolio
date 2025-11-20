@@ -37,7 +37,7 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
         snapshotValidationService.validateCreateRequest(
                 request.getTotalValue(),
                 request.getCashBalance(),
-                request.getTotalInvested(),
+                request.getTotalCostBasis(),
                 request.getSnapshotDate()
         );
 
@@ -100,19 +100,6 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
     public void deleteSnapshot(UUID snapshotId) {
         PortfolioSnapshot snapshot = snapshotValidationService.validateSnapshotExists(snapshotId);
         snapshotRepository.delete(snapshot);
-    }
-
-    @Override
-    public List<PortfolioSnapshotDTO> getSnapshotsForUser(UUID userId) {
-        // Fetch all snapshots for the user
-        List<PortfolioSnapshot> snapshots = portfolioSnapshotRepository.findByUser_IdOrderByDateDesc(userId);
-
-        // Map to DTOs
-        List<PortfolioSnapshotDTO> snapshotDTOs = snapshots.stream()
-                .map(PortfolioSnapshotMapper::toDTO)
-                .collect(Collectors.toList());
-
-        return snapshotDTOs;
     }
 
     @Override

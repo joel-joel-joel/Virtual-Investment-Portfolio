@@ -17,7 +17,7 @@ public class PortfolioSnapshot {
     // Constructor
 
     public PortfolioSnapshot(UUID snapshotId, Account account, LocalDate snapshotDate, BigDecimal totalValue,
-                             BigDecimal cashBalance, BigDecimal totalInvested, BigDecimal totalGain,
+                             BigDecimal cashBalance, BigDecimal totalCostBasis, BigDecimal totalGain,
                              BigDecimal realizedGain, BigDecimal unrealizedGain,
                              BigDecimal totalDividends, BigDecimal roiPercentage,
                              BigDecimal dayChange, BigDecimal dayChangePercent) {
@@ -26,7 +26,7 @@ public class PortfolioSnapshot {
         this.snapshotDate = snapshotDate;
         this.totalValue = totalValue;
         this.cashBalance = cashBalance;
-        this.totalInvested = totalInvested;
+        this.totalCostBasis = totalCostBasis;
         this.totalGain = totalGain;
         this.realizedGain = realizedGain;
         this.unrealizedGain = unrealizedGain;
@@ -54,7 +54,7 @@ public class PortfolioSnapshot {
     private BigDecimal cashBalance = BigDecimal.ZERO;
 
     @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal totalInvested;
+    private BigDecimal totalCostBasis;
 
     @Column(precision = 19, scale = 2)
     private BigDecimal totalGain;
@@ -133,12 +133,12 @@ public class PortfolioSnapshot {
         this.cashBalance = cashBalance;
     }
 
-    public BigDecimal getTotalInvested() {
-        return totalInvested;
+    public BigDecimal getTotalCostBasis() {
+        return totalCostBasis;
     }
 
-    public void setTotalInvested(BigDecimal totalInvested) {
-        this.totalInvested = totalInvested;
+    public void setTotalCostBasis(BigDecimal totalCostBasis) {
+        this.totalCostBasis = totalCostBasis;
     }
 
     public BigDecimal getTotalGain() {
@@ -201,7 +201,7 @@ public class PortfolioSnapshot {
 
     public BigDecimal getTotalGainPercent() {
         // EDGE CASE: Division by zero check
-        if (totalInvested == null || totalInvested.compareTo(BigDecimal.ZERO) == 0) {
+        if (totalCostBasis == null || totalCostBasis.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
 
@@ -211,7 +211,7 @@ public class PortfolioSnapshot {
         }
 
         return totalGain
-                .divide(totalInvested, 4, RoundingMode.HALF_UP)
+                .divide(totalCostBasis, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(2, RoundingMode.HALF_UP);
     }
