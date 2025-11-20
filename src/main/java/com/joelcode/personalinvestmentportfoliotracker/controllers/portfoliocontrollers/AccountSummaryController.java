@@ -14,7 +14,7 @@ import java.util.UUID;
 public class AccountSummaryController {
 
     @Autowired
-    private AccountSummaryService accountSummaryService;
+    AccountSummaryService accountSummaryService;
 
     // Get summary for a specific account
     @GetMapping("/account/{accountId}")

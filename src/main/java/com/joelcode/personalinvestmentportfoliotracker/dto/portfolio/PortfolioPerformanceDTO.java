@@ -9,9 +9,10 @@ import java.util.UUID;
 public class PortfolioPerformanceDTO {
 
     // Define key fields
+    private UUID userId;
     private UUID accountId;
     private BigDecimal totalPortfolioValue;
-    private BigDecimal totalInvested;
+    private BigDecimal totalCostBasis;
     private BigDecimal totalRealizedGain;
     private BigDecimal totalUnrealizedGain;
     private BigDecimal totalDividends;
@@ -21,13 +22,31 @@ public class PortfolioPerformanceDTO {
     private BigDecimal monthlyGain;
 
     // Constructors
-    public PortfolioPerformanceDTO(UUID accountId, BigDecimal totalPortfolioValue, BigDecimal totalInvested,
+    public PortfolioPerformanceDTO(UUID userId, UUID accountId, BigDecimal totalPortfolioValue, BigDecimal totalCostBasis,
                                    BigDecimal totalRealizedGain, BigDecimal totalUnrealizedGain,
                                    BigDecimal totalDividends, BigDecimal cashBalance,
                                    BigDecimal roiPercentage, BigDecimal dailyGain, BigDecimal monthlyGain) {
+        this.userId = userId;
         this.accountId = accountId;
         this.totalPortfolioValue = totalPortfolioValue;
-        this.totalInvested = totalInvested;
+        this.totalCostBasis = totalCostBasis;
+        this.totalRealizedGain = totalRealizedGain;
+        this.totalUnrealizedGain = totalUnrealizedGain;
+        this.totalDividends = totalDividends;
+        this.cashBalance = cashBalance;
+        this.roiPercentage = roiPercentage;
+        this.dailyGain = dailyGain;
+        this.monthlyGain = monthlyGain;
+    }
+
+    public PortfolioPerformanceDTO(UUID userId, BigDecimal totalPortfolioValue, BigDecimal totalCostBasis,
+                                   BigDecimal totalRealizedGain, BigDecimal totalUnrealizedGain,
+                                   BigDecimal totalDividends, BigDecimal cashBalance,
+                                   BigDecimal roiPercentage, BigDecimal dailyGain, BigDecimal monthlyGain) {
+        this.userId = userId;
+        this.accountId = null;
+        this.totalPortfolioValue = totalPortfolioValue;
+        this.totalCostBasis = totalCostBasis;
         this.totalRealizedGain = totalRealizedGain;
         this.totalUnrealizedGain = totalUnrealizedGain;
         this.totalDividends = totalDividends;
@@ -38,10 +57,15 @@ public class PortfolioPerformanceDTO {
     }
 
 
+
     public PortfolioPerformanceDTO() {}
 
 
     // Getters and Setters
+    public UUID getUserId() {return userId;}
+
+    public void setUserId(UUID userId) {this.userId = userId;}
+
     public UUID getAccountId() {return accountId;}
 
     public void setAccountId(UUID accountId) {this.accountId = accountId;}
@@ -50,9 +74,9 @@ public class PortfolioPerformanceDTO {
 
     public void setTotalPortfolioValue(BigDecimal totalPortfolioValue) {this.totalPortfolioValue = totalPortfolioValue;}
 
-    public BigDecimal getTotalInvested() {return totalInvested;}
+    public BigDecimal getTotalCostBasis() {return totalCostBasis;}
 
-    public void setTotalInvested(BigDecimal totalInvested) {this.totalInvested = totalInvested;}
+    public void setTotalCostBasis(BigDecimal totalCostBasis) {this.totalCostBasis = totalCostBasis;}
 
     public BigDecimal getTotalRealizedGain() {return totalRealizedGain;}
 

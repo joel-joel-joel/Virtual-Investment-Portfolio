@@ -86,7 +86,7 @@ public class PortfolioOverviewServiceImplTest {
         assertNotNull(overview);
         assertEquals(accountId, overview.getAccountId());
         assertEquals(BigDecimal.valueOf(1600), overview.getTotalPortfolioValue());
-        assertTrue(overview.getTotalInvested().compareTo(BigDecimal.valueOf(500)) == 0);
+        assertTrue(overview.getTotalCostBasis().compareTo(BigDecimal.valueOf(500)) == 0);
         assertEquals(BigDecimal.valueOf(100), overview.getTotalUnrealizedGain());
         assertTrue(overview.getCashBalance().compareTo(BigDecimal.valueOf(1000)) == 0);
         assertEquals(1, overview.getHoldings().size());
@@ -99,7 +99,7 @@ public class PortfolioOverviewServiceImplTest {
         assertNotNull(overview);
         assertNull(overview.getAccountId()); // User-level overview has no single accountId
         assertEquals(BigDecimal.valueOf(1600), overview.getTotalPortfolioValue());
-        assertTrue(overview.getTotalInvested().compareTo(BigDecimal.valueOf(500)) == 0);
+        assertTrue(overview.getTotalCostBasis().compareTo(BigDecimal.valueOf(500)) == 0);
         assertEquals(BigDecimal.valueOf(100), overview.getTotalUnrealizedGain());
         assertTrue(overview.getCashBalance().compareTo(BigDecimal.valueOf(1000)) == 0);
         assertEquals(1, overview.getHoldings().size());
@@ -114,7 +114,7 @@ public class PortfolioOverviewServiceImplTest {
         assertNotNull(overview);
         assertEquals(accountId, overview.getAccountId());
         assertEquals(BigDecimal.valueOf(1000), overview.getTotalPortfolioValue());
-        assertEquals(BigDecimal.ZERO, overview.getTotalInvested());
+        assertEquals(BigDecimal.ZERO, overview.getTotalCostBasis());
         assertEquals(BigDecimal.ZERO, overview.getTotalUnrealizedGain());
         assertEquals(BigDecimal.ZERO, overview.getTotalRealizedGain());
         assertTrue(overview.getCashBalance().compareTo(BigDecimal.valueOf(1000)) == 0);
@@ -129,7 +129,7 @@ public class PortfolioOverviewServiceImplTest {
         assertNotNull(overview);
         assertNull(overview.getAccountId());
         assertEquals(BigDecimal.valueOf(1000), overview.getTotalPortfolioValue());
-        assertEquals(BigDecimal.ZERO, overview.getTotalInvested());
+        assertEquals(BigDecimal.ZERO, overview.getTotalCostBasis());
         assertEquals(BigDecimal.ZERO, overview.getTotalUnrealizedGain());
         assertEquals(BigDecimal.ZERO, overview.getTotalRealizedGain());
         assertTrue(overview.getCashBalance().compareTo(BigDecimal.valueOf(1000)) == 0);

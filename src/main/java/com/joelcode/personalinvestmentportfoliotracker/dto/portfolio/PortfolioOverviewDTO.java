@@ -11,7 +11,7 @@ public class PortfolioOverviewDTO {
     // Portfolio overview response DTO (output)
     private UUID accountId;
     private BigDecimal totalPortfolioValue;
-    private BigDecimal totalInvested;
+    private BigDecimal totalCostBasis;
     private BigDecimal totalUnrealizedGain;
     private BigDecimal totalRealizedGain;
     private BigDecimal totalDividends;
@@ -19,12 +19,12 @@ public class PortfolioOverviewDTO {
     private List<HoldingDTO> holdings;
 
     // Constructor
-    public PortfolioOverviewDTO (UUID accountId, BigDecimal totalPortfolioValue, BigDecimal totalInvested,
+    public PortfolioOverviewDTO (UUID accountId, BigDecimal totalPortfolioValue, BigDecimal totalCostBasis,
                                  BigDecimal totalUnrealizedGain, BigDecimal totalRealizedGain,
                                  BigDecimal totalDividends, BigDecimal cashBalance, List<HoldingDTO> holdings) {
         this.accountId = accountId;
         this.totalPortfolioValue = totalPortfolioValue;
-        this.totalInvested = totalInvested;
+        this.totalCostBasis = totalCostBasis;
         this.totalUnrealizedGain = totalUnrealizedGain;
         this.totalRealizedGain = totalRealizedGain;
         this.totalDividends = totalDividends;
@@ -43,9 +43,9 @@ public class PortfolioOverviewDTO {
 
     public void setTotalPortfolioValue(BigDecimal totalPortfolioValue) {this.totalPortfolioValue = totalPortfolioValue;}
 
-    public BigDecimal getTotalInvested() {return totalInvested;}
+    public BigDecimal getTotalCostBasis() {return totalCostBasis;}
 
-    public void setTotalInvested(BigDecimal totalInvested) {this.totalInvested = totalInvested;}
+    public void setTotalCostBasis(BigDecimal totalCostBasis) {this.totalCostBasis = totalCostBasis;}
 
     public BigDecimal getTotalUnrealizedGain() {return totalUnrealizedGain;}
 

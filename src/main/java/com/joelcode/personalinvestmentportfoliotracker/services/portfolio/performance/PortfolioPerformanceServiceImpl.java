@@ -134,7 +134,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         PortfolioPerformanceDTO dto = new PortfolioPerformanceDTO();
         dto.setAccountId(accountId);
         dto.setTotalPortfolioValue(normalize(totalPortfolioValue));
-        dto.setTotalInvested(normalize(totalCostBasis));
+        dto.setTotalCostBasis(normalize(totalCostBasis));
         dto.setTotalRealizedGain(normalize(totalRealizedGain));
         dto.setTotalUnrealizedGain(normalize(totalUnrealizedGain));
         dto.setTotalDividends(normalize(totalDividends));
@@ -154,7 +154,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
                 .orElseThrow(() -> new IllegalArgumentException("Account not found")));
         snapshot.setTotalValue(performance.getTotalPortfolioValue());
         snapshot.setCashBalance(performance.getCashBalance());
-        snapshot.setTotalCostBasis(performance.getTotalInvested());
+        snapshot.setTotalCostBasis(performance.getTotalCostBasis());
         snapshot.setRealizedGain(performance.getTotalRealizedGain());
         snapshot.setUnrealizedGain(performance.getTotalUnrealizedGain());
         snapshot.setTotalDividends(performance.getTotalDividends());
@@ -192,6 +192,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
                     account.getAccountBalance() : BigDecimal.ZERO;
 
             return new PortfolioPerformanceDTO(
+                    account.getUserid(),
                     account.getAccountId(),
                     cashBalance,           // totalPortfolioValue = just cash
                     BigDecimal.ZERO,       // totalCostBasis
@@ -277,6 +278,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         BigDecimal monthlyGain = BigDecimal.ZERO;
 
         return new PortfolioPerformanceDTO(
+                account.getUserid(),
                 account.getAccountId(),
                 totalPortfolioValue,
                 totalCostBasis,
@@ -306,7 +308,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         // Aggregate performance across all accounts
         for (Account account : user.getAccounts()) {
             PortfolioPerformanceDTO accountPerf = getPerformanceForAccount(account.getAccountId());
-            totalCostBasis = totalCostBasis.add(accountPerf.getTotalInvested());
+            totalCostBasis = totalCostBasis.add(accountPerf.getTotalCostBasis());
             totalPortfolioValue = totalPortfolioValue.add(accountPerf.getTotalPortfolioValue());
             totalRealizedGain = totalRealizedGain.add(accountPerf.getTotalRealizedGain());
             totalUnrealizedGain = totalUnrealizedGain.add(accountPerf.getTotalUnrealizedGain());
@@ -327,7 +329,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         BigDecimal monthlyGain = BigDecimal.ZERO; // Replace with actual calculation
 
         return new PortfolioPerformanceDTO(
-                null,                     // No single account for user-level
+                userId,
                 totalPortfolioValue,      // totalPortfolioValue
                 totalCostBasis,            // totalCostBasis
                 totalRealizedGain,        // totalRealizedGain

@@ -14,7 +14,7 @@ import java.util.UUID;
 public class AllocationBreakdownController {
 
     @Autowired
-    private AllocationBreakdownService allocationService;
+    AllocationBreakdownService allocationService;
 
     // Get allocation for a specific account
     @GetMapping("/account/{accountId}")

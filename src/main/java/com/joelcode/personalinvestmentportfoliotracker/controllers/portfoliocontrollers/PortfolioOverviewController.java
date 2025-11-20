@@ -13,7 +13,7 @@ import java.util.UUID;
 public class PortfolioOverviewController {
 
     @Autowired
-    private PortfolioOverviewService portfolioOverviewService;
+    PortfolioOverviewService portfolioOverviewService;
 
     // Get portfolio overview for a specific account
     @GetMapping("/account/{accountId}")

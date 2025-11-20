@@ -83,7 +83,7 @@ public class AccountSummaryServiceImpl implements AccountSummaryService{
         // Build summary
         AccountSummaryDTO summary = new AccountSummaryDTO();
         summary.setAccountId(accountId);
-        summary.setTotalInvestedValue(totalInvested);
+        summary.setTotalCostBasis(totalInvested);
         summary.setTotalMarketValue(totalMarketValue);
         summary.setTotalUnrealizedGain(totalMarketValue.subtract(totalInvested));
         summary.setTotalDividends(totalDividends);

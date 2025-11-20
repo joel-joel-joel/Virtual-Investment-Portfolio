@@ -13,7 +13,7 @@ import java.util.UUID;
 public class PortfolioAggregationController {
 
     @Autowired
-    private PortfolioAggregationService portfolioAggregationService;
+    PortfolioAggregationService portfolioAggregationService;
 
     // Aggregate for a single account
     @GetMapping("/account/{accountId}")

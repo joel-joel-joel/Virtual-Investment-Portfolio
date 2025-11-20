@@ -3,8 +3,6 @@ package com.joelcode.personalinvestmentportfoliotracker.services.portfolio;
 import com.joelcode.personalinvestmentportfoliotracker.dto.holding.HoldingDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.PortfolioOverviewDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;
-import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
-import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
 import com.joelcode.personalinvestmentportfoliotracker.services.dividend.DividendCalculationService;
@@ -13,7 +11,6 @@ import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidat
 import com.joelcode.personalinvestmentportfoliotracker.services.portfolio.aggregation.PortfolioAggregationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -102,7 +99,7 @@ class PortfolioAggregationServiceImplTest {
 
         // Assertions with null protection
         assertEquals(BigDecimal.ZERO, safe(overview.getCashBalance()));
-        assertEquals(BigDecimal.valueOf(1000), safe(overview.getTotalInvested()));
+        assertEquals(BigDecimal.valueOf(1000), safe(overview.getTotalCostBasis()));
         assertEquals(BigDecimal.valueOf(300), safe(overview.getTotalUnrealizedGain()));
         assertEquals(BigDecimal.valueOf(200), safe(overview.getTotalRealizedGain()));
         assertEquals(BigDecimal.ZERO, safe(overview.getTotalDividends()));
@@ -123,7 +120,7 @@ class PortfolioAggregationServiceImplTest {
 
         assertEquals(BigDecimal.ZERO, safe(overview.getCashBalance()));
         assertEquals(BigDecimal.ZERO, safe(overview.getTotalPortfolioValue()));
-        assertEquals(BigDecimal.ZERO, safe(overview.getTotalInvested()));
+        assertEquals(BigDecimal.ZERO, safe(overview.getTotalCostBasis()));
         assertEquals(BigDecimal.ZERO, safe(overview.getTotalUnrealizedGain()));
         assertEquals(BigDecimal.ZERO, safe(overview.getTotalRealizedGain()));
         assertEquals(BigDecimal.ZERO, safe(overview.getTotalDividends()));

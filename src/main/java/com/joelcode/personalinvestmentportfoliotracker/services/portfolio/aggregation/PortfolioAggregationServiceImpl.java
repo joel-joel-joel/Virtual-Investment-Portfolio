@@ -93,7 +93,7 @@ public class PortfolioAggregationServiceImpl implements PortfolioAggregationServ
         PortfolioOverviewDTO dto = new PortfolioOverviewDTO();
         dto.setAccountId(accountId);
         dto.setTotalPortfolioValue(totalPortfolioValue);
-        dto.setTotalInvested(totalInvested);
+        dto.setTotalCostBasis(totalInvested);
         dto.setTotalUnrealizedGain(totalUnrealizedGain);
         dto.setTotalRealizedGain(totalRealizedGain);
         dto.setTotalDividends(totalDividends);

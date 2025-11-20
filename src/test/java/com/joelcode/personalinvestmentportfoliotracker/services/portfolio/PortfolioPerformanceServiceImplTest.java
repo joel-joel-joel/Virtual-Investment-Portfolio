@@ -15,13 +15,11 @@ import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingS
 import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.PortfolioPerformanceDTO;
 import com.joelcode.personalinvestmentportfoliotracker.services.portfolio.performance.PortfolioPerformanceServiceImpl;
 import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidationService;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -140,7 +138,7 @@ public class PortfolioPerformanceServiceImplTest {
         assertEquals(accountId, perf.getAccountId());
         // Cash: 1000 + Holdings: 10 * 60 = 600 = 1600 total
         assertEquals(BigDecimal.valueOf(1600), perf.getTotalPortfolioValue());
-        assertEquals(BigDecimal.valueOf(500), perf.getTotalInvested()); // 10 * 50
+        assertEquals(BigDecimal.valueOf(500), perf.getTotalCostBasis()); // 10 * 50
         assertEquals(BigDecimal.valueOf(10), perf.getTotalRealizedGain());
         assertEquals(BigDecimal.valueOf(100), perf.getTotalUnrealizedGain()); // (60-50)*10
         assertEquals(BigDecimal.valueOf(25), perf.getTotalDividends());
@@ -166,7 +164,7 @@ public class PortfolioPerformanceServiceImplTest {
         assertNotNull(perf);
         assertEquals(accountId, perf.getAccountId());
         assertEquals(account.getAccountBalance(), perf.getTotalPortfolioValue());
-        assertEquals(BigDecimal.ZERO, perf.getTotalInvested());
+        assertEquals(BigDecimal.ZERO, perf.getTotalCostBasis());
         assertEquals(BigDecimal.ZERO, perf.getTotalUnrealizedGain());
         assertEquals(BigDecimal.ZERO, perf.getTotalRealizedGain());
     }
@@ -178,7 +176,7 @@ public class PortfolioPerformanceServiceImplTest {
         assertNotNull(perf);
         // Cash: 1000 + Holdings: 10 * 60 = 600 = 1600 total
         assertEquals(BigDecimal.valueOf(1600), perf.getTotalPortfolioValue());
-        assertEquals(BigDecimal.valueOf(500), perf.getTotalInvested());
+        assertEquals(BigDecimal.valueOf(500), perf.getTotalCostBasis());
         assertEquals(BigDecimal.valueOf(10), perf.getTotalRealizedGain());
         assertEquals(BigDecimal.valueOf(100), perf.getTotalUnrealizedGain());
     }

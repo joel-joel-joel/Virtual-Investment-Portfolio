@@ -108,7 +108,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
             PortfolioOverviewDTO accountOverview = getPortfolioOverviewForAccount(account.getAccountId());
 
             totalPortfolioValue = totalPortfolioValue.add(accountOverview.getTotalPortfolioValue());
-            totalInvested = totalInvested.add(accountOverview.getTotalInvested());
+            totalInvested = totalInvested.add(accountOverview.getTotalCostBasis());
             totalUnrealizedGain = totalUnrealizedGain.add(accountOverview.getTotalUnrealizedGain());
             totalRealizedGain = totalRealizedGain.add(accountOverview.getTotalRealizedGain());
             totalDividends = totalDividends.add(accountOverview.getTotalDividends());

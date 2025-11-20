@@ -99,7 +99,7 @@ public class AccountSummaryServiceImplTest {
 
         assertNotNull(summary);
         assertEquals(accountId, summary.getAccountId());
-        assertEquals(BigDecimal.valueOf(500), summary.getTotalInvestedValue()); // 50 * 10
+        assertEquals(BigDecimal.valueOf(500), summary.getTotalCostBasis()); // 50 * 10
         assertEquals(BigDecimal.valueOf(600), summary.getTotalMarketValue()); // 60 * 10
         assertEquals(BigDecimal.valueOf(100), summary.getTotalUnrealizedGain()); // 600 - 500
         assertEquals(BigDecimal.valueOf(25), summary.getTotalDividends());

@@ -13,11 +13,9 @@ import java.util.UUID;
 public class PortfolioPerformanceController {
 
     @Autowired
-    private PortfolioPerformanceService portfolioPerformanceService;
+    PortfolioPerformanceService portfolioPerformanceService;
 
-    /**
-     * Get portfolio performance for a specific account
-     */
+    // Get portfolio performance for a specific account
     @GetMapping("/account/{accountId}")
     public ResponseEntity<PortfolioPerformanceDTO> getPerformanceForAccount(@PathVariable UUID accountId) {
         PortfolioPerformanceDTO performance = portfolioPerformanceService.getPerformanceForAccount(accountId);
@@ -28,9 +26,7 @@ public class PortfolioPerformanceController {
         }
     }
 
-    /**
-     * Get portfolio performance for a user (aggregates across all accounts)
-     */
+    // Get portfolio performance for a user (aggregates across all accounts)
     @GetMapping("/user/{userId}")
     public ResponseEntity<PortfolioPerformanceDTO> getPerformanceForUser(@PathVariable UUID userId) {
         PortfolioPerformanceDTO performance = portfolioPerformanceService.getPerformanceForUser(userId);

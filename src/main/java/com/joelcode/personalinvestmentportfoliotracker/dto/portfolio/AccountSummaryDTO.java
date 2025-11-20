@@ -12,8 +12,10 @@ public class AccountSummaryDTO {
 
     // Getters and setters
     // Define key fields
+    private UUID userId;
     private UUID accountId;
-    private BigDecimal totalInvestedValue;
+    private String accountName;
+    private BigDecimal totalCostBasis;
     private BigDecimal totalMarketValue;
     private BigDecimal totalUnrealizedGain;
     private BigDecimal totalDividends;
@@ -21,11 +23,14 @@ public class AccountSummaryDTO {
     private List<HoldingSummaryDTO> holdings;
 
     // Constructor
-    public AccountSummaryDTO(UUID accountId, BigDecimal totalInvestedValue, BigDecimal totalMarketValue,
+    public AccountSummaryDTO(UUID userId, UUID accountId, String accountName, BigDecimal totalCostBasis, BigDecimal totalMarketValue,
                              BigDecimal totalUnrealizedGain, BigDecimal totalDividends, BigDecimal totalCashBalance,
                              List<HoldingSummaryDTO> holdings) {
+
+        this.userId = userId;
         this.accountId = accountId;
-        this.totalInvestedValue = totalInvestedValue;
+        this.accountName = accountName;
+        this.totalCostBasis = totalCostBasis;
         this.totalMarketValue = totalMarketValue;
         this.totalUnrealizedGain = totalUnrealizedGain;
         this.totalDividends = totalDividends;
@@ -36,13 +41,21 @@ public class AccountSummaryDTO {
     public AccountSummaryDTO() {}
 
     // Getters and setters
+    public UUID getUserId() {return userId;}
+
+    public void setUserId(UUID userId) {this.userId = userId;}
+
     public UUID getAccountId() {return accountId;}
 
     public void setAccountId(UUID accountId) {this.accountId = accountId;}
 
-    public BigDecimal getTotalInvestedValue() {return totalInvestedValue;}
+    public String getAccountName() {return accountName;}
 
-    public void setTotalInvestedValue(BigDecimal totalInvestedValue) {this.totalInvestedValue = totalInvestedValue;}
+    public void setAccountName(String accountName) {this.accountName = accountName;}
+
+    public BigDecimal getTotalCostBasis() {return totalCostBasis;}
+
+    public void setTotalCostBasis(BigDecimal totalCostBasis) {this.totalCostBasis = totalCostBasis;}
 
     public BigDecimal getTotalMarketValue() {return totalMarketValue;}
 
