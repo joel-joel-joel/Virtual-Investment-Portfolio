@@ -58,6 +58,21 @@ public class DividendPaymentDTO {
         this.status = payment.getStatus();
     }
 
+    public DividendPaymentDTO(UUID accountId, BigDecimal payment) {
+        this.paymentId = null;
+        this.accountId = accountId;
+        this.accountName = null;
+        this.stockId = null;
+        this.stockCode = null;
+        this.dividendId = null;
+        this.amountPerShare = null;
+        this.shareQuantity = null;
+        this.totalAmount = payment;
+        this.paymentDate = null;
+        this.recordedAt = null;
+        this.status = null;
+    }
+
     // Getters
 
     public UUID getPaymentId() {return paymentId;}

@@ -18,7 +18,7 @@ public class Stock {
 
     // Constructor
 
-    public Stock(String stockCode, String companyName, Double stockValue, BigDecimal dividendPerShare) {
+    public Stock(String stockCode, String companyName, BigDecimal stockValue, BigDecimal dividendPerShare) {
         this.stockCode = stockCode;
         this.companyName = companyName;
         this.stockValue = stockValue;
@@ -40,7 +40,7 @@ public class Stock {
     private String companyName;
 
     @Column (nullable = false)
-    private Double stockValue;
+    private BigDecimal stockValue;
 
     @Column (nullable = false)
     private BigDecimal dividendPerShare;
@@ -88,13 +88,11 @@ public class Stock {
         this.companyName = companyName;
     }
 
-    public Double getStockValue() {
+    public BigDecimal getStockValue() {
         return stockValue;
     }
 
-    public void setStockValue(Double stockValue) {
-        this.stockValue = stockValue;
-    }
+    public void setStockValue(BigDecimal stockValue) {this.stockValue = stockValue;}
 
     public LocalDateTime getCreatedAt() {
         return createdAt;

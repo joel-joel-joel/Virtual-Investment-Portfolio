@@ -130,6 +130,8 @@ public class HoldingDTO {
 
     public BigDecimal setRealizedGain(BigDecimal realizedGain) {return this.realizedGain = realizedGain;}
 
+    public BigDecimal setUnrealizedGain(BigDecimal unrealizedGain) {return this.unrealizedGain = unrealizedGain;}
+
     public LocalDateTime setFirstPurchaseDate(LocalDateTime firstPurchaseDate) {return this.firstPurchaseDate = firstPurchaseDate;}
 
     public BigDecimal setCurrentPrice(BigDecimal currentPrice) {return this.currentPrice = currentPrice;}

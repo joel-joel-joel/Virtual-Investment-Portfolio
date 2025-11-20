@@ -44,7 +44,7 @@ public class StockServiceImplTest {
         testStock.setStockId(stockId);
         testStock.setStockCode("AAPL");
         testStock.setCompanyName("Apple Inc.");
-        testStock.setStockValue(150.0);
+        testStock.setStockValue(BigDecimal.valueOf(150.0));
     }
 
     // Test stock creation
@@ -54,7 +54,7 @@ public class StockServiceImplTest {
                 stockId,
                 "Apple Inc.",
                 "AAPL",
-                150.0
+                BigDecimal.valueOf(150.0)
         );
 
         when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
@@ -94,7 +94,7 @@ public class StockServiceImplTest {
                 "AAPL",
                 "Apple Inc.",
                 stockId,
-                160.0
+                BigDecimal.valueOf(160.0)
         );
 
         when(stockValidationService.validateStockExists(stockId)).thenReturn(testStock);

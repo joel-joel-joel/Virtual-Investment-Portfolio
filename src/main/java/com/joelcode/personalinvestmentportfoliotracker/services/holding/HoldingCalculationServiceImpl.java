@@ -69,7 +69,7 @@ public class HoldingCalculationServiceImpl implements HoldingCalculationService 
             return BigDecimal.ZERO;
         }
 
-        BigDecimal price = BigDecimal.valueOf(holding.getStock().getStockValue());
+        BigDecimal price = holding.getStock().getStockValue();
 
         // EDGE CASE: Null quantity
         if (holding.getQuantity() == null) {

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class StockUpdateRequest {
@@ -21,7 +22,7 @@ public class StockUpdateRequest {
     private String companyName;
 
     @Positive(message = "Stock value must be positive")
-    private Double stockValue;
+    private BigDecimal stockValue;
 
     // Jackson-compatible constructor
     @JsonCreator
@@ -29,7 +30,7 @@ public class StockUpdateRequest {
             @JsonProperty("stockCode") String stockCode,
             @JsonProperty ("companyName") String companyName,
             @JsonProperty ("stockId") UUID stockId,
-            @JsonProperty ("stockValue") Double stockValue) {
+            @JsonProperty ("stockValue") BigDecimal stockValue) {
         this.stockCode = stockCode;
         this.stockId = stockId;
         this.companyName = companyName;
@@ -49,7 +50,7 @@ public class StockUpdateRequest {
 
     public void setCompanyName(String companyName) {this.companyName = companyName;}
 
-    public Double getStockValue() {return stockValue;}
+    public BigDecimal getStockValue() {return stockValue;}
 
-    public void setStockValue(Double stockValue) {this.stockValue = stockValue;}
+    public void setStockValue(BigDecimal stockValue) {this.stockValue = stockValue;}
 }

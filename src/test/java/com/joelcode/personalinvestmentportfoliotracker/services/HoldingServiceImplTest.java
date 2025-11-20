@@ -61,7 +61,7 @@ public class HoldingServiceImplTest {
         testStock = new Stock();
         testStock.setStockId(stockId);
         testStock.setStockCode("AAPL");
-        testStock.setStockValue(150.0);
+        testStock.setStockValue(BigDecimal.valueOf(150.0));
 
         testHolding = new Holding();
         testHolding.setHoldingId(holdingId);

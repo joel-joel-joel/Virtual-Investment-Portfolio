@@ -2,6 +2,7 @@ package com.joelcode.personalinvestmentportfoliotracker.dto.stock;
 
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class StockDTO {
@@ -10,10 +11,10 @@ public class StockDTO {
     private final UUID stockId;
     private final String stockCode;
     private final String companyName;
-    private final Double stockValue;
+    private final BigDecimal stockValue;
 
     // Constructor
-    public StockDTO(UUID stockId, String stockCode, String companyName, Double stockValue) {
+    public StockDTO(UUID stockId, String stockCode, String companyName, BigDecimal stockValue) {
         this.stockId = stockId;
         this.stockCode = stockCode;
         this.companyName = companyName;
@@ -34,5 +35,5 @@ public class StockDTO {
 
     public String getCompanyName() {return companyName;}
 
-    public Double getStockValue() {return stockValue;}
+    public BigDecimal getStockValue() {return stockValue;}
 }

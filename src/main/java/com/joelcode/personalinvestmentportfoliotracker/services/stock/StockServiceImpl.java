@@ -107,7 +107,7 @@ public class StockServiceImpl implements StockService {
         // If exists, return close price, otherwise fallback to stock.stockValue
         return latestPrice
                 .map(PriceHistory::getClosePrice)
-                .orElse(BigDecimal.valueOf(stock.getStockValue()));
+                .orElse(stock.getStockValue());
     }
 
 

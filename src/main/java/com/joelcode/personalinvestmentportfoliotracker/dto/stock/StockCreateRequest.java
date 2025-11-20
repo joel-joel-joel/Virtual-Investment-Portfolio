@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class StockCreateRequest {
@@ -27,7 +28,7 @@ public class StockCreateRequest {
 
     @NotNull(message = "Stock value is required")
     @Positive(message = "Stock value must be positive")
-    private final Double stockValue;
+    private final BigDecimal stockValue;
 
     // Jackson-compatible constructor
     @JsonCreator
@@ -35,7 +36,7 @@ public class StockCreateRequest {
             @JsonProperty ("stockiD") UUID stockId,
             @JsonProperty ("companyName") String companyName,
             @JsonProperty ("stockCode") String stockCode,
-            @JsonProperty ("stockValue") Double stockValue){
+            @JsonProperty ("stockValue") BigDecimal stockValue){
         this.stockId = stockId;
         this.companyName = companyName;
         this.stockCode = stockCode;
@@ -47,7 +48,7 @@ public class StockCreateRequest {
 
     public String getCompanyName() {return companyName;}
 
-    public Double getStockValue() {return stockValue;}
+    public BigDecimal getStockValue() {return stockValue;}
 
     public UUID getStockId() {return stockId;}
 }

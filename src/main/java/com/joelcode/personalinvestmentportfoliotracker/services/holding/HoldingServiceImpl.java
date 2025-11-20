@@ -88,20 +88,20 @@ public class HoldingServiceImpl implements HoldingService {
         );
 
         // Convert entity -> DTO
-        return HoldingMapper.toDTO(holding, BigDecimal.valueOf(stock.getStockValue()));
+        return HoldingMapper.toDTO(holding, stock.getStockValue());
     }
 
     @Override
     public HoldingDTO getHoldingById(UUID holdingId) {
         Holding holding = holdingValidationService.validateHoldingExists(holdingId);
-        return HoldingMapper.toDTO(holding, BigDecimal.valueOf(holding.getStock().getStockValue()));
+        return HoldingMapper.toDTO(holding, holding.getStock().getStockValue());
     }
 
     @Override
     public List<HoldingDTO> getAllHoldings() {
         return holdingRepository.findAll()
                 .stream()
-                .map(holding -> HoldingMapper.toDTO(holding, BigDecimal.valueOf(holding.getStock().getStockValue())))
+                .map(holding -> HoldingMapper.toDTO(holding, holding.getStock().getStockValue()))
                 .collect(Collectors.toList());
     }
 
@@ -110,7 +110,7 @@ public class HoldingServiceImpl implements HoldingService {
         Account account = holdingValidationService.validateAccountExists(accountId);
         return holdingRepository.findByAccount(account)
                 .stream()
-                .map(holding -> HoldingMapper.toDTO(holding, BigDecimal.valueOf(holding.getStock().getStockValue())))
+                .map(holding -> HoldingMapper.toDTO(holding, holding.getStock().getStockValue()))
                 .collect(Collectors.toList());
     }
 
@@ -162,7 +162,7 @@ public class HoldingServiceImpl implements HoldingService {
 
 
         // Convert entity -> DTO
-        return HoldingMapper.toDTO(holding, BigDecimal.valueOf(holding.getStock().getStockValue()));
+        return HoldingMapper.toDTO(holding, holding.getStock().getStockValue());
     }
 
     // Transactional type methods

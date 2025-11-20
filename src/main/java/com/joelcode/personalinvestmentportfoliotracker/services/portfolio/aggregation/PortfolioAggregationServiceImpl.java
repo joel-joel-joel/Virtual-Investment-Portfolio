@@ -19,6 +19,7 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.PortfolioOv
 import com.joelcode.personalinvestmentportfoliotracker.services.portfolio.allocation.AllocationBreakdownService;
 import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryService;
 import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,31 +30,30 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class PortfolioAggregationServiceImpl implements PortfolioAggregationService{
+public class PortfolioAggregationServiceImpl implements PortfolioAggregationService {
 
-    // Define key fields
     private final AccountService accountService;
     private final HoldingService holdingService;
     private final AccountRepository accountRepository;
     private final HoldingCalculationService holdingCalculationService;
     private final HoldingRepository holdingRepository;
-    private final DividendCalculationService dividendCalculationService;
+    @Autowired
+    private DividendCalculationService dividendCalculationService;
     private final AllocationBreakdownService allocationBreakdownService;
     private final DividendPaymentService dividendPaymentService;
     private final UserValidationService userValidationService;
     private final PriceHistoryService priceHistoryService;
     private final AccountValidationService accountValidationService;
 
-    // Constructor
-    public PortfolioAggregationServiceImpl (AccountService accountService, HoldingService holdingService,
-                                            HoldingCalculationService holdingCalculationService,
-                                            DividendCalculationService dividendCalculationService, AccountRepository accountRepository,
-                                            HoldingRepository holdingRepository,
-                                            AllocationBreakdownService allocationBreakdownService,
-                                            DividendPaymentService dividendPaymentService,
-                                            UserValidationService userValidationService,
-                                            PriceHistoryService priceHistoryService,
-                                            AccountValidationService accountValidationService) {
+    public PortfolioAggregationServiceImpl(AccountService accountService, HoldingService holdingService,
+                                           HoldingCalculationService holdingCalculationService,
+                                           DividendCalculationService dividendCalculationService, AccountRepository accountRepository,
+                                           HoldingRepository holdingRepository,
+                                           AllocationBreakdownService allocationBreakdownService,
+                                           DividendPaymentService dividendPaymentService,
+                                           UserValidationService userValidationService,
+                                           PriceHistoryService priceHistoryService,
+                                           AccountValidationService accountValidationService) {
         this.accountService = accountService;
         this.holdingService = holdingService;
         this.holdingCalculationService = holdingCalculationService;
@@ -67,44 +67,30 @@ public class PortfolioAggregationServiceImpl implements PortfolioAggregationServ
         this.accountValidationService = accountValidationService;
     }
 
-    // Interface function
     @Override
     public PortfolioOverviewDTO getPortfolioOverview(UUID accountId) {
-
-        // Fetch account
         AccountDTO account = accountService.getAccountById(accountId);
-
-        // Fetch holdings
         List<HoldingDTO> holdings = holdingService.getHoldingsByAccount(accountId);
 
-        // Initialize and calculate invested returns and losses
         BigDecimal totalInvested = BigDecimal.ZERO;
         BigDecimal totalUnrealizedGain = BigDecimal.ZERO;
         BigDecimal totalRealizedGain = BigDecimal.ZERO;
 
         for (HoldingDTO holding : holdings) {
-            totalInvested = totalInvested.add(holding.getTotalCostBasis());
-            totalUnrealizedGain = totalUnrealizedGain.add(holding.getUnrealizedGain());
-            totalRealizedGain = totalRealizedGain.add(holding.getRealizedGain());
+            totalInvested = totalInvested.add(safe(holding.getTotalCostBasis()));
+            totalUnrealizedGain = totalUnrealizedGain.add(safe(holding.getUnrealizedGain()));
+            totalRealizedGain = totalRealizedGain.add(safe(holding.getRealizedGain()));
         }
 
-        // Fetch dividends
-        BigDecimal totalDividends = dividendCalculationService.calculateTotalDividends(accountId);
+        BigDecimal totalDividends = safe(dividendCalculationService.calculateTotalDividends(accountId));
+        BigDecimal cashBalance = safe(account.getCashBalance());
 
-        // Fetch cash balance
-        BigDecimal cashBalance = account.getCashBalance();
-        if (cashBalance == null) {
-            cashBalance = BigDecimal.ZERO;
-        }
-
-        // Calculate full portfolio balance
         BigDecimal totalPortfolioValue = cashBalance.add(
                 holdings.stream()
-                        .map(HoldingDTO::getCurrentValue)
+                        .map(h -> safe(h.getCurrentValue()))
                         .reduce(BigDecimal.ZERO, BigDecimal::add)
         );
 
-        // Construct DTO
         PortfolioOverviewDTO dto = new PortfolioOverviewDTO();
         dto.setAccountId(accountId);
         dto.setTotalPortfolioValue(totalPortfolioValue);
@@ -118,25 +104,21 @@ public class PortfolioAggregationServiceImpl implements PortfolioAggregationServ
         return dto;
     }
 
-
     @Override
     public List<AllocationBreakdownDTO> getAllocationBreakdown(UUID accountId) {
-
         List<Holding> holdings = holdingRepository.getHoldingsEntitiesByAccount(accountId);
 
         BigDecimal totalValue = holdings.stream()
-                .map(holdingCalculationService::calculateCurrentValue)
+                .map(h -> safe(holdingCalculationService.calculateCurrentValue(h)))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return holdings.stream()
                 .map(h -> {
-                    BigDecimal currentValue = holdingCalculationService.calculateCurrentValue(h);
-                    BigDecimal percentage =
-                            totalValue.compareTo(BigDecimal.ZERO) == 0
-                                    ? BigDecimal.ZERO
-                                    : currentValue
-                                    .multiply(BigDecimal.valueOf(100))
-                                    .divide(totalValue, 4, RoundingMode.HALF_UP);
+                    BigDecimal currentValue = safe(holdingCalculationService.calculateCurrentValue(h));
+                    BigDecimal percentage = totalValue.compareTo(BigDecimal.ZERO) == 0
+                            ? BigDecimal.ZERO
+                            : currentValue.multiply(BigDecimal.valueOf(100))
+                            .divide(totalValue, 4, RoundingMode.HALF_UP);
 
                     AllocationBreakdownDTO dto = new AllocationBreakdownDTO();
                     dto.setStockCode(h.getStock().getStockCode());
@@ -147,26 +129,18 @@ public class PortfolioAggregationServiceImpl implements PortfolioAggregationServ
                 .toList();
     }
 
-    // Aggregate portfolio for an account
     public PortfolioAggregationDTO aggregateForAccount(UUID accountId) {
-        // Validate account exists
         Account account = accountValidationService.validateAccountExistsById(accountId);
 
-        // Calculate total value of holdings
         BigDecimal totalValue = account.getHoldings().stream()
-                .map(h -> priceHistoryService.getCurrentPrice(h.getStock().getStockId())
-                        .multiply(h.getQuantity()))
+                .map(h -> safe(priceHistoryService.getCurrentPrice(h.getStock().getStockId())).multiply(safe(h.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Calculate total dividends received
         BigDecimal totalDividends = dividendPaymentService.getDividendPaymentsForAccount(accountId).stream()
-                .map(dto -> dto.getAmountPerShare())
+                .map(dto -> safe(dto.getAmountPerShare()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Number of holdings
         int numberOfHoldings = account.getHoldings().size();
-
-        // Allocation breakdown
         List<AllocationBreakdownDTO> allocations = allocationBreakdownService.getAllocationForAccount(accountId);
 
         return new PortfolioAggregationDTO(
@@ -179,10 +153,7 @@ public class PortfolioAggregationServiceImpl implements PortfolioAggregationServ
         );
     }
 
-     // Aggregate portfolio data across all accounts for a user.
-
     public PortfolioAggregationDTO aggregateForUser(UUID userId) {
-        // Validate user exists
         User user = userValidationService.validateUserExists(userId);
 
         BigDecimal totalValue = BigDecimal.ZERO;
@@ -190,17 +161,18 @@ public class PortfolioAggregationServiceImpl implements PortfolioAggregationServ
         int totalHoldings = 0;
         List<AllocationBreakdownDTO> allAllocations = new ArrayList<>();
 
-        // Loop through all accounts and aggregate
         for (Account account : user.getAccounts()) {
             PortfolioAggregationDTO accountAgg = aggregateForAccount(account.getAccountId());
-            totalValue = totalValue.add(accountAgg.getTotalValue());
-            totalDividends = totalDividends.add(accountAgg.getTotalDividends());
+            totalValue = totalValue.add(safe(accountAgg.getTotalValue()));
+            totalDividends = totalDividends.add(safe(accountAgg.getTotalDividends()));
             totalHoldings += accountAgg.getNumberOfHoldings();
-            allAllocations.addAll((Collection<? extends AllocationBreakdownDTO>) accountAgg.getAllocations());
+            if (accountAgg.getAllocations() != null) {
+                allAllocations.addAll(accountAgg.getAllocations());
+            }
         }
 
         return new PortfolioAggregationDTO(
-                null, // user-level aggregation does not have a single accountId
+                null,
                 userId,
                 totalValue,
                 totalDividends,
@@ -209,4 +181,8 @@ public class PortfolioAggregationServiceImpl implements PortfolioAggregationServ
         );
     }
 
+    // Helper to safely return BigDecimal or ZERO if null
+    private BigDecimal safe(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
 }

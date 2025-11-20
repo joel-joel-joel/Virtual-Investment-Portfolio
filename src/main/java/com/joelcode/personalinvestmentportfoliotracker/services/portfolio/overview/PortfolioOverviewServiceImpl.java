@@ -20,6 +20,7 @@ import java.util.UUID;
 @Service
 public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
 
+
     @Autowired
     private AccountValidationService accountValidationService;
 
@@ -47,36 +48,34 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
     }
 
     @Override
-    public PortfolioOverviewDTO getPortfolioOverviewForAccount(java.util.UUID accountId) {
+    public PortfolioOverviewDTO getPortfolioOverviewForAccount(UUID accountId) {
         // Validate account exists
         Account account = accountValidationService.validateAccountExistsById(accountId);
 
         // Get holdings as DTOs
         List<HoldingDTO> holdings = holdingService.getHoldingsForAccount(accountId);
 
-        // Calculate total portfolio value
-        BigDecimal totalPortfolioValue = holdings.stream()
+        BigDecimal holdingsValue = holdings.stream()
                 .map(h -> h.getCurrentPrice().multiply(h.getQuantity()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Calculate total invested
         BigDecimal totalInvested = holdings.stream()
                 .map(h -> h.getAverageCostBasis().multiply(h.getQuantity()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Calculate unrealized gain
-        BigDecimal totalUnrealizedGain = totalPortfolioValue.subtract(totalInvested);
+        BigDecimal totalRealizedGain = BigDecimal.ZERO;
 
-        // Calculate realized gain (you may need a transaction service for this)
-        BigDecimal totalRealizedGain = BigDecimal.ZERO; // placeholder, implement logic if you have realized transactions
+        BigDecimal totalUnrealizedGain = holdingsValue.subtract(totalInvested);
+
+        BigDecimal cashBalance = account.getAccountBalance() != null ? account.getAccountBalance() : BigDecimal.ZERO;
+
+        BigDecimal totalPortfolioValue = holdingsValue.add(cashBalance);
 
         // Calculate total dividends
         BigDecimal totalDividends = dividendPaymentService.getDividendPaymentsForAccount(accountId).stream()
-                .map(dto -> dto.getAmountPerShare())
+                .map(dto -> dto.getAmountPerShare() != null ? dto.getAmountPerShare() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Cash balance (assume account has a cashBalance field)
-        BigDecimal cashBalance = account.getAccountBalance() != null ? account.getAccountBalance() : BigDecimal.ZERO;
 
         return new PortfolioOverviewDTO(
                 account.getAccountId(),
@@ -122,7 +121,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
         }
 
         return new PortfolioOverviewDTO(
-                null,                  // No single accountId for user-level overview
+                null,
                 totalPortfolioValue,
                 totalInvested,
                 totalUnrealizedGain,

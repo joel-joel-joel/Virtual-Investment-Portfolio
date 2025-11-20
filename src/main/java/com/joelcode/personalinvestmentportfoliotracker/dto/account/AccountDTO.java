@@ -32,7 +32,7 @@ public class AccountDTO {
 
     public AccountDTO() {}
 
-    // Getters
+    // Getters and setters
     public String getAccountName() {return accountName;}
 
     public UUID getAccountId() {return accountId;}
@@ -40,4 +40,12 @@ public class AccountDTO {
     public UserDTO getUser() {return user;}
 
     public BigDecimal getCashBalance() {return cashBalance;}
+
+    public void setAccountName(String accountName) {this.accountName = accountName;}
+
+    public void setAccountId(UUID accountId) {this.accountId = accountId;}
+
+    public void setUser(UserDTO user) {this.user = user;}
+
+    public void setCashBalance(BigDecimal cashBalance) {this.cashBalance = cashBalance;}
 }

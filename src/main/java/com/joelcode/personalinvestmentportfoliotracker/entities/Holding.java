@@ -17,13 +17,14 @@ public class Holding {
     // Constructor
 
     public Holding(UUID holdingId, Account account, Stock stock, BigDecimal quantity, BigDecimal averageCostBasis,
-                   BigDecimal totalCostBasis, BigDecimal realizedGain, LocalDateTime firstPurchaseDate) {
+                   BigDecimal totalCostBasis, BigDecimal unrealizedGain, BigDecimal realizedGain, LocalDateTime firstPurchaseDate) {
         this.holdingId = holdingId;
         this.account = account;
         this.stock = stock;
         this.quantity = quantity;
         this.averageCostBasis = averageCostBasis; // Average cost you paid for all the assets you have
         this.totalCostBasis = totalCostBasis; // Total invested into the stock
+        this.unrealizedGain = unrealizedGain;
         this.realizedGain = realizedGain; // Profit upon selling shares
         this.firstPurchaseDate = firstPurchaseDate;
     }
@@ -44,6 +45,9 @@ public class Holding {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal totalCostBasis;
+
+    @Column(precision = 19, scale = 2)
+    private BigDecimal unrealizedGain = BigDecimal.ZERO;
 
     @Column(precision = 19, scale = 2)
     private BigDecimal realizedGain = BigDecimal.ZERO;
@@ -125,6 +129,10 @@ public class Holding {
     public void setRealizedGain(BigDecimal realizedGain) {
         this.realizedGain = realizedGain;
     }
+
+    public BigDecimal getUnrealizedGain() {return unrealizedGain;}
+
+    public void setUnrealizedGain(BigDecimal unrealizedGain) {this.unrealizedGain = unrealizedGain;}
 
     public LocalDateTime getFirstPurchaseDate() {
         return firstPurchaseDate;
