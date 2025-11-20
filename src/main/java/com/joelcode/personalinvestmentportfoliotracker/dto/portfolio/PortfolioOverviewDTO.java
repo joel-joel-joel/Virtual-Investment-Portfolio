@@ -9,6 +9,7 @@ import java.util.UUID;
 public class PortfolioOverviewDTO {
 
     // Portfolio overview response DTO (output)
+    private UUID userId;
     private UUID accountId;
     private BigDecimal totalPortfolioValue;
     private BigDecimal totalCostBasis;
@@ -19,9 +20,10 @@ public class PortfolioOverviewDTO {
     private List<HoldingDTO> holdings;
 
     // Constructor
-    public PortfolioOverviewDTO (UUID accountId, BigDecimal totalPortfolioValue, BigDecimal totalCostBasis,
+    public PortfolioOverviewDTO (UUID userId, UUID accountId, BigDecimal totalPortfolioValue, BigDecimal totalCostBasis,
                                  BigDecimal totalUnrealizedGain, BigDecimal totalRealizedGain,
                                  BigDecimal totalDividends, BigDecimal cashBalance, List<HoldingDTO> holdings) {
+        this.userId = userId;
         this.accountId = accountId;
         this.totalPortfolioValue = totalPortfolioValue;
         this.totalCostBasis = totalCostBasis;
@@ -35,6 +37,10 @@ public class PortfolioOverviewDTO {
     public PortfolioOverviewDTO() {}
 
     // Getters and setters
+    public UUID getUserId() {return userId;}
+
+    public void setUserId(UUID userId) {this.userId = userId;}
+
     public UUID getAccountId() {return accountId;}
 
     public void setAccountId(UUID accountId) {this.accountId = accountId;}

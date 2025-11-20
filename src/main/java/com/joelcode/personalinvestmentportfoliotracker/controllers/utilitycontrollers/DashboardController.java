@@ -17,10 +17,10 @@ import java.util.UUID;
 public class DashboardController {
 
     @Autowired
-    private PortfolioOverviewService portfolioOverviewService;
+    PortfolioOverviewService portfolioOverviewService;
 
     @Autowired
-    private PortfolioPerformanceService portfolioPerformanceService;
+    PortfolioPerformanceService portfolioPerformanceService;
 
     /**
      * Get dashboard data for a specific account

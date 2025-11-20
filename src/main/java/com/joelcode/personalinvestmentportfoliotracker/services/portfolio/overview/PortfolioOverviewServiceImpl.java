@@ -78,6 +78,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
 
 
         return new PortfolioOverviewDTO(
+                account.getUserid(),
                 account.getAccountId(),
                 totalPortfolioValue,
                 totalInvested,
@@ -121,6 +122,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
         }
 
         return new PortfolioOverviewDTO(
+                userId,
                 null,
                 totalPortfolioValue,
                 totalInvested,

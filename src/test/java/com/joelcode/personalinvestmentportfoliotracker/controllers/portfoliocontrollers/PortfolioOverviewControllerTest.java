@@ -38,7 +38,7 @@ class PortfolioOverviewControllerTest {
     void testGetPortfolioOverview_Success() {
         // Setup sample portfolio overview data
         UUID accountId = UUID.randomUUID();
-        PortfolioOverviewDTO overview = new PortfolioOverviewDTO(accountId, BigDecimal.valueOf(50000),
+        PortfolioOverviewDTO overview = new PortfolioOverviewDTO(UUID.randomUUID(), accountId, BigDecimal.valueOf(50000),
                 BigDecimal.valueOf(55000), BigDecimal.valueOf(5000), BigDecimal.valueOf(4000), BigDecimal.valueOf(10),
                 BigDecimal.valueOf(10), new ArrayList<>());
         when(portfolioOverviewService.getPortfolioOverviewForAccount(accountId)).thenReturn(overview);
@@ -77,7 +77,7 @@ class PortfolioOverviewControllerTest {
     void testGetPortfolioOverview_EmptyPortfolio() {
         // Setup portfolio overview with zero totals
         UUID accountId = UUID.randomUUID();
-        PortfolioOverviewDTO overview = new PortfolioOverviewDTO(accountId, BigDecimal.ZERO,
+        PortfolioOverviewDTO overview = new PortfolioOverviewDTO(UUID.randomUUID(), accountId, BigDecimal.ZERO,
                 BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
                 BigDecimal.ZERO, null);
         when(portfolioOverviewService.getPortfolioOverviewForAccount(accountId)).thenReturn(overview);
@@ -110,7 +110,7 @@ class PortfolioOverviewControllerTest {
             holdings.add(holding);
         }
 
-        PortfolioOverviewDTO overview = new PortfolioOverviewDTO(accountId, BigDecimal.valueOf(50000),
+        PortfolioOverviewDTO overview = new PortfolioOverviewDTO(UUID.randomUUID(), accountId, BigDecimal.valueOf(50000),
                 BigDecimal.valueOf(1000000), BigDecimal.valueOf(5000), BigDecimal.valueOf(4000), BigDecimal.valueOf(10),
                 BigDecimal.valueOf(10), holdings);
         when(portfolioOverviewService.getPortfolioOverviewForAccount(accountId)).thenReturn(overview);
@@ -130,7 +130,7 @@ class PortfolioOverviewControllerTest {
     void testGetPortfolioOverview_NegativeReturn() {
         // Setup portfolio overview with negative gains
         UUID accountId = UUID.randomUUID();
-        PortfolioOverviewDTO overview = new PortfolioOverviewDTO(accountId, BigDecimal.valueOf(50000),
+        PortfolioOverviewDTO overview = new PortfolioOverviewDTO(UUID.randomUUID(), accountId, BigDecimal.valueOf(50000),
                 BigDecimal.valueOf(55000), BigDecimal.valueOf(-5000), BigDecimal.valueOf(-10), BigDecimal.valueOf(10),
                 BigDecimal.valueOf(10), new ArrayList<>());
         when(portfolioOverviewService.getPortfolioOverviewForAccount(accountId)).thenReturn(overview);

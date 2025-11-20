@@ -13,7 +13,7 @@ import java.util.UUID;
 public class SearchController {
 
     @Autowired
-    private SearchService searchService;
+    SearchService searchService;
 
     /**
      * Search across stocks, accounts, and holdings
