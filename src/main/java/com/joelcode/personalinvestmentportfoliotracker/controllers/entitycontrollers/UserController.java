@@ -3,7 +3,6 @@ package com.joelcode.personalinvestmentportfoliotracker.controllers.entitycontro
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserUpdateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.services.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,19 +13,23 @@ import java.util.UUID;
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    // Constructor injection (preferred)
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     // Get all users (admin only ideally)
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers(){
-        List<UserDTO> user = userService.getAllUsers();
-        return ResponseEntity.ok(user);
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
     // Get a user
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable UUID id){
+    public ResponseEntity<UserDTO> getUserById(@PathVariable UUID id) {
         UserDTO user = userService.getUserById(id);
         if (user != null) {
             return ResponseEntity.ok(user);
@@ -58,10 +61,8 @@ public class UserController {
     }
 
     // Get all accounts from specific user
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/accounts")
     public ResponseEntity<?> getUserAccounts(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getAllAccountsForUser(id));
     }
-
-
 }

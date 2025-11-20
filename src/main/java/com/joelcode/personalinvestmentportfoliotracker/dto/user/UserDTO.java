@@ -26,7 +26,7 @@ public class UserDTO {
 
     public UserDTO() {}
 
-    // Getters
+    // Getters and setters
     public UUID getUserId() {
         return userId;
     }
@@ -36,5 +36,12 @@ public class UserDTO {
     }
 
     public String getEmail() {return email;}
+
+    public void setUserId(UUID userId) {this.userId = userId;}
+
+    public void setUsername(String username) {this.username = username;}
+
+    public void setEmail(String email) {this.email = email;}
+
 
 }
