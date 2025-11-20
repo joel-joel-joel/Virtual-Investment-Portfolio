@@ -8,10 +8,10 @@ import java.util.UUID;
 public class StockDTO {
 
     // Stock response DTO (output)
-    private final UUID stockId;
-    private final String stockCode;
-    private final String companyName;
-    private final BigDecimal stockValue;
+    private UUID stockId;
+    private String stockCode;
+    private String companyName;
+    private BigDecimal stockValue;
 
     // Constructor
     public StockDTO(UUID stockId, String stockCode, String companyName, BigDecimal stockValue) {
@@ -27,6 +27,8 @@ public class StockDTO {
         this.companyName = stock.getCompanyName();
         this.stockValue = stock.getStockValue();
     }
+
+    public StockDTO() {}
 
     // Getters
     public UUID getStockId() {return stockId;}
