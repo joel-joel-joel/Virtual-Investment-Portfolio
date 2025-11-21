@@ -17,7 +17,7 @@ import java.util.UUID;
 public class WebSocketController {
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    public SimpMessagingTemplate messagingTemplate;
 
      // Handle portfolio subscription requests from client. When client sends message to /app/portfolio/subscribe,
      //Server broadcasts response to /topic/portfolio/updates
@@ -161,13 +161,13 @@ public class WebSocketController {
     }
 
     public static class HoldingUpdateMessage {
-        private UUID accountId;
-        private UUID stockId;
-        private BigDecimal quantity;
-        private BigDecimal totalCostBasis;
-        private BigDecimal averageCostBasis;
-        private BigDecimal realizedGain;
-        private LocalDateTime timestamp;
+        public UUID accountId;
+        public UUID stockId;
+        public BigDecimal quantity;
+        public BigDecimal totalCostBasis;
+        public BigDecimal averageCostBasis;
+        public BigDecimal realizedGain;
+        public LocalDateTime timestamp;
 
         public HoldingUpdateMessage(UUID accountId, UUID stockId, BigDecimal quantity,
                                     BigDecimal totalCostBasis, BigDecimal averageCostBasis,
