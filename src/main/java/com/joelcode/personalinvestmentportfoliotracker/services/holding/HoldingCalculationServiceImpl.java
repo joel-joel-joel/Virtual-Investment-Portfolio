@@ -15,18 +15,23 @@ import java.util.UUID;
 @Profile("!test")
 public class HoldingCalculationServiceImpl implements HoldingCalculationService {
 
+    // Define key fields
     private final HoldingRepository holdingRepository;
     private final HoldingValidationService holdingValidationService;
     private final StockService stockService;
 
+    // Constructor
     public HoldingCalculationServiceImpl(HoldingRepository holdingRepository,
-                                              HoldingValidationService holdingValidationService,
-                                              StockService stockService) {
+                                         HoldingValidationService holdingValidationService,
+                                         StockService stockService) {
         this.holdingRepository = holdingRepository;
         this.holdingValidationService = holdingValidationService;
         this.stockService = stockService;
     }
 
+    // Calculation functions
+
+    // Calculate total portfolio value
     @Override
     public BigDecimal calculateTotalPortfolioValue(UUID accountId) {
         var account = holdingValidationService.validateAccountExists(accountId);
@@ -64,6 +69,7 @@ public class HoldingCalculationServiceImpl implements HoldingCalculationService 
         return totalValue.setScale(2, RoundingMode.HALF_UP);
     }
 
+    // Calculate current value
     @Override
     public BigDecimal calculateCurrentValue(Holding holding) {
         // EDGE CASE: Null checks
@@ -89,6 +95,7 @@ public class HoldingCalculationServiceImpl implements HoldingCalculationService 
         return currentPrice.multiply(holding.getQuantity()).setScale(2, RoundingMode.HALF_UP);
     }
 
+    // Calculate total cost basis
     @Override
     public BigDecimal calculateTotalCostBasis(UUID accountId) {
         var account = holdingValidationService.validateAccountExists(accountId);
@@ -98,6 +105,7 @@ public class HoldingCalculationServiceImpl implements HoldingCalculationService 
         return totalCostBasis != null ? totalCostBasis : BigDecimal.ZERO;
     }
 
+    // Calculate total unrealized gain
     @Override
     public BigDecimal calculateTotalUnrealizedGain(UUID accountId) {
         var account = holdingValidationService.validateAccountExists(accountId);
@@ -138,6 +146,7 @@ public class HoldingCalculationServiceImpl implements HoldingCalculationService 
         return totalUnrealizedGain.setScale(2, RoundingMode.HALF_UP);
     }
 
+    // Calculate total realized gain
     @Override
     public BigDecimal calculateTotalRealizedGain(UUID accountId) {
         var account = holdingValidationService.validateAccountExists(accountId);

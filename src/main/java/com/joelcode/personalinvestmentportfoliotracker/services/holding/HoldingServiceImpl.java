@@ -50,6 +50,8 @@ public class HoldingServiceImpl implements HoldingService {
         this.messagingTemplate = messagingTemplate;
     }
 
+    // Interface function
+
     // Create holding entity from request dto
     @Override
     public HoldingDTO createHolding(HoldingCreateRequest request) {
@@ -92,12 +94,14 @@ public class HoldingServiceImpl implements HoldingService {
         return HoldingMapper.toDTO(holding, stock.getStockValue());
     }
 
+    // Get holding by ID
     @Override
     public HoldingDTO getHoldingById(UUID holdingId) {
         Holding holding = holdingValidationService.validateHoldingExists(holdingId);
         return HoldingMapper.toDTO(holding, holding.getStock().getStockValue());
     }
 
+    // Get all holdings
     @Override
     public List<HoldingDTO> getAllHoldings() {
         return holdingRepository.findAll()
@@ -106,6 +110,7 @@ public class HoldingServiceImpl implements HoldingService {
                 .collect(Collectors.toList());
     }
 
+    // Get holdings by account
     @Override
     public List<HoldingDTO> getHoldingsByAccount(UUID accountId) {
         Account account = holdingValidationService.validateAccountExists(accountId);
@@ -115,6 +120,7 @@ public class HoldingServiceImpl implements HoldingService {
                 .collect(Collectors.toList());
     }
 
+    // Update holding
     @Override
     public HoldingDTO updateHolding(UUID holdingId, HoldingUpdateRequest request) {
 
@@ -168,6 +174,7 @@ public class HoldingServiceImpl implements HoldingService {
 
     // Transactional type methods
 
+    // Update holding after sale
     @Override
     public void updateHoldingAfterSale(Holding holding, BigDecimal quantitySold, BigDecimal salePrice) {
         BigDecimal avgCost = holding.getAverageCostBasis();
@@ -198,6 +205,7 @@ public class HoldingServiceImpl implements HoldingService {
 
     }
 
+    // Update or create holding from transaction
     @Override
     public void updateOrCreateHoldingFromTransaction(TransactionCreateRequest request) {
 
@@ -272,12 +280,14 @@ public class HoldingServiceImpl implements HoldingService {
 
     }
 
+    // Delete holding
     @Override
     public void deleteHolding(UUID id) {
         Holding holding = holdingValidationService.validateHoldingExists(id);
         holdingRepository.delete(holding);
     }
 
+    // Get holdings for account
     @Override
     public List<HoldingDTO> getHoldingsForAccount(UUID accountId) {
         // Validate account exists

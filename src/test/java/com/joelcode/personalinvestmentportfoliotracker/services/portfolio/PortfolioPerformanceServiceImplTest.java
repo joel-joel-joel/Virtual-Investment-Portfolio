@@ -9,7 +9,7 @@ import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepos
 import com.joelcode.personalinvestmentportfoliotracker.repositories.PortfolioSnapshotRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountValidationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountService;
-import com.joelcode.personalinvestmentportfoliotracker.services.dividend.DividendCalculationService;
+import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
 import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.PortfolioPerformanceDTO;
@@ -37,7 +37,7 @@ public class PortfolioPerformanceServiceImplTest {
     private HoldingService holdingService;
 
     @Mock
-    private DividendCalculationService dividendCalculationService;
+    private DividendPaymentCalculationService dividendPaymentCalculationService;
 
     @Mock
     private PortfolioSnapshotRepository snapshotRepository;
@@ -123,7 +123,7 @@ public class PortfolioPerformanceServiceImplTest {
         when(accountValidationService.validateAccountExistsById(accountId)).thenReturn(account);
         when(holdingRepository.findByAccount_AccountId(accountId)).thenReturn(List.of(holding));
         when(holdingService.getHoldingsForAccount(accountId)).thenReturn(List.of(holdingDTO));
-        when(dividendCalculationService.calculateTotalDividends(accountId)).thenReturn(BigDecimal.valueOf(25));
+        when(dividendPaymentCalculationService.calculateTotalDividends(accountId)).thenReturn(BigDecimal.valueOf(25));
         when(dividendPaymentService.getDividendPaymentsForAccount(accountId)).thenReturn(List.of(
                 new DividendPaymentDTO(accountId, BigDecimal.valueOf(25))
         ));

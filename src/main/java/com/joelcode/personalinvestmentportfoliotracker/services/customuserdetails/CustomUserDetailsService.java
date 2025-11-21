@@ -7,18 +7,22 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
+// This class queries repository to retrieve the information needed for a user entity
 @Service
 @Profile("!test")
 public class CustomUserDetailsService implements UserDetailsService {
 
-    // This class queries repository to retrieve the information needed for a user entity
-
+    // Define key field
     private final UserRepository userRepository;
 
+
+    // Constructor
     public CustomUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
+
+    // Load user by username
     @Override
     public CustomUserDetails loadUserByUsername(String username) {
         // Fetch user using repository

@@ -26,6 +26,7 @@ public class PortfolioSnapshotCalculationServiceImpl implements PortfolioSnapsho
     private final PortfolioSnapshotValidationService snapshotValidationService;
     private final HoldingCalculationService holdingCalculationService;
 
+
     // Constructor
     public PortfolioSnapshotCalculationServiceImpl(PortfolioSnapshotService snapshotService,
                                                    PortfolioSnapshotRepository snapshotRepository,
@@ -36,6 +37,8 @@ public class PortfolioSnapshotCalculationServiceImpl implements PortfolioSnapsho
         this.snapshotValidationService = snapshotValidationService;
         this.holdingCalculationService = holdingCalculationService;
     }
+
+    // Calculation functions
 
     // Generate a snapshot for today based on current holdings
     @Override

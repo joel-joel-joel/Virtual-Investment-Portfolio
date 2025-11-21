@@ -16,12 +16,16 @@ public class TransactionValidationService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
 
+
     // Constructor
     public TransactionValidationService(TransactionRepository transactionRepository,
                                         AccountRepository accountRepository) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
     }
+
+
+    // Validation functions
 
     // Checks transaction exists
     public Transaction validateTransactionExists(UUID transactionId) {

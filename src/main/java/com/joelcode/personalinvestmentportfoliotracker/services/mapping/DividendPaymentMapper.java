@@ -11,13 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DividendPaymentMapper {
 
-    public static DividendPaymentDTO toDTO(DividendPayment payment) {
-        if (payment == null) {
-            return null;
-        }
-        return new DividendPaymentDTO(payment);
-    }
-
+    // Convert account creation request DTO to entity
     public static DividendPayment toEntity(DividendPaymentCreateRequest request,
                                            Account account,
                                            Dividend dividend,
@@ -43,4 +37,13 @@ public class DividendPaymentMapper {
 
         return payment;
     }
+
+    // Convert entity to response dividend payment dto
+    public static DividendPaymentDTO toDTO(DividendPayment payment) {
+        if (payment == null) {
+            return null;
+        }
+        return new DividendPaymentDTO(payment);
+    }
+
 }

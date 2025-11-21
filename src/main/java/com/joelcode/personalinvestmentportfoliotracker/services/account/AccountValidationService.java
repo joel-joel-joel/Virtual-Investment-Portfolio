@@ -14,10 +14,14 @@ public class AccountValidationService {
     // Define key field
     private AccountRepository accountRepository;
 
+
     // Constructor
     public AccountValidationService(AccountRepository accountRepository){
         this.accountRepository = accountRepository;
     }
+
+
+    // Validation functions
 
     // Check account exists
     public Account validateAccountExistsByName(String accountName){

@@ -5,7 +5,7 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.PortfolioOv
 import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
-import com.joelcode.personalinvestmentportfoliotracker.services.dividend.DividendCalculationService;
+import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentService;
 import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.portfolio.aggregation.PortfolioAggregationServiceImpl;
@@ -26,7 +26,7 @@ class PortfolioAggregationServiceImplTest {
 
     private AccountService accountService;
     private HoldingService holdingService;
-    private DividendCalculationService dividendCalculationService;
+    private DividendPaymentCalculationService dividendPaymentCalculationService;
     private DividendPaymentService dividendPaymentService;
     private UserValidationService userValidationService;
 
@@ -37,17 +37,17 @@ class PortfolioAggregationServiceImplTest {
     void setup() {
         accountService = mock(AccountService.class);
         holdingService = mock(HoldingService.class);
-        dividendCalculationService = mock(DividendCalculationService.class);
+        dividendPaymentCalculationService = mock(DividendPaymentCalculationService.class);
         dividendPaymentService = mock(DividendPaymentService.class);
         userValidationService = mock(UserValidationService.class);
 
-        dividendCalculationService = mock(DividendCalculationService.class);
+        dividendPaymentCalculationService = mock(DividendPaymentCalculationService.class);
 
         service = new PortfolioAggregationServiceImpl(
                 accountService,
                 holdingService,
                 null, // holdingCalculationService, not needed for these tests
-                dividendCalculationService, // <- pass the mock here
+                dividendPaymentCalculationService, // <- pass the mock here
                 null, // accountRepository
                 null, // holdingRepository
                 null, // allocationBreakdownService
@@ -93,7 +93,7 @@ class PortfolioAggregationServiceImplTest {
         when(holdingService.getHoldingsByAccount(accountId)).thenReturn(holdings);
 
         // Setup dividends
-        when(dividendCalculationService.calculateTotalDividends(accountId)).thenReturn(null); // test null protection
+        when(dividendPaymentCalculationService.calculateTotalDividends(accountId)).thenReturn(null); // test null protection
 
         PortfolioOverviewDTO overview = service.getPortfolioOverview(accountId);
 
@@ -114,7 +114,7 @@ class PortfolioAggregationServiceImplTest {
         when(accountService.getAccountById(accountId)).thenReturn(accountDTO);
 
         when(holdingService.getHoldingsByAccount(accountId)).thenReturn(new ArrayList<>());
-        when(dividendCalculationService.calculateTotalDividends(accountId)).thenReturn(BigDecimal.ZERO);
+        when(dividendPaymentCalculationService.calculateTotalDividends(accountId)).thenReturn(BigDecimal.ZERO);
 
         PortfolioOverviewDTO overview = service.getPortfolioOverview(accountId);
 

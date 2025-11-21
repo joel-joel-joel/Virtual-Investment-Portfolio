@@ -11,13 +11,17 @@ import java.util.UUID;
 @Profile("!test")
 public class UserValidationService {
 
-    // Define user repository
+    // Define key field
     private final UserRepository userRepository;
+
 
     // Constructor
     public UserValidationService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
+
+
+    // Validation functions
 
     // Check if email is already used
     public void validateEmailUnique(String email) {
@@ -32,11 +36,10 @@ public class UserValidationService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    // Check that username is unqiue
+    // Check that username is unique
     public void validateUsernameUnique(String username) {
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("Username already exists");
         }
     }
-
 }

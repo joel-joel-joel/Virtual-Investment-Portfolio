@@ -34,6 +34,7 @@ public class UserServiceImpl implements UserService{
         this.passwordEncoder = passwordEncoder;
     }
 
+
     // Interface functions
 
     // Create a new user and show its essential information
@@ -113,6 +114,4 @@ public class UserServiceImpl implements UserService{
                 .collect(Collectors.toList());
         return accountDTOs;
     }
-
-
 }

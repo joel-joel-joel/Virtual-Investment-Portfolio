@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Profile("!test")
 public class DividendPaymentServiceImpl implements DividendPaymentService {
 
+    // Define key fields
     private final DividendPaymentRepository paymentRepository;
     private final DividendRepository dividendRepository;
     private final AccountRepository accountRepository;
@@ -31,6 +32,8 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
     private final SimpMessagingTemplate messagingTemplate;
     private final HoldingCalculationService holdingCalculationService;
 
+
+    // Constructor
     public DividendPaymentServiceImpl(DividendPaymentRepository paymentRepository,
                                       DividendRepository dividendRepository,
                                       AccountRepository accountRepository,
@@ -49,6 +52,10 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
         this.holdingCalculationService = holdingCalculationService;
     }
 
+
+    // Interface function
+
+    // Create response dividend payment dto from request dto
     @Override
     @Transactional
     public DividendPaymentDTO createDividendPayment(DividendPaymentCreateRequest request) {
@@ -116,12 +123,14 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
         return DividendPaymentMapper.toDTO(payment);
     }
 
+    // Get paymnent by iD
     @Override
     public DividendPaymentDTO getDividendPaymentById(UUID paymentId) {
         DividendPayment payment = validationService.validatePaymentExists(paymentId);
         return DividendPaymentMapper.toDTO(payment);
     }
 
+    // Get payments by account
     @Override
     public List<DividendPaymentDTO> getDividendPaymentsByAccount(UUID accountId) {
         validationService.validateAccountExists(accountId);
@@ -133,6 +142,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
                 .collect(Collectors.toList());
     }
 
+    // Get by account and stock
     @Override
     public List<DividendPaymentDTO> getDividendPaymentsByAccountAndStock(UUID accountId, UUID stockId) {
         validationService.validateAccountExists(accountId);
@@ -144,6 +154,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
                 .collect(Collectors.toList());
     }
 
+    // Get payments bya account
     @Override
     public List<DividendPaymentDTO> getDividendPaymentsForAccount(UUID accountId) {
         List<DividendPayment> payments = paymentRepository.findPaymentsByIdAccountAndStockId(accountId, null);
@@ -154,6 +165,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
                 .collect(Collectors.toList());
     }
 
+    // Get payments by stock
     @Override
     public List<DividendPaymentDTO> getDividendPaymentsForStock(UUID stockId) {
         List<DividendPayment> payments = paymentRepository.findPaymentsByIdAccountAndStockId(null, stockId);
@@ -164,7 +176,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
                 .collect(Collectors.toList());
     }
 
-
+    // Get payments within a date range
     @Override
     public List<DividendPaymentDTO> getDividendPaymentsByAccountInDateRange(UUID accountId,
                                                                     LocalDateTime start,
@@ -179,18 +191,21 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
                 .collect(Collectors.toList());
     }
 
+    // Calculate total divided from an account
     @Override
     public BigDecimal calculateTotalDividendsByAccount(UUID accountId) {
         validationService.validateAccountExists(accountId);
         return paymentRepository.calculateTotalDividendsByAccount(accountId);
     }
 
+    // Calculate total divided from an account and stock
     @Override
     public BigDecimal calculateTotalDividendsByAccountAndStock(UUID accountId, UUID stockId) {
         validationService.validateAccountExists(accountId);
         return paymentRepository.calculateTotalDividendsByAccountAndStock(accountId, stockId);
     }
 
+    // Get pending payments
     @Override
     public List<DividendPaymentDTO> getPendingPayments(UUID accountId) {
         validationService.validateAccountExists(accountId);
@@ -205,6 +220,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
                 .collect(Collectors.toList());
     }
 
+    // Process payment for dividend
     @Override
     @Transactional
     public void processPaymentsForDividend(UUID dividendId) {
@@ -241,6 +257,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
         }
     }
 
+    // Delete payment
     @Override
     @Transactional
     public void deleteDividendPayment(UUID paymentId) {
@@ -248,6 +265,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
         paymentRepository.delete(payment);
     }
 
+    // Get all payments
     @Override
     public List<DividendPaymentDTO> getAllDividendPayments() {
         // Fetch all dividend payment entities

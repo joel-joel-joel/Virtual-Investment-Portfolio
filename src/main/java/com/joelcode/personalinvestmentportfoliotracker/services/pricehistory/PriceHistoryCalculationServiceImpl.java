@@ -12,6 +12,7 @@ public class PriceHistoryCalculationServiceImpl implements PriceHistoryCalculati
 
     // For common calculation operations
 
+    // Calculate average price
     @Override
     public double calculateAveragePrice(List<PriceHistory> priceHistories){
         if (priceHistories== null || priceHistories.isEmpty()) return 0.0;
@@ -21,17 +22,20 @@ public class PriceHistoryCalculationServiceImpl implements PriceHistoryCalculati
         return sum / priceHistories.size();
     }
 
+    // Calculate price change
     @Override
     public double calculatePriceChange(PriceHistory previous, PriceHistory latest){
         return latest.getClosePrice().doubleValue() - previous.getClosePrice().doubleValue();
     }
 
+    // Calculate percentage change
     @Override
     public double calculatePercentageChange(PriceHistory previous, PriceHistory latest){
         if (previous.getClosePrice().doubleValue() == 0) return 0;
         return (latest.getClosePrice().doubleValue() - previous.getClosePrice().doubleValue()) / previous.getClosePrice().doubleValue() * 100;
     }
 
+    // Find highest price
     @Override
     public double findHighestPrice(List<PriceHistory> priceHistories){
         if (priceHistories == null || priceHistories.isEmpty()) return 0.0;
@@ -41,6 +45,7 @@ public class PriceHistoryCalculationServiceImpl implements PriceHistoryCalculati
                 .orElse(0.0);
     }
 
+    // Find lowest price
     @Override
     public double findLowestPrice(List<PriceHistory> priceHistories) {
         if (priceHistories == null || priceHistories.isEmpty()) return 0.0;

@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @Profile("!test")
 public class DividendServiceImpl implements DividendService {
 
+    // Define key fields
     private final DividendRepository dividendRepository;
     private final StockRepository stockRepository;
     private final DividendValidationService dividendValidationService;
@@ -31,6 +32,7 @@ public class DividendServiceImpl implements DividendService {
     private final SimpMessagingTemplate messagingTemplate;
 
 
+    // Constructors
     public DividendServiceImpl(DividendRepository dividendRepository,
                                StockRepository stockRepository,
                                DividendValidationService dividendValidationService,
@@ -45,6 +47,10 @@ public class DividendServiceImpl implements DividendService {
         this.messagingTemplate = messagingTemplate;
     }
 
+
+    // Interface functions
+
+    // Create dividend DTO from request dto
     @Override
     @Transactional
     public DividendDTO createDividend(DividendCreateRequest request) {
@@ -91,12 +97,14 @@ public class DividendServiceImpl implements DividendService {
         return DividendMapper.toDTO(dividend);
     }
 
+    // Create response DTO from id
     @Override
     public DividendDTO getDividendById(UUID dividendId) {
         Dividend dividend = dividendValidationService.validateDividendExists(dividendId);
         return DividendMapper.toDTO(dividend);
     }
 
+    // Retrieve all dividends
     @Override
     public List<DividendDTO> getAllDividends() {
         return dividendRepository.findAll()
@@ -105,6 +113,7 @@ public class DividendServiceImpl implements DividendService {
                 .collect(Collectors.toList());
     }
 
+    // Retrieve dividends by stockiD
     @Override
     public List<DividendDTO> getDividendsByStock(UUID stockId) {
         return dividendRepository.findByStock_StockId(stockId)
@@ -113,13 +122,12 @@ public class DividendServiceImpl implements DividendService {
                 .collect(Collectors.toList());
     }
 
+    // Delete dividend
     @Override
     @Transactional
     public void deleteDividend(UUID dividendId) {
         Dividend dividend = dividendValidationService.validateDividendExists(dividendId);
 
-        // Note: This will cascade delete all associated DividendPayments
-        // Consider adding a check to prevent deletion if payments exist
         dividendRepository.delete(dividend);
     }
 }

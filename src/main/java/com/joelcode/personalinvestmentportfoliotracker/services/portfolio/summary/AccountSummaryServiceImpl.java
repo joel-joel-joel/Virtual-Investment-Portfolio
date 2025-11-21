@@ -7,7 +7,7 @@ import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepository;
-import com.joelcode.personalinvestmentportfoliotracker.services.dividend.DividendCalculationService;
+import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
 import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidationService;
 import org.springframework.context.annotation.Profile;
@@ -27,22 +27,25 @@ public class AccountSummaryServiceImpl implements AccountSummaryService{
     private final AccountRepository accountRepository;
     private final HoldingRepository holdingRepository;
     private final StockService stockService;
-    private final DividendCalculationService dividendCalculationService;
+    private final DividendPaymentCalculationService dividendPaymentCalculationService;
     private final UserValidationService userValidationService;
+
 
     // Constructor
     public AccountSummaryServiceImpl (AccountRepository accountRepository, HoldingRepository holdingRepository,
-                                      StockService stockService, DividendCalculationService dividendCalculationService,
+                                      StockService stockService, DividendPaymentCalculationService dividendPaymentCalculationService,
                                       UserValidationService userValidationService) {
         this.accountRepository = accountRepository;
         this.holdingRepository = holdingRepository;
         this.stockService = stockService;
-        this.dividendCalculationService = dividendCalculationService;
+        this.dividendPaymentCalculationService = dividendPaymentCalculationService;
         this.userValidationService = userValidationService;
     }
 
+
     // Interface functions
 
+    // Get account summary by Id
     public AccountSummaryDTO getAccountSummary(UUID accountId) {
         Account account = accountRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
@@ -79,7 +82,7 @@ public class AccountSummaryServiceImpl implements AccountSummaryService{
         }
 
         // calculate dividend
-        BigDecimal totalDividends = dividendCalculationService.calculateTotalDividends(accountId);
+        BigDecimal totalDividends = dividendPaymentCalculationService.calculateTotalDividends(accountId);
 
         // Calculate cash
         BigDecimal cash = account.getAccountBalance() != null ? account.getAccountBalance() : BigDecimal.ZERO;
@@ -97,6 +100,7 @@ public class AccountSummaryServiceImpl implements AccountSummaryService{
         return summary;
     }
 
+    // Get all summaries for a user
     public List<AccountSummaryDTO> getAccountSummariesForUser(UUID userId) {
         // Validate user exists
         User user = userValidationService.validateUserExists(userId);

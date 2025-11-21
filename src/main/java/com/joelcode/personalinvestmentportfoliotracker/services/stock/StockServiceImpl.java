@@ -26,12 +26,14 @@ public class StockServiceImpl implements StockService {
     private final StockValidationService stockValidationService;
     private final PriceHistoryRepository priceHistoryRepository;
 
+
     // Constructor
     public StockServiceImpl(StockRepository stockRepository, StockValidationService stockValidationService, PriceHistoryRepository priceHistoryRepository) {
         this.stockRepository = stockRepository;
         this.stockValidationService = stockValidationService;
         this.priceHistoryRepository = priceHistoryRepository;
     }
+
 
     // Interface function
 
@@ -95,6 +97,7 @@ public class StockServiceImpl implements StockService {
         return StockMapper.toDTO(stock);
     }
 
+    // Get current price
     @Override
     public BigDecimal getCurrentPrice(UUID stockId) {
 

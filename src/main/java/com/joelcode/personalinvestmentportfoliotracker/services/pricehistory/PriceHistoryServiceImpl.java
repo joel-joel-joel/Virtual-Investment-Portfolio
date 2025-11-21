@@ -28,6 +28,7 @@ public class PriceHistoryServiceImpl implements PriceHistoryService{
     private final SimpMessagingTemplate messagingTemplate;
     private final WebSocketController webSocketController;
 
+
     // Constructor
     public PriceHistoryServiceImpl(PriceHistoryRepository priceHistoryRepository,
                                    PriceHistoryValidationService validationService,
@@ -38,6 +39,9 @@ public class PriceHistoryServiceImpl implements PriceHistoryService{
         this.messagingTemplate = messagingTemplate;
         this.webSocketController = webSocketController;
     }
+
+
+    // Interface function
 
     // Create price history entity from request dto
     @Override
@@ -56,12 +60,14 @@ public class PriceHistoryServiceImpl implements PriceHistoryService{
         return PriceHistoryMapper.toDTO(priceHistory);
     }
 
+    // Get price history by ID
     @Override
     public PriceHistoryDTO getPriceHistoryById(UUID id) {
         PriceHistory priceHistory = validationService.validatePriceHistoryExists(id);
         return PriceHistoryMapper.toDTO(priceHistory);
     }
 
+    // Get all price histories
     @Override
     public List<PriceHistoryDTO> getAllPriceHistories() {
         return priceHistoryRepository.findAll()
@@ -70,18 +76,21 @@ public class PriceHistoryServiceImpl implements PriceHistoryService{
                 .collect(Collectors.toList());
     }
 
+    // Delete price history
     @Override
     public void deletePriceHistory(UUID priceHistoryId) {
         PriceHistory priceHistory = validationService.validatePriceHistoryExists(priceHistoryId);
         priceHistoryRepository.delete(priceHistory);
     }
 
+    // Get current price
     @Override
     public BigDecimal getCurrentPrice(UUID stockId) {
         return priceHistoryRepository.findTopByStock_StockIdOrderByCloseDateDesc(stockId).map(PriceHistory::getClosePrice)
                 .orElseThrow(() -> new CustomAuthenticationException("No price found for stock " + stockId));
     }
 
+    // Get price history for stock
     @Override
     public List<PriceHistoryDTO> getPriceHistoryForStock(UUID stockId) {
         // Fetch all price history records for the stock
@@ -95,6 +104,7 @@ public class PriceHistoryServiceImpl implements PriceHistoryService{
         return dtos;
     }
 
+    // Get latest price for stock
     @Override
     public PriceHistoryDTO getLatestPriceForStock(UUID stockId) {
         // Fetch latest price from repository
@@ -115,7 +125,5 @@ public class PriceHistoryServiceImpl implements PriceHistoryService{
             return null; // or throw an exception if preferred
         }
     }
-
-
 
 }

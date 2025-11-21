@@ -30,6 +30,8 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
     @Autowired
     private PortfolioSnapshotValidationService snapshotValidationService;
 
+    // Interface functions
+
     // Create snapshot entity from request dto
     @Override
     public PortfolioSnapshotDTO createSnapshot(PortfolioSnapshotCreateRequest request) {
@@ -56,12 +58,14 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
         return PortfolioSnapshotMapper.toDTO(snapshot);
     }
 
+    // Get snapshot by ID
     @Override
     public PortfolioSnapshotDTO getSnapshotById(UUID snapshotId) {
         PortfolioSnapshot snapshot = snapshotValidationService.validateSnapshotExists(snapshotId);
         return PortfolioSnapshotMapper.toDTO(snapshot);
     }
 
+    // Get all snapshots
     @Override
     public List<PortfolioSnapshotDTO> getAllSnapshots() {
         return snapshotRepository.findAll()
@@ -70,6 +74,7 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
                 .collect(Collectors.toList());
     }
 
+    // Get snapshots by account
     @Override
     public List<PortfolioSnapshotDTO> getSnapshotsByAccount(UUID accountId) {
         Account account = snapshotValidationService.validateAccountExists(accountId);
@@ -79,6 +84,7 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
                 .collect(Collectors.toList());
     }
 
+    // Get snapshots by date range
     @Override
     public List<PortfolioSnapshotDTO> getSnapshotsByDateRange(UUID accountId, LocalDate startDate, LocalDate endDate) {
         Account account = snapshotValidationService.validateAccountExists(accountId);
@@ -90,6 +96,7 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
                 .collect(Collectors.toList());
     }
 
+    // Get latest snapshot
     @Override
     public PortfolioSnapshotDTO getLatestSnapshot(UUID accountId) {
         Account account = snapshotValidationService.validateAccountExists(accountId);
@@ -98,12 +105,14 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
         return PortfolioSnapshotMapper.toDTO(snapshot);
     }
 
+    // Delete snapshot
     @Override
     public void deleteSnapshot(UUID snapshotId) {
         PortfolioSnapshot snapshot = snapshotValidationService.validateSnapshotExists(snapshotId);
         snapshotRepository.delete(snapshot);
     }
 
+    // Get snapshots for account
     @Override
     public List<PortfolioSnapshotDTO> getSnapshotsForAccount(UUID accountId) {
         // Fetch all snapshots for the account

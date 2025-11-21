@@ -22,7 +22,7 @@ import java.util.UUID;
 @Profile("!test")
 public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
 
-
+    // Define key fields
     @Autowired
     private AccountValidationService accountValidationService;
 
@@ -38,6 +38,8 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
     @Autowired
     private UserValidationService userValidationService;
 
+
+    // Constructor
     public PortfolioOverviewServiceImpl(AccountValidationService accountValidationService,
                                         HoldingService holdingService, DividendPaymentService dividendPaymentService,
                                         AllocationBreakdownService allocationService,
@@ -49,6 +51,10 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
         this.userValidationService = userValidationService;
     }
 
+
+    // Interface functions
+
+    // Get overview for account
     @Override
     public PortfolioOverviewDTO getPortfolioOverviewForAccount(UUID accountId) {
         // Validate account exists
@@ -61,6 +67,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
                 .map(h -> h.getCurrentPrice().multiply(h.getQuantity()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // Calculate total invested for each holding
         BigDecimal totalInvested = holdings.stream()
                 .map(h -> h.getAverageCostBasis().multiply(h.getQuantity()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -92,6 +99,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
         );
     }
 
+    // Get portfolio overview on user level
     @Override
     public PortfolioOverviewDTO getPortfolioOverviewForUser(UUID userId) {
         // Validate user exists

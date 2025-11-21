@@ -15,10 +15,14 @@ public class PriceHistoryValidationService {
     // Define key field
     private final PriceHistoryRepository priceHistoryRepository;
 
+
     // Constructor
     public PriceHistoryValidationService(PriceHistoryRepository priceHistoryRepository) {
         this.priceHistoryRepository = priceHistoryRepository;
     }
+
+
+    // Validation functions
 
     // Check that price history exists by id
     public PriceHistory validatePriceHistoryExists(UUID priceHistoryId) {

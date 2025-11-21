@@ -20,10 +20,13 @@ import java.util.stream.Collectors;
 @Profile("!test")
 public class AllocationBreakdownServiceImpl implements AllocationBreakdownService {
 
+    // Define key fields
     private final HoldingCalculationService holdingCalcService;
     private final HoldingRepository holdingRepository;
     private final UserValidationService userValidationService;
 
+
+    // Constructor
     public AllocationBreakdownServiceImpl(HoldingCalculationService holdingCalcService,
                                                HoldingRepository holdingRepository,
                                                UserValidationService userValidationService) {
@@ -32,6 +35,10 @@ public class AllocationBreakdownServiceImpl implements AllocationBreakdownServic
         this.userValidationService = userValidationService;
     }
 
+
+    // Interface functions
+
+    // get allocation for an account
     @Override
     public List<AllocationBreakdownDTO> getAllocationForAccount(UUID accountId) {
         List<Holding> holdings = holdingRepository.findByAccount_AccountId(accountId);
@@ -93,6 +100,7 @@ public class AllocationBreakdownServiceImpl implements AllocationBreakdownServic
                 .collect(Collectors.toList());
     }
 
+    // Get allocation breakdown on user level
     @Override
     public List<AllocationBreakdownDTO> getAllocationForUser(UUID userId) {
         // Validate user exists

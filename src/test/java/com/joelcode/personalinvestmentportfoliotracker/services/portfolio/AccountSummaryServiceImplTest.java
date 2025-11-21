@@ -8,7 +8,7 @@ import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepository;
-import com.joelcode.personalinvestmentportfoliotracker.services.dividend.DividendCalculationService;
+import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.portfolio.summary.AccountSummaryServiceImpl;
 import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
 import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidationService;
@@ -38,7 +38,7 @@ public class AccountSummaryServiceImplTest {
     private StockService stockService;
 
     @Mock
-    private DividendCalculationService dividendCalculationService;
+    private DividendPaymentCalculationService dividendPaymentCalculationService;
 
     @Mock
     private UserValidationService userValidationService;
@@ -93,7 +93,7 @@ public class AccountSummaryServiceImplTest {
     void testGetAccountSummary_Success() {
         when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(testAccount));
         when(stockService.getCurrentPrice(stockId)).thenReturn(BigDecimal.valueOf(60));
-        when(dividendCalculationService.calculateTotalDividends(accountId)).thenReturn(BigDecimal.valueOf(25));
+        when(dividendPaymentCalculationService.calculateTotalDividends(accountId)).thenReturn(BigDecimal.valueOf(25));
 
         AccountSummaryDTO summary = accountSummaryService.getAccountSummary(accountId);
 
@@ -116,7 +116,7 @@ public class AccountSummaryServiceImplTest {
         when(userValidationService.validateUserExists(userId)).thenReturn(testUser);
         when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(testAccount));
         when(stockService.getCurrentPrice(stockId)).thenReturn(BigDecimal.valueOf(60));
-        when(dividendCalculationService.calculateTotalDividends(accountId)).thenReturn(BigDecimal.valueOf(25));
+        when(dividendPaymentCalculationService.calculateTotalDividends(accountId)).thenReturn(BigDecimal.valueOf(25));
 
         List<AccountSummaryDTO> summaries = accountSummaryService.getAccountSummariesForUser(userId);
 

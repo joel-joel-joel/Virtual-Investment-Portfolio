@@ -9,13 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DividendMapper {
 
-    public static DividendDTO toDTO(Dividend dividend) {
-        if (dividend == null) {
-            return null;
-        }
-        return new DividendDTO(dividend);
-    }
-
+    // Convert account creation request DTO to entity
     public static Dividend toEntity(DividendCreateRequest request, Stock stock) {
         if (request == null) {
             return null;
@@ -28,5 +22,13 @@ public class DividendMapper {
                 request.getPayDate(),
                 stock
         );
+    }
+
+    // Convert entity to dto
+    public static DividendDTO toDTO(Dividend dividend) {
+        if (dividend == null) {
+            return null;
+        }
+        return new DividendDTO(dividend);
     }
 }

@@ -8,7 +8,7 @@ import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountService;
-import com.joelcode.personalinvestmentportfoliotracker.services.dividend.DividendCalculationService;
+import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
 import jakarta.transaction.Transactional;
@@ -30,7 +30,7 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
     private final HoldingService holdingService;
     private final HoldingCalculationService holdingCalculationService;
     private final AccountService accountService;
-    private final DividendCalculationService dividendCalculationService;
+    private final DividendPaymentCalculationService dividendPaymentCalculationService;
     private final AccountRepository accountRepository;
     private final HoldingRepository holdingRepository;
     private final SimpMessagingTemplate messagingTemplate;
@@ -40,20 +40,23 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
     public TransactionProcessorServiceImpl(TransactionService transactionService, HoldingService holdingService,
                                            HoldingCalculationService holdingCalculationService,
                                            AccountService accountService,
-                                           DividendCalculationService dividendCalculationService,
+                                           DividendPaymentCalculationService dividendPaymentCalculationService,
                                            AccountRepository accountRepository, HoldingRepository holdingRepository,
                                            SimpMessagingTemplate messagingTemplate) {
         this.transactionService = transactionService;
         this.holdingService = holdingService;
         this.holdingCalculationService = holdingCalculationService;
         this.accountService = accountService;
-        this.dividendCalculationService = dividendCalculationService;
+        this.dividendPaymentCalculationService = dividendPaymentCalculationService;
         this.accountRepository = accountRepository;
         this.holdingRepository = holdingRepository;
         this.messagingTemplate = messagingTemplate;
     }
 
+
     // Interface function
+
+    // Process transaction
     @Override
     @Transactional
     public TransactionDTO processTransaction(TransactionCreateRequest request) {

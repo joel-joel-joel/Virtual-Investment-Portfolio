@@ -50,6 +50,7 @@ public class AccountServiceImpl implements AccountService {
         this.messagingTemplate = messagingTemplate;
     }
 
+
     // Interface functions
 
     // Create a new account and show essential information
@@ -129,8 +130,10 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.delete(account);
     }
 
+
     // Transactional related methods
 
+    // Update account balance include zero case
     @Override
     public void updateAccountBalance(Account account, BigDecimal amount){
         BigDecimal currentBalance = account.getAccountBalance();
@@ -152,6 +155,7 @@ public class AccountServiceImpl implements AccountService {
 
     }
 
+    // Retrieve all transaction for an account
     @Override
     public List<TransactionDTO> getTransactionsForAccount(UUID accountId) {
         // Validate account exists
@@ -168,6 +172,7 @@ public class AccountServiceImpl implements AccountService {
         return transactionDTOs;
     }
 
+    // Get all the holdings for an account
     @Override
     public List<HoldingDTO> getHoldingsForAccount(UUID accountId) {
         // Validate the account exists
@@ -183,7 +188,6 @@ public class AccountServiceImpl implements AccountService {
 
         return holdingDTOs;
     }
-
 }
 
 

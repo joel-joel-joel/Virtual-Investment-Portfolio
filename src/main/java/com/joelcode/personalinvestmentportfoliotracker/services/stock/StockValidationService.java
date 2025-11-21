@@ -14,10 +14,14 @@ public class StockValidationService {
     // Define key field
     private final StockRepository stockRepository;
 
+
     // Constructor
     public StockValidationService(StockRepository stockRepository) {
         this.stockRepository = stockRepository;
     }
+
+
+    // Validation functions
 
     // Check stock exists
     public Stock validateStockExists(UUID stockId) {

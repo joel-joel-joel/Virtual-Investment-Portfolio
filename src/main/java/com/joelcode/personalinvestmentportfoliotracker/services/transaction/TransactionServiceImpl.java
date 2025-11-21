@@ -19,12 +19,14 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionValidationService transactionValidationService;
 
+
     // Constructor
     public TransactionServiceImpl(TransactionRepository transactionRepository,
                                   TransactionValidationService transactionValidationService) {
         this.transactionRepository = transactionRepository;
         this.transactionValidationService = transactionValidationService;
     }
+
 
     // Interface functions
 

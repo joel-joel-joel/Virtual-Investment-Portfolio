@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @Profile("!test")
 public class SearchServiceImpl implements SearchService {
 
+    // Define key fields
     @Autowired
     private StockRepository stockRepository;
 
@@ -46,6 +47,10 @@ public class SearchServiceImpl implements SearchService {
     @Autowired
     private PriceHistoryServiceImpl priceHistoryService;
 
+
+    // Interface function
+
+    // Search across stocks, accounts and holdings
     @Override
     public SearchDTO search(String query, UUID userId) {
 
@@ -78,8 +83,6 @@ public class SearchServiceImpl implements SearchService {
         List<HoldingDTO> holdings = holdingEntities.stream()
                 .map(h -> HoldingMapper.toDTO(h, priceHistoryService.getCurrentPrice(h.getStock().getStockId())))
                 .collect(Collectors.toList());
-
-
 
         return new SearchDTO(stocks, accounts, holdings);
     }

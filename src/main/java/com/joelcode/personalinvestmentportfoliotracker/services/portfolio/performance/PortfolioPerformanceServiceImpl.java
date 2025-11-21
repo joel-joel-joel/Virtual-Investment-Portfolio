@@ -12,7 +12,7 @@ import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepos
 import com.joelcode.personalinvestmentportfoliotracker.repositories.PortfolioSnapshotRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountService;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountValidationService;
-import com.joelcode.personalinvestmentportfoliotracker.services.dividend.DividendCalculationService;
+import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
 import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.PortfolioPerformanceDTO;
@@ -32,22 +32,10 @@ import java.util.UUID;
 @Profile("!test")
 public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceService{
 
-    private BigDecimal normalize(BigDecimal value) {
-        if (value == null) return null;
-        if (value.scale() > 0) {
-            try {
-                return value.setScale(0, RoundingMode.UNNECESSARY);
-            } catch (ArithmeticException ignored) {
-                // keep original if non-zero fractional part
-            }
-        }
-        return value;
-    }
-
     // Define key fields
     private final AccountService accountService;
     private final HoldingService holdingService;
-    private final DividendCalculationService dividendCalculationService;
+    private final DividendPaymentCalculationService dividendPaymentCalculationService;
     private final PortfolioSnapshotRepository snapshotRepository;
     private final AccountRepository accountRepository;
     private final HoldingRepository holdingRepository;
@@ -57,9 +45,10 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
     private final SimpMessagingTemplate messagingTemplate;
     private final WebSocketController webSocketController;
 
+
     // Constructor
     public PortfolioPerformanceServiceImpl (AccountService accountService, HoldingService holdingService,
-                                            DividendCalculationService dividendCalculationService,
+                                            DividendPaymentCalculationService dividendPaymentCalculationService,
                                             PortfolioSnapshotRepository snapshotRepository,
                                             AccountRepository accountRepository, HoldingRepository holdingRepository,
                                             AccountValidationService accountValidationService,
@@ -69,7 +58,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
                                             WebSocketController webSocketController) {
         this.accountService = accountService;
         this.holdingService = holdingService;
-        this.dividendCalculationService = dividendCalculationService;
+        this.dividendPaymentCalculationService = dividendPaymentCalculationService;
         this.snapshotRepository = snapshotRepository;
         this.accountRepository = accountRepository;
         this.holdingRepository = holdingRepository;
@@ -80,6 +69,10 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         this.webSocketController = webSocketController;
     }
 
+
+    // Interface functions
+
+    // Calculate performace for a portfolio
     @Override
     @Transactional
     public PortfolioPerformanceDTO calculatePortfolioPerformance(UUID accountId){
@@ -105,7 +98,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         }
 
         // Fetch dividends
-        BigDecimal totalDividends = dividendCalculationService.calculateTotalDividends(accountId);
+        BigDecimal totalDividends = dividendPaymentCalculationService.calculateTotalDividends(accountId);
 
         // Fetch cash balance
         BigDecimal cashBalance = account.getAccountBalance();
@@ -146,6 +139,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         return dto;
     }
 
+    // Create a portfolio snapshot
     @Override
     @Transactional
     public void createPortfolioSnapshot(UUID accountId){
@@ -180,6 +174,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
 
     }
 
+    // Get performance for an account
     @Override
     public PortfolioPerformanceDTO getPerformanceForAccount(UUID accountId) {
         // Validate account exists
@@ -294,7 +289,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
         );
     }
 
-
+    // Get performance on the user level
     @Override
     public PortfolioPerformanceDTO getPerformanceForUser(UUID userId) {
         // Validate user exists
@@ -342,6 +337,19 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
                 dailyGain,                // dailyGain
                 monthlyGain               // monthlyGain
         );
+    }
+
+    // Normalizing Big Decimal values for clean calculation
+    private BigDecimal normalize(BigDecimal value) {
+        if (value == null) return null;
+        if (value.scale() > 0) {
+            try {
+                return value.setScale(0, RoundingMode.UNNECESSARY);
+            } catch (ArithmeticException ignored) {
+                // keep original if non-zero fractional part
+            }
+        }
+        return value;
     }
 
 

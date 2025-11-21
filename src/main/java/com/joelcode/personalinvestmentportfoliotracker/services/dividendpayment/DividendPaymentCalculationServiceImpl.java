@@ -1,4 +1,4 @@
-package com.joelcode.personalinvestmentportfoliotracker.services.dividend;
+package com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment;
 
 import com.joelcode.personalinvestmentportfoliotracker.repositories.DividendPaymentRepository;
 import org.springframework.context.annotation.Profile;
@@ -10,14 +10,20 @@ import java.util.UUID;
 
 @Service
 @Profile("!test")
-public class DividendCalculationServiceImpl implements DividendCalculationService {
+public class DividendPaymentCalculationServiceImpl implements DividendPaymentCalculationService {
 
+    // Define key field
     private final DividendPaymentRepository paymentRepository;
 
-    public DividendCalculationServiceImpl(DividendPaymentRepository paymentRepository) {
+
+    // Constructor
+    public DividendPaymentCalculationServiceImpl(DividendPaymentRepository paymentRepository) {
         this.paymentRepository = paymentRepository;
     }
 
+    // Calculation functions
+
+    // Calculate total dividends
     @Override
     public BigDecimal calculateTotalDividends(UUID accountId) {
         BigDecimal result =  paymentRepository.calculateTotalDividendsByAccount(accountId);
@@ -25,24 +31,14 @@ public class DividendCalculationServiceImpl implements DividendCalculationServic
 
     }
 
-    @Override
-    public void recalculateDividends(UUID accountId) {
-        // This method is no longer needed with the new structure
-        // Dividend payments are created when dividends are announced
-        // and are immutable records of what was actually paid
-        throw new UnsupportedOperationException(
-                "Recalculation not supported. Dividend payments are immutable records. " +
-                        "Use processPaymentsForDividend() when announcing new dividends."
-        );
-    }
-
-    // New helper methods
+    // Calculate within date range
     public BigDecimal calculateDividendsInDateRange(UUID accountId,
                                                     LocalDateTime start,
                                                     LocalDateTime end) {
         return paymentRepository.calculateDividendsInDateRange(accountId, start, end);
     }
 
+    // Calculate for a stock
     public BigDecimal calculateDividendsForStock(UUID accountId, UUID stockId) {
         return paymentRepository.calculateTotalDividendsByAccountAndStock(accountId, stockId);
     }

@@ -16,10 +16,12 @@ import java.util.UUID;
 @Profile("!test")
 public class DividendPaymentValidationService {
 
+    // Define key fields
     private final DividendPaymentRepository paymentRepository;
     private final DividendRepository dividendRepository;
     private final AccountRepository accountRepository;
 
+    // Constructor
     public DividendPaymentValidationService(DividendPaymentRepository paymentRepository,
                                             DividendRepository dividendRepository,
                                             AccountRepository accountRepository) {
@@ -28,17 +30,23 @@ public class DividendPaymentValidationService {
         this.accountRepository = accountRepository;
     }
 
+
+    // Validation functions
+
+    // Validate payment exists
     public DividendPayment validatePaymentExists(UUID paymentId) {
         return paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new RuntimeException("Dividend payment not found with ID: " + paymentId));
     }
 
+    // Validate account exists
     public void validateAccountExists(UUID accountId) {
         if (!accountRepository.existsById(accountId)) {
             throw new RuntimeException("Account not found with ID: " + accountId);
         }
     }
 
+    // Validate creation request
     public void validateCreateRequest(DividendPaymentCreateRequest request) {
         if (request.getAccountId() == null) {
             throw new RuntimeException("Account ID cannot be null");
@@ -49,12 +57,14 @@ public class DividendPaymentValidationService {
         validateShareQuantity(request.getShareQuantity());
     }
 
+    // Validate share quantity
     public void validateShareQuantity(BigDecimal shareQuantity) {
         if (shareQuantity == null || shareQuantity.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Share quantity must be greater than zero");
         }
     }
 
+    // Validate by date range
     public void validateDateRange(LocalDateTime start, LocalDateTime end) {
         if (start == null || end == null) {
             throw new RuntimeException("Start and end dates cannot be null");
