@@ -179,4 +179,33 @@ public class Stock {
     public void setPriceHistories(List<PriceHistory> priceHistories) {
         this.priceHistories = priceHistories;
     }
+
+    // Helper functinos
+    @PrePersist
+    public void prePersist() {
+
+        // Default stockValue → 0.00
+        if (this.stockValue == null) {
+            this.stockValue = BigDecimal.ZERO;
+        }
+
+        // Default dividendPerShare → 0.00
+        if (this.dividendPerShare == null) {
+            this.dividendPerShare = BigDecimal.ZERO;
+        }
+
+        // createdAt default
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+
+        // updatedAt default
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
 }

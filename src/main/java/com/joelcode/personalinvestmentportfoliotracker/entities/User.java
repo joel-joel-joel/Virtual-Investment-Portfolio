@@ -38,13 +38,10 @@ public class User {
 
     @JsonIgnore
     @Column(nullable = false)
-    private String password = UUID.randomUUID()
-            .toString()
-                    .replace("-", "")
-                    .substring(0, 12);;
+    private String password;
 
     @Column(nullable = false)
-    private String fullName = "Anonymous User";
+    private String fullName;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -132,6 +129,30 @@ public class User {
     }
 
     public String getRoleNames() {return roles.name();}
+
+    @PrePersist
+    public void prePersist() {
+
+        if (this.fullName == null || this.fullName.isBlank()) {
+            this.fullName = "Anonymous User";
+        }
+
+        if (this.password == null || this.password.isBlank()) {
+            this.password = UUID.randomUUID()
+                    .toString()
+                    .replace("-", "")
+                    .substring(0, 12);
+        }
+
+        if (this.email == null || this.email.isBlank()) {
+            String random = UUID.randomUUID()
+                    .toString()
+                    .replace("-", "")
+                    .substring(0, 12);
+            this.email = "user-" + random + "@auto.local";
+        }
+    }
+
 
 }
 
