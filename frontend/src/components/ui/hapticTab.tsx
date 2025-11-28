@@ -1,16 +1,16 @@
-import * as Haptics from 'expo-haptics';
-import React from "react";
-import { Pressable } from 'react-native';
+import React from 'react';
+import { TouchableOpacity, GestureResponderEvent, ViewStyle } from 'react-native';
 
-export function HapticTab({ children, ...props }) {
-    return (
-        <Pressable
-            onPressIn={() => {
-                Haptics.selectionAsync();
-            }}
-            {...props}
-        >
-            {children}
-        </Pressable>
-    );
+interface HapticTabProps {
+    children: React.ReactNode;
+    onPress?: (event: GestureResponderEvent) => void;
+    style?: ViewStyle | ViewStyle[];
 }
+
+export const HapticTab: React.FC<HapticTabProps> = ({ children, onPress, style }) => {
+    return (
+        <TouchableOpacity onPress={onPress} style={style} activeOpacity={0.7}>
+            {children}
+        </TouchableOpacity>
+    );
+};
