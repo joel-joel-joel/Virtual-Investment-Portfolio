@@ -15,6 +15,8 @@ export default function HomeScreen() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
     const progress = useSharedValue<number>(0);
+    const holdingsProgress = useSharedValue<number>(0);
+    const moversProgress = useSharedValue<number>(0);
 
     const priceData = [90, 100, 102, 101, 105, 107, 110, 108];
 
@@ -25,9 +27,26 @@ export default function HomeScreen() {
         { id: 4, symbol: "TSLA", price: "A$245.30", change: "-1.5%" },
         { id: 5, symbol: "AMZN", price: "A$170.90", change: "+2.1%" },
     ];
+
+    const topHoldings = [
+        { id: 1, symbol: "AAPL", percentage: "32.5%" },
+        { id: 2, symbol: "MSFT", percentage: "18.3%" },
+        { id: 3, symbol: "GOOGL", percentage: "15.7%" },
+        { id: 4, symbol: "TSLA", percentage: "12.1%" },
+        { id: 5, symbol: "AMZN", percentage: "8.2%" },
+    ];
+
+    const topMovers = [
+        { id: 1, symbol: "NVDA", change: "+8.5%" },
+        { id: 2, symbol: "TSLA", change: "+6.2%" },
+        { id: 3, symbol: "AMD", change: "+5.1%" },
+        { id: 4, symbol: "META", change: "-4.3%" },
+        { id: 5, symbol: "INTEL", change: "-3.7%" },
+    ];
+
     return (
         <View style={[styles.container, { backgroundColor: Colors.background }]}>
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Top bar */}
                 <View style={styles.topBar}>
                     <View style={styles.centerGroup}>
@@ -47,30 +66,37 @@ export default function HomeScreen() {
 
                 {/* Dashboard */}
                 <View style={styles.DashboardWrapper}>
-                    <View
-                        style={[
-                            styles.dashboard,
-                            { backgroundColor: "white", borderColor: Colors.border },
-                        ]}
-                    >
-                        <Text style={[styles.dashboardtitle, { color: Colors.text }]}>
-                            Welcome to Pegasus!
-                        </Text>
-                        <Text style={[styles.subtitle, { color: Colors.text }]}>
-                            Cash and Holdings
-                        </Text>
-                        <Text style={[styles.cashamount, { color: Colors.text }]}>
-                            A$1,000,000.00
-                        </Text>
-                        <Text style={[styles.dashboarddetails, { color: Colors.text }]}>
-                            Gain: A$27.68 (0.89%), Today
-                        </Text>
+                    <View style={[styles.dashboard, { borderColor: "#266EF1"}]}>
 
-                        <View style={[styles.chartContainer, { width: "100%", alignItems: "center", overflow: "hidden" }]}>
+                        {/* TOP ROW — TEXT + TALL BOX */}
+                        <View style={styles.dashboardTopRow}>
+
+                            {/* TEXT BLOCK */}
+                            <View style={styles.dashboardTextBlock}>
+                                <Text style={[styles.dashboardtitle, { color: Colors.text }]}>
+                                    Welcome to Pegasus!
+                                </Text>
+                                <Text style={[styles.subtitle, { color: Colors.text }]}>
+                                    Cash and Holdings
+                                </Text>
+                                <Text style={{ flexDirection: "row" }}>
+                                    <Text style={[styles.currency, { color: Colors.text }]}>A$</Text>
+                                    <Text style={[styles.cashamount, { color: Colors.text }]}>
+                                        1,000,000.00
+                                    </Text>
+                                </Text>
+                                <Text style={[styles.dashboarddetails, { color: Colors.text }]}>
+                                    Gain: A$27.68 (0.89%), Today
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* CHART FULL WIDTH */}
+                        <View style={[styles.chartContainer, {"overflow": "hidden"}]}>
                             <LineChart
                                 data={{
                                     labels: ["Jan", "Feb", "Mar"],
-                                    datasets: [{ data: priceData, color: () => "#266EF1", strokeWidth: 2 }]
+                                    datasets: [{ data: priceData, color: () => "#266EF1", strokeWidth: 2 }],
                                 }}
                                 width={screenWidth}
                                 height={140}
@@ -86,7 +112,7 @@ export default function HomeScreen() {
                                     backgroundGradientTo: "white",
                                     color: () => "#266EF1",
                                 }}
-                                style={{ borderRadius: 12}}
+                                style={{ borderRadius: 12 }}
                             />
                         </View>
                     </View>
@@ -97,7 +123,7 @@ export default function HomeScreen() {
                     <View
                         style={[
                             styles.watchlisthighlights,
-                            { backgroundColor: Colors.card, borderColor: "#266EF1" },
+                            { backgroundColor: Colors.card, borderColor: "black" },
                         ]}
                     >
                         <Text
@@ -170,6 +196,105 @@ export default function HomeScreen() {
 
                 {/* Continuous Stock Ticker */}
                 <StockTicker stocks={watchlistStocks} />
+
+                <View style={styles.bottomSection}>
+                    {/* TOP MOVERS - LEFT SIDE */}
+                    <View style={styles.bottomSideContainer}>
+                        <Text style={[styles.bottomHeader, { color: Colors.text }]}>
+                            Top Movers
+                        </Text>
+                        <View
+                            style={[
+                                styles.verticalCarouselWrapper,
+                                { backgroundColor: "white", borderColor: "#266EF1" }
+                            ]}
+                        >
+                            <Carousel
+                                width={Dimensions.get("window").width / 2 - 30}
+                                height={88}
+                                data={topMovers}
+                                autoPlayInterval={4000}
+                                loop={true}
+                                pagingEnabled={true}
+                                snapEnabled={true}
+                                vertical={true}
+                                mode="parallax"
+                                modeConfig={{
+                                    parallaxScrollingScale: 0.75,
+                                    parallaxScrollingOffset: 35,
+                                }}
+                                onProgressChange={moversProgress}
+                                renderItem={({ item }) => (
+                                    <View
+                                        style={[
+                                            styles.moverCard,
+                                            { backgroundColor: Colors.card, borderColor: Colors.card }
+                                        ]}
+                                    >
+                                        <Text style={[styles.moverSymbol, { color: Colors.tint }]}>
+                                            {item.symbol}
+                                        </Text>
+                                        <Text
+                                            style={[
+                                                styles.moverChange,
+                                                {
+                                                    color: item.change.startsWith("+") ? "#2E7D32" : "#C62828",
+                                                }
+                                            ]}
+                                        >
+                                            {item.change}
+                                        </Text>
+                                    </View>
+                                )}
+                            />
+                        </View>
+                    </View>
+
+                    {/* TOP HOLDINGS - RIGHT SIDE */}
+                    <View style={styles.bottomSideContainer}>
+                        <Text style={[styles.bottomHeader, { color: Colors.text }]}>
+                            Top % Holdings
+                        </Text>
+                        <View
+                            style={[
+                                styles.verticalCarouselWrapper,
+                                { backgroundColor: Colors.card, borderColor: "#266EF1" }
+                            ]}
+                        >
+                            <Carousel
+                                width={Dimensions.get("window").width / 2 - 30}
+                                height={88}
+                                data={topHoldings}
+                                autoPlayInterval={4000}
+                                loop={true}
+                                pagingEnabled={true}
+                                snapEnabled={true}
+                                vertical={true}
+                                mode="parallax"
+                                modeConfig={{
+                                    parallaxScrollingScale: 0.75,
+                                    parallaxScrollingOffset: 35,
+                                }}
+                                onProgressChange={holdingsProgress}
+                                renderItem={({ item }) => (
+                                    <View
+                                        style={[
+                                            styles.holdingCard,
+                                            { backgroundColor: "white", borderColor: "white" }
+                                        ]}
+                                    >
+                                        <Text style={[styles.holdingSymbol, { color: "black" }]}>
+                                            {item.symbol}
+                                        </Text>
+                                        <Text style={[styles.holdingPercentage, { color: "#266EF1" }]}>
+                                            {item.percentage}
+                                        </Text>
+                                    </View>
+                                )}
+                            />
+                        </View>
+                    </View>
+                </View>
             </ScrollView>
         </View>
     );
@@ -222,7 +347,18 @@ const styles = StyleSheet.create({
         padding: 20,
         borderRadius: 12,
         borderWidth: 1,
-        height: 300,
+        backgroundColor: "white",
+    },
+
+    dashboardTopRow: {
+        flexDirection: "row",
+        width: "100%",
+        alignItems: "stretch",   // important → makes box match the text column height
+    },
+
+    dashboardTextBlock: {
+        flex: 1,  // text takes most space
+        gap: 4,
     },
     dashboardtitle: {
         fontSize: 16,
@@ -233,6 +369,11 @@ const styles = StyleSheet.create({
         fontSize: 24,
         marginTop: 10,
         fontWeight: "bold",
+    },
+    currency: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginTop: 20,
     },
     dashboarddetails: {
         fontSize: 12,
@@ -295,5 +436,78 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: "600",
         marginTop: 3.1,
+    },
+    topholdingsContainer: {
+        alignItems: "center",
+        marginLeft: 20,
+    },
+    topholdingsHeader: {
+        fontSize: 10,
+        fontWeight: "700",
+        marginBottom: 5,
+    },
+    topholdingsWrapper: {
+        width: 90,
+        borderWidth: 1,
+        borderRadius: 12,
+        height: 90,
+    },
+    bottomSection: {
+        flexDirection: "row",
+        width: "100%",
+        marginTop: 20,
+        gap: 12,
+        justifyContent: "space-between",
+    },
+    bottomSideContainer: {
+        flex: 1,
+        alignItems: "center",
+    },
+    bottomHeader: {
+        fontSize: 12,
+        fontWeight: "700",
+        marginBottom: 8,
+    },
+    verticalCarouselWrapper: {
+        borderWidth: 1,
+        borderRadius: 12,
+        flex: 1,
+        width: "100%",
+    },
+    moverCard: {
+        borderRadius: 12,
+        borderWidth: 2,
+        padding: 8,
+        justifyContent: "center",
+        alignItems: "center",
+        marginVertical: 3,
+        height: 70,
+    },
+    moverSymbol: {
+        fontSize: 14,
+        fontWeight: "700",
+    },
+    moverChange: {
+        fontSize: 18,
+        fontWeight: "800",
+        marginTop: 3,
+    },
+    holdingCard: {
+        borderRadius: 12,
+        borderWidth: 2,
+        padding: 8,
+        justifyContent: "center",
+        alignItems: "center",
+        marginVertical: 3,
+        height: 70,
+    },
+    holdingSymbol: {
+        fontSize: 14,
+        fontWeight: "700",
+    },
+    holdingPercentage: {
+        fontSize: 18,
+        fontWeight: "800",
+        marginTop: 3,
     },
 });
