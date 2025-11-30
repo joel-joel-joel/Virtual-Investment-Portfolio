@@ -54,7 +54,6 @@ export default function HomeScreen() {
                             source={icons.pegasus}
                             style={[styles.icon, { tintColor: Colors.tint }]}
                         />
-                        <Text style={[styles.title, { color: Colors.tint }]}>Pegasus</Text>
                     </View>
                     <MaterialCommunityIcons
                         name="dots-vertical"
@@ -66,7 +65,7 @@ export default function HomeScreen() {
 
                 {/* Dashboard */}
                 <View style={styles.DashboardWrapper}>
-                    <View style={[styles.dashboard, { borderColor: "#266EF1"}]}>
+                    <View style={[styles.dashboard, { borderColor: "white"}]}>
 
                         {/* TOP ROW — TEXT + TALL BOX */}
                         <View style={styles.dashboardTopRow}>
@@ -123,7 +122,7 @@ export default function HomeScreen() {
                     <View
                         style={[
                             styles.watchlisthighlights,
-                            { backgroundColor: Colors.card, borderColor: "black" },
+                            { backgroundColor: Colors.card, borderColor: Colors.card },
                         ]}
                     >
                         <Text
@@ -206,7 +205,7 @@ export default function HomeScreen() {
                         <View
                             style={[
                                 styles.verticalCarouselWrapper,
-                                { backgroundColor: "white", borderColor: "#266EF1" }
+                                { backgroundColor: Colors.card, borderColor: Colors.card}
                             ]}
                         >
                             <Carousel
@@ -228,7 +227,7 @@ export default function HomeScreen() {
                                     <View
                                         style={[
                                             styles.moverCard,
-                                            { backgroundColor: Colors.card, borderColor: Colors.card }
+                                            { backgroundColor: "white", borderColor: "white" }
                                         ]}
                                     >
                                         <Text style={[styles.moverSymbol, { color: Colors.tint }]}>
@@ -258,7 +257,7 @@ export default function HomeScreen() {
                         <View
                             style={[
                                 styles.verticalCarouselWrapper,
-                                { backgroundColor: Colors.card, borderColor: "#266EF1" }
+                                { backgroundColor: Colors.card, borderColor: Colors.card }
                             ]}
                         >
                             <Carousel
@@ -283,10 +282,10 @@ export default function HomeScreen() {
                                             { backgroundColor: "white", borderColor: "white" }
                                         ]}
                                     >
-                                        <Text style={[styles.holdingSymbol, { color: "black" }]}>
+                                        <Text style={[styles.holdingSymbol, { color: "#266EF1" }]}>
                                             {item.symbol}
                                         </Text>
-                                        <Text style={[styles.holdingPercentage, { color: "#266EF1" }]}>
+                                        <Text style={[styles.holdingPercentage, { color: "black" }]}>
                                             {item.percentage}
                                         </Text>
                                     </View>
@@ -310,7 +309,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        marginTop: 0,
+        marginTop: -20,
         position: "relative",
     },
     centerGroup: {
@@ -318,8 +317,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     icon: {
-        width: 95,
-        height: 95,
+        width: 125,
+        height: 125,
         resizeMode: "contain",
     },
     title: {
@@ -331,9 +330,10 @@ const styles = StyleSheet.create({
     rightIcon: {
         position: "absolute",
         right: 0,
+        marginTop: 5,
     },
     DashboardWrapper: {
-        marginTop: -10,
+        marginTop: -35,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         padding: 12,
         borderWidth: 2,
-        borderColor: "#266EF1",
+        borderColor: "white",
     },
     stockCardContent: {
         alignItems: "center",
