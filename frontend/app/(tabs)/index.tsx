@@ -8,6 +8,8 @@ import { LineChart } from "react-native-chart-kit";
 import Carousel from "react-native-reanimated-carousel";
 import { useSharedValue } from "react-native-reanimated";
 import { StockTicker } from "../../src/components/StockTicker";
+import { ExpandableNewsCard } from '../../src/components/ExpandableNewsCard';
+
 
 const screenWidth = Dimensions.get("window").width - 48;
 
@@ -42,6 +44,30 @@ export default function HomeScreen() {
         { id: 3, symbol: "AMD", change: "+5.1%" },
         { id: 4, symbol: "META", change: "-4.3%" },
         { id: 5, symbol: "INTEL", change: "-3.7%" },
+    ];
+
+    const newsItems = [
+        {
+            id: 1,
+            title: "Fed Signals Rate Cuts Ahead",
+            description: "Federal Reserve indicates potential interest rate reductions...",
+            image: require('../../assets/images/apple.png'),
+            content: "The Federal Reserve has signaled that interest rate cuts may be coming in the near future as inflation pressures ease. This development has positive implications for stock market investors and borrowers. Markets responded positively to this announcement, with major indices posting gains.",
+        },
+        {
+            id: 2,
+            title: "Tech Stocks Rally on AI News",
+            description: "Technology sector leads market as AI developments continue...",
+            image: require('../../assets/images/apple.png'),
+            content: "Major technology companies announced breakthrough developments in artificial intelligence, spurring investor enthusiasm across the sector. Companies like NVIDIA, Microsoft, and Tesla saw significant gains as the AI narrative continues to drive market sentiment.",
+        },
+        {
+            id: 3,
+            title: "Earnings Season Exceeds Expectations",
+            description: "Companies report stronger than expected Q3 earnings...",
+            image: require('../../assets/images/apple.png'),
+            content: "Corporate earnings for the third quarter have exceeded analyst expectations across multiple sectors. Strong profit margins and revenue growth indicate resilient corporate performance despite economic headwinds.",
+        },
     ];
 
     return (
@@ -294,6 +320,10 @@ export default function HomeScreen() {
                         </View>
                     </View>
                 </View>
+
+                <ExpandableNewsCard news={newsItems} />
+
+
             </ScrollView>
         </View>
     );
