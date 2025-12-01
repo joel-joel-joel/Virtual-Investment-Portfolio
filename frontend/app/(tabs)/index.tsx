@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 30,
         fontWeight: "800",
-        marginLeft: -30,
+        marginLeft: -20,
         marginRight: 40,
     },
     rightIcon: {
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     },
     dashboard: {
         width: "100%",
-        padding: 20,
+        padding: 10,
         borderRadius: 12,
         borderWidth: 1,
         backgroundColor: "white",

@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '../constants/colors';
+import {Colors} from "@/constants/theme";
 
 interface NewsItem {
     id: number;
@@ -76,7 +77,7 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
                         />
                         <View style={styles.newsCardContent}>
                             <Text
-                                style={[styles.newsTitle, { color: Colors.text }]}
+                                style={[styles.newsTitle, { color: "#266EF1" }]}
                                 numberOfLines={2}
                             >
                                 {item.title}
@@ -186,6 +187,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
         marginBottom: 12,
+        marginLeft: 20,
     },
     newsCard: {
         flexDirection: 'row',
