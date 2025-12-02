@@ -187,7 +187,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
         marginBottom: 12,
-        marginLeft: 20,
+        marginLeft: 22,
+        fontStyle: "italic",
     },
     newsCard: {
         flexDirection: 'row',
