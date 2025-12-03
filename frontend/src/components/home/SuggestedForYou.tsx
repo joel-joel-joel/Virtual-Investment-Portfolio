@@ -6,23 +6,22 @@ import { useColorScheme } from "react-native";
 
 const { width } = Dimensions.get("window");
 
+
 const sectorColors = {
-    "Technology": { textColor: "#0369A1", cardColor: "#EFF6FF" },
-    "Semiconductors": { textColor: "#EF6C00", cardColor: "#FFF3E0" },
-    "FinTech": { textColor: "#15803D", cardColor: "#F0FDF4" },
-    "Consumer/Tech": { textColor: "#6D28D9", cardColor: "#F5F3FF" },
-    "Healthcare": { textColor: "#BE123C", cardColor: "#FFE4E6" },
-    "Markets": { textColor: "#7C3AED", cardColor: "#F3E8FF" },
+    "Technology":      { color: "#0369A1" },
+    "Semiconductors":  { color: "#EF6C00" },
+    "FinTech":         { color: "#15803D" },
+    "Consumer/Tech":   { color: "#6D28D9" },
+    "Healthcare":      { color: "#BE123C" },
+    "Markets":         { color: "#7C3AED" },
 };
 
 
 
 
-// Component for individual suggestion card
+
 // @ts-ignore
-const SuggestionCard = ({ stock, reason, icon, cardColor, textColor }) => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+const SuggestionCard = ({ stock, reason, icon, sectorColor }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (
@@ -32,8 +31,8 @@ const SuggestionCard = ({ stock, reason, icon, cardColor, textColor }) => {
             style={[
                 styles.suggestionCard,
                 {
-                    backgroundColor: cardColor,
-                    borderColor: textColor,
+                    backgroundColor: "white",
+                    borderColor: sectorColor,
                     maxHeight: isExpanded ? 280 : 120,
                 }
             ]}
@@ -41,24 +40,26 @@ const SuggestionCard = ({ stock, reason, icon, cardColor, textColor }) => {
             {/* Header Row */}
             <View style={styles.cardHeader}>
                 <View style={styles.leftContent}>
-                    <View style={[styles.iconBadge, { backgroundColor: textColor + "20" }]}>
+                    <View style={[styles.iconBadge, { backgroundColor: sectorColor + "20" }]}>
                         <MaterialCommunityIcons
                             name={icon}
                             size={20}
-                            color={textColor}
+                            color={sectorColor}
                         />
                     </View>
+
                     <View style={styles.stockInfo}>
-                        <Text style={[styles.stockTickerBig, { color: textColor }]}>
+                        <Text style={[styles.stockTickerBig, { color: sectorColor }]}>
                             {stock.symbol}
                         </Text>
-                        <Text style={[styles.reasonTag, { color: textColor, opacity: 0.7 }]}>
+                        <Text style={[styles.reasonTag, { color: sectorColor }]}>
                             {reason}
                         </Text>
                     </View>
                 </View>
+
                 <View style={styles.priceSection}>
-                    <Text style={[styles.priceText, { color: textColor }]}>
+                    <Text style={[styles.priceText, { color: sectorColor }]}>
                         {stock.price}
                     </Text>
                     <Text
@@ -74,58 +75,47 @@ const SuggestionCard = ({ stock, reason, icon, cardColor, textColor }) => {
                 </View>
             </View>
 
-            {/* Expanded Content */}
+            {/* Expanded Section */}
             {isExpanded && (
-                <View style={[styles.expandedContent, { borderTopColor: textColor + "30" }]}>
+                <View style={[styles.expandedContent, { borderTopColor: "#F3F6FA" }]}>
                     <View style={styles.metricRow}>
                         <View style={styles.metricItem}>
-                            <Text style={[styles.metricLabel, { color: textColor, opacity: 0.6 }]}>
-                                Volatility
-                            </Text>
-                            <Text style={[styles.metricValue, { color: textColor }]}>
-                                {stock.volatility}
-                            </Text>
+                            <Text style={styles.metricLabelBlack}>Volatility</Text>
+                            <Text style={styles.metricValueBlack}>{stock.volatility}</Text>
                         </View>
+
                         <View style={styles.metricItem}>
-                            <Text style={[styles.metricLabel, { color: textColor, opacity: 0.6 }]}>
-                                News Volume
-                            </Text>
-                            <Text style={[styles.metricValue, { color: textColor }]}>
-                                {stock.newsVolume}
-                            </Text>
+                            <Text style={styles.metricLabelBlack}>News Volume</Text>
+                            <Text style={styles.metricValueBlack}>{stock.newsVolume}</Text>
                         </View>
+
                         <View style={styles.metricItem}>
-                            <Text style={[styles.metricLabel, { color: textColor, opacity: 0.6 }]}>
-                                Sector
-                            </Text>
-                            <Text style={[styles.metricValue, { color: textColor }]}>
-                                {stock.sector}
-                            </Text>
+                            <Text style={styles.metricLabelBlack}>Sector</Text>
+                            <Text style={styles.metricValueBlack}>{stock.sector}</Text>
                         </View>
                     </View>
 
-                    <View style={[styles.insightBox, { backgroundColor: textColor + "10", borderColor: textColor + "30" }]}>
+                    <View style={[styles.insightBox, { backgroundColor: "#F3F6FA", borderColor: "#F3F6FA" }]}>
                         <MaterialCommunityIcons
                             name="lightbulb-on"
                             size={16}
-                            color={textColor}
+                            color="#000"
                             style={{ marginRight: 8 }}
                         />
-                        <Text style={[styles.insightText, { color: textColor }]}>
+                        <Text style={styles.insightTextBlack}>
                             {stock.insight}
                         </Text>
                     </View>
 
-                    <TouchableOpacity style={[styles.viewButton, { backgroundColor: textColor, borderColor: textColor }]}>
-                        <Text style={[styles.viewButtonText, { color: cardColor }]}>
-                            View Details →
-                        </Text>
+                    <TouchableOpacity style={styles.viewButtonBlue}>
+                        <Text style={styles.viewButtonBlueText}>View Details →</Text>
                     </TouchableOpacity>
                 </View>
             )}
         </TouchableOpacity>
     );
 };
+
 
 export const SuggestedForYou = () => {
     const colorScheme = useColorScheme();
@@ -226,8 +216,7 @@ export const SuggestedForYou = () => {
                             stock={stock}
                             reason={stock.reason}
                             icon={stock.icon}
-                            cardColor={sectorTheme.cardColor}
-                            textColor={sectorTheme.textColor}
+                            sectorColor={sectorTheme.color}
                         />
                     );
                 })}
@@ -282,8 +271,8 @@ const styles = StyleSheet.create({
         paddingRight: 12,
     },
     suggestionCard: {
-        width: width - 53,
-        minHeight: 120,
+        width: width - 85,
+        minHeight: 80,
         borderRadius: 16,
         borderWidth: 2,
         padding: 16,
@@ -395,6 +384,35 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: "500",
     },
+    metricLabelBlack: {
+        fontSize: 10,
+        fontWeight: "600",
+        color: "black",
+    },
+    metricValueBlack: {
+        fontSize: 12,
+        fontWeight: "700",
+        color: "black",
+    },
+    insightTextBlack: {
+        fontSize: 12,
+        fontWeight: "500",
+        flex: 1,
+        lineHeight: 16,
+        color: "black",
+    },
+    viewButtonBlue: {
+        paddingVertical: 10,
+        borderRadius: 10,
+        alignItems: "center",
+        backgroundColor: "#266EF1",
+    },
+    viewButtonBlueText: {
+        fontSize: 13,
+        fontWeight: "700",
+        color: "white",
+    },
+
 });
 
 export default SuggestedForYou;

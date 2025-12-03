@@ -432,7 +432,6 @@ const styles = StyleSheet.create({
         opacity: 0.8,
     },
     earningsCard: {
-        borderWidth: 1,
         borderRadius: 12,
         padding: 12,
         marginBottom: 8,

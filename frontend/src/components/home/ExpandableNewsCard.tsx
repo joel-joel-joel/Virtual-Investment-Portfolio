@@ -29,19 +29,19 @@ interface ExpandableNewsCardProps {
 
 // Sector color mapping
 const sectorColors = {
-    "Technology": { color: "#0369A1", bgLight: "#EFF6FF" },
-    "Semiconductors": { color: "#B45309", bgLight: "#FEF3C7" },
-    "FinTech": { color: "#15803D", bgLight: "#F0FDF4" },
-    "Consumer/Tech": { color: "#6D28D9", bgLight: "#F5F3FF" },
-    "Healthcare": { color: "#BE123C", bgLight: "#FFE4E6" },
-    "Markets": { color: "#7C3AED", bgLight: "#F3E8FF" },
+    "Technology": { color: "#0369A1" },
+    "Semiconductors": { color: "#B45309" },
+    "FinTech": { color: "#15803D" },
+    "Consumer/Tech": { color: "#6D28D9" },
+    "Healthcare": { color: "#BE123C"},
+    "Markets": { color: "#7C3AED" },
 };
 
 const SectorBadge = ({ sector }: { sector: string }) => {
     const sectorColor = sectorColors[sector as keyof typeof sectorColors] || sectorColors["Technology"];
 
     return (
-        <View style={[styles.sectorBadge, { backgroundColor: sectorColor.bgLight }]}>
+        <View style={[styles.sectorBadge, { backgroundColor: "white" }]}>
             <MaterialCommunityIcons
                 name="tag"
                 size={12}
@@ -78,7 +78,7 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, {backgroundColor: Colors.card}]}>
             <View style={styles.newsListWrapper}>
                 <View style={[styles.header, { borderBottomColor: Colors.card }]}>
                     <View>
@@ -108,7 +108,7 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
                             style={[
                                 styles.newsCard,
                                 {
-                                    backgroundColor: sectorTheme.bgLight, // Card background based on sector
+                                    backgroundColor: "white", // Card background based on sector
                                     borderColor: sectorTheme.color, // Optional: border accent
                                 },
                             ]}
@@ -223,9 +223,13 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
 const styles = StyleSheet.create({
     container: {
         width: '100%',
+        paddingHorizontal: 16,
+        paddingBottom: 24,
+        borderRadius: 20,
+        marginTop: 10,
     },
     newsListWrapper: {
-        marginTop: 30,
+        marginTop: 15,
     },
     newsHeader: {
         fontSize: 20,
@@ -283,9 +287,9 @@ const styles = StyleSheet.create({
         marginBottom: 2,
     },
     newsTitle: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '600',
-        marginBottom: 4,
+        marginBottom: -2,
     },
     sectorBadge: {
         flexDirection: 'row',
@@ -300,7 +304,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     newsDescription: {
-        fontSize: 12,
+        fontSize: 10,
     },
     modalOverlay: {
         flex: 1,

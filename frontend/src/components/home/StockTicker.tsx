@@ -2,11 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions, useColorScheme } from 'react-native';
 import { getThemeColors } from '../../constants/colors';
 
-
 interface TickerStock {
     symbol: string;
     price: string;
     change: string;
+    sector: string; // make sure sector is included
 }
 
 interface StockTickerProps {
@@ -14,6 +14,15 @@ interface StockTickerProps {
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
+
+const sectorColors: { [key: string]: string } = {
+    Technology: "#0369A1",
+    Semiconductors: "#EF6C00",
+    FinTech: "#15803D",
+    "Consumer/Tech": "#6D28D9",
+    Healthcare: "#BE123C",
+    Markets: "#7C3AED",
+};
 
 export const StockTicker: React.FC<StockTickerProps> = ({ stocks }) => {
     const colorScheme = useColorScheme();
@@ -49,27 +58,31 @@ export const StockTicker: React.FC<StockTickerProps> = ({ stocks }) => {
                         },
                     ]}
                 >
-                    {duplicatedStocks.map((stock, index) => (
-                        <View key={index} style={styles.tickerItem}>
-                            <Text style={[styles.tickerSymbol, { color: Colors.tint }]}>
-                                {stock.symbol}
-                            </Text>
-                            <Text style={[styles.tickerPrice, { color: Colors.text }]}>
-                                {stock.price}
-                            </Text>
-                            <Text
-                                style={[
-                                    styles.tickerChange,
-                                    {
-                                        color: stock.change.startsWith('+') ? '#2E7D32' : '#C62828',
-                                    },
-                                ]}
-                            >
-                                {stock.change}
-                            </Text>
-                            <View style={[styles.separator, { backgroundColor: Colors.border }]} />
-                        </View>
-                    ))}
+                    {duplicatedStocks.map((stock, index) => {
+                        const symbolColor = sectorColors[stock.sector] || Colors.tint;
+
+                        return (
+                            <View key={index} style={styles.tickerItem}>
+                                <Text style={[styles.tickerSymbol, { color: symbolColor }]}>
+                                    {stock.symbol}
+                                </Text>
+                                <Text style={[styles.tickerPrice, { color: Colors.text }]}>
+                                    {stock.price}
+                                </Text>
+                                <Text
+                                    style={[
+                                        styles.tickerChange,
+                                        {
+                                            color: stock.change.startsWith('+') ? '#2E7D32' : '#C62828',
+                                        },
+                                    ]}
+                                >
+                                    {stock.change}
+                                </Text>
+                                <View style={[styles.separator, { backgroundColor: Colors.border }]} />
+                            </View>
+                        );
+                    })}
                 </Animated.View>
             </View>
         </View>

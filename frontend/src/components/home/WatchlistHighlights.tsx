@@ -6,12 +6,23 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const screenWidth = Dimensions.get("window").width - 48;
 
+// ★ Sector color coding
+const sectorColors = {
+    "Technology": "#0369A1",
+    "Semiconductors": "#EF6C00",
+    "FinTech": "#15803D",
+    "Consumer/Tech": "#6D28D9",
+    "Healthcare": "#BE123C",
+    "Markets": "#7C3AED",
+};
+
+// ★ Added sectors for each company
 const watchlistStocks = [
-    { id: 1, symbol: "AAPL", price: "A$150.25", change: "+2.5%" },
-    { id: 2, symbol: "MSFT", price: "A$380.50", change: "+1.8%" },
-    { id: 3, symbol: "GOOGL", price: "A$140.75", change: "+3.2%" },
-    { id: 4, symbol: "TSLA", price: "A$245.30", change: "-1.5%" },
-    { id: 5, symbol: "AMZN", price: "A$170.90", change: "+2.1%" },
+    { id: 1, symbol: "AAPL", price: "A$150.25", change: "+2.5%", sector: "Technology" },
+    { id: 2, symbol: "MSFT", price: "A$380.50", change: "+1.8%", sector: "Technology" },
+    { id: 3, symbol: "GOOGL", price: "A$140.75", change: "+3.2%", sector: "Technology" },
+    { id: 4, symbol: "TSLA", price: "A$245.30", change: "-1.5%", sector: "Consumer/Tech" },
+    { id: 5, symbol: "AMZN", price: "A$170.90", change: "+2.1%", sector: "Technology" },
 ];
 
 export const WatchlistHighlights = () => {
@@ -39,13 +50,13 @@ export const WatchlistHighlights = () => {
 
             <Carousel
                 width={screenWidth / 1.2}
-                height={120} // Increased height to fit cards
+                height={120}
                 data={watchlistStocks}
                 loop
-                mode="parallax" // enable parallax mode
+                mode="parallax"
                 modeConfig={{
-                    parallaxScrollingScale: 0.85, // adjacent cards shrink
-                    parallaxScrollingOffset: 40,   // how much they shift
+                    parallaxScrollingScale: 0.85,
+                    parallaxScrollingOffset: 40,
                 }}
                 renderItem={({ item }) => (
                     <View style={[styles.stockCard, { backgroundColor: "white" }]}>
@@ -53,9 +64,27 @@ export const WatchlistHighlights = () => {
                             source={require('../../../assets/images/apple.png')}
                             style={{ width: 24, height: 24, marginBottom: 4 }}
                         />
-                        <Text style={[styles.stockSymbol, { color: Colors.tint }]}>{item.symbol}</Text>
-                        <Text style={[styles.stockPrice, { color: Colors.text }]}>{item.price}</Text>
-                        <Text style={[styles.stockChange, { color: item.change.startsWith("+") ? "#2E7D32" : "#C62828" }]}>
+
+                        {/* ★ Sector-colored stock symbol */}
+                        <Text
+                            style={[
+                                styles.stockSymbol,
+                                { color: sectorColors[item.sector as keyof typeof sectorColors] || Colors.tint }
+                            ]}
+                        >
+                            {item.symbol}
+                        </Text>
+
+                        <Text style={[styles.stockPrice, { color: Colors.text }]}>
+                            {item.price}
+                        </Text>
+
+                        <Text
+                            style={[
+                                styles.stockChange,
+                                { color: item.change.startsWith("+") ? "#2E7D32" : "#C62828" }
+                            ]}
+                        >
                             {item.change}
                         </Text>
                     </View>
@@ -71,8 +100,8 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         padding: 20,
-        borderRadius: 20, // Rounded all sides
-        height: 200, // Increased container height
+        borderRadius: 20,
+        height: 200,
     },
     header: {
         flexDirection: "row",
@@ -81,8 +110,19 @@ const styles = StyleSheet.create({
         width: "100%",
         marginBottom: 15,
     },
-    title: { fontSize: 18, fontWeight: "800", marginBottom: 2, textAlign: "left", marginLeft: -3},
-    subtitle: { fontSize: 12, marginBottom: -3, textAlign: "left" , marginTop: 3},
+    title: {
+        fontSize: 18,
+        fontWeight: "800",
+        marginBottom: 2,
+        textAlign: "left",
+        marginLeft: -3
+    },
+    subtitle: {
+        fontSize: 12,
+        marginBottom: -3,
+        textAlign: "left",
+        marginTop: 3
+    },
     stockCard: {
         borderRadius: 12,
         padding: 12,

@@ -44,12 +44,13 @@ export default function HomeScreen() {
     ];
 
     const watchlistStocks = [
-        { id: 1, symbol: "AAPL", price: "A$150.25", change: "+2.5%" },
-        { id: 2, symbol: "MSFT", price: "A$380.50", change: "+1.8%" },
-        { id: 3, symbol: "GOOGL", price: "A$140.75", change: "+3.2%" },
-        { id: 4, symbol: "TSLA", price: "A$245.30", change: "-1.5%" },
-        { id: 5, symbol: "AMZN", price: "A$170.90", change: "+2.1%" },
+        { id: 1, symbol: "AAPL", price: "A$150.25", change: "+2.5%", sector: "Technology" },
+        { id: 2, symbol: "MSFT", price: "A$380.50", change: "+1.8%", sector: "Technology" },
+        { id: 3, symbol: "GOOGL", price: "A$140.75", change: "+3.2%", sector: "Technology" },
+        { id: 4, symbol: "TSLA", price: "A$245.30", change: "-1.5%", sector: "Consumer/Tech" },
+        { id: 5, symbol: "AMZN", price: "A$170.90", change: "+2.1%", sector: "Consumer/Tech" },
     ];
+
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.background, padding: 24 }}>
@@ -63,7 +64,6 @@ export default function HomeScreen() {
                 <EarningsCalendar />
                 <ExpandableNewsCard news={newsItems} />
                 <SuggestedForYou />
-
             </ScrollView>
         </View>
     );
