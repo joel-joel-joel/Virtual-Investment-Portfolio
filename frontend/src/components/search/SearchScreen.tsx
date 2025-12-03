@@ -521,7 +521,7 @@ export default function SearchScreen() {
                     </Text>
                     <TouchableOpacity
                         onPress={handleClearSearch}
-                        style={[styles.clearButton, { marginTop: 16 }]} // ✅ remove color
+                        style={[styles.clearButton, { marginTop: 16 }]}
                     >
                         <Text style={{ color: Colors.tint, fontWeight: '700' }}>Clear search</Text>
                     </TouchableOpacity>
