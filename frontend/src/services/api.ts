@@ -1,0 +1,128 @@
+/**
+ * Base API Configuration
+ * Provides the foundation for all API service calls
+ */
+
+// Base URL for the backend API
+export const API_BASE_URL = 'http://localhost:8080';
+
+/**
+ * Get JWT token from storage
+ * TODO: Implement actual token storage (AsyncStorage for React Native)
+ */
+const getAuthToken = async (): Promise<string | null> => {
+  // Placeholder - implement with AsyncStorage
+  // import AsyncStorage from '@react-native-async-storage/async-storage';
+  // return await AsyncStorage.getItem('jwt_token');
+  return null;
+};
+
+/**
+ * Store JWT token in storage
+ * TODO: Implement actual token storage
+ */
+export const setAuthToken = async (token: string): Promise<void> => {
+  // Placeholder - implement with AsyncStorage
+  // import AsyncStorage from '@react-native-async-storage/async-storage';
+  // await AsyncStorage.setItem('jwt_token', token);
+};
+
+/**
+ * Remove JWT token from storage
+ * TODO: Implement actual token storage
+ */
+export const removeAuthToken = async (): Promise<void> => {
+  // Placeholder - implement with AsyncStorage
+  // import AsyncStorage from '@react-native-async-storage/async-storage';
+  // await AsyncStorage.removeItem('jwt_token');
+};
+
+/**
+ * Base fetch wrapper with error handling
+ */
+interface FetchOptions extends RequestInit {
+  requireAuth?: boolean;
+}
+
+export const apiFetch = async <T>(
+  endpoint: string,
+  options: FetchOptions = {}
+): Promise<T> => {
+  const { requireAuth = false, headers = {}, ...restOptions } = options;
+
+  const defaultHeaders: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  // Add auth token if required
+  if (requireAuth) {
+    const token = await getAuthToken();
+    if (token) {
+      defaultHeaders['Authorization'] = `Bearer ${token}`;
+    } else {
+      throw new Error('Authentication required but no token found');
+    }
+  }
+
+  const url = `${API_BASE_URL}${endpoint}`;
+
+  try {
+    const response = await fetch(url, {
+      ...restOptions,
+      headers: {
+        ...defaultHeaders,
+        ...headers,
+      },
+    });
+
+    // Handle different response statuses
+    if (!response.ok) {
+      const errorData = await response.text();
+
+      switch (response.status) {
+        case 400:
+          throw new Error(`Bad Request: ${errorData}`);
+        case 401:
+          throw new Error('Unauthorized: Invalid or missing authentication');
+        case 404:
+          throw new Error('Resource not found');
+        case 500:
+          throw new Error('Server error: Please try again later');
+        case 503:
+          throw new Error('Service unavailable: External API temporarily unavailable');
+        default:
+          throw new Error(`Request failed with status ${response.status}`);
+      }
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    // Parse JSON response
+    const data = await response.json();
+    return data as T;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Network error: Unable to connect to server');
+  }
+};
+
+/**
+ * Build query string from parameters
+ */
+export const buildQueryString = (params: Record<string, any>): string => {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      searchParams.append(key, String(value));
+    }
+  });
+
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : '';
+};
