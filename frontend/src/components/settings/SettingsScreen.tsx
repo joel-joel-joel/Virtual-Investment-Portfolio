@@ -646,24 +646,27 @@ export default function SettingsScreen({ navigation }: { navigation?: any }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        marginTop: 20,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 24,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
+        paddingVertical: 8,
+        borderBottomWidth: 0.4,
     },
     backButton: {
         padding: 8,
         marginLeft: -8,
+        marginTop: 5,
     },
     title: {
-        fontSize: 20,
+        fontSize: 28,
         fontWeight: '800',
         flex: 1,
         textAlign: 'center',
+        marginRight: -13,
     },
     scrollContent: {
         paddingVertical: 20,
@@ -671,7 +674,6 @@ const styles = StyleSheet.create({
     },
     section: {
         gap: 10,
-        paddingHorizontal: 24,
     },
     sectionHeader: {
         fontSize: 12,

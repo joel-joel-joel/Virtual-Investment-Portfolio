@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
     View,
@@ -10,8 +11,11 @@ import {
     Modal,
     Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
+import { useRouter } from 'expo-router';
+
 
 interface UserAccount {
     id: string;
@@ -111,6 +115,7 @@ const ProfileMenuOption = ({
 export default function ProfileScreen({ navigation }: { navigation?: any }) {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
+    const nav = useNavigation();
     const [activeAccount, setActiveAccount] = useState(userAccounts[0]);
     const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
 
@@ -119,13 +124,12 @@ export default function ProfileScreen({ navigation }: { navigation?: any }) {
         setShowAccountSwitcher(false);
     };
 
+    const router = useRouter();
+
     const handleSettingsPress = () => {
-        if (navigation) {
-            navigation.navigate('Settings');
-        } else {
-            Alert.alert('Navigation not available');
-        }
+        router.push('/(tabs)/settings');
     };
+
 
     const handleLogoutPress = () => {
         Alert.alert(

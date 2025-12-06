@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
     },
     title: {
-        fontSize: 20,
+        fontSize: 28,
         fontWeight: '800',
         fontStyle: 'italic',
         marginBottom: 4,

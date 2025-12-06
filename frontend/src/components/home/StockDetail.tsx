@@ -29,7 +29,7 @@ interface StockDetailProps {
 
 const screenWidth = Dimensions.get('window').width - 48;
 
-export const StockDetail: React.FC<StockDetailProps> = ({
+export const StockDetailScreen: React.FC<StockDetailProps> = ({
     symbol,
     price,
     change,

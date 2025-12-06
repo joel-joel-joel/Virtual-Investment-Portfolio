@@ -4,21 +4,26 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
-import { getThemeColors } from '@/src/constants/colors';
+import { getThemeColors } from '../src/constants/colors';
 
 // Screen Imports
-import HomeScreen from '@/app/(tabs)';
-import PortfolioScreen from '@/app/(tabs)/portfolio';
-import SearchScreen from '@/app/(tabs)/search';
-import WatchlistScreen from '@/app/(tabs)/watchlist';
-import ProfileScreen from '@/app/(tabs)/profile';
+import HomeScreen from './(tabs)/index';
+import PortfolioScreen from './(tabs)/portfolio';
+import SearchScreen from './(tabs)/search';
+import WatchlistScreen from './(tabs)/watchlist';
+import ProfileScreen from './(tabs)/profile';
 
 // Modal/Stack Imports
-import SettingsScreen from '@/src/components/settings/SettingsScreen';
-import {StockDetail} from '@/src/components/home/StockDetail'; // Create this if needed
+import Settings from './(tabs)/settings';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+// Define Navigation Params
+export type RootStackParamList = {
+    MainTabs: undefined;
+    Settings: undefined;
+};
 
 // Tab Navigator
 function TabNavigator() {
@@ -117,15 +122,13 @@ function RootStack() {
             screenOptions={{
                 headerStyle: {
                     backgroundColor: Colors.card,
-                    borderBottomColor: Colors.border,
-                    borderBottomWidth: 1,
                 },
                 headerTintColor: Colors.text,
                 headerTitleStyle: {
                     fontWeight: '800',
                     fontSize: 18,
                 },
-                headerBackTitleVisible: false,
+                headerBackVisible: false,
                 contentStyle: {
                     backgroundColor: Colors.background,
                 },
@@ -150,26 +153,10 @@ function RootStack() {
             >
                 <Stack.Screen
                     name="Settings"
-                    component={SettingsScreen}
+                    component={Settings}
                     options={{
                         title: 'Settings',
-                        headerBackTitleVisible: false,
-                    }}
-                />
-            </Stack.Group>
-
-            {/* Modal Stack - Stock Detail */}
-            <Stack.Group
-                screenOptions={{
-                    presentation: 'card',
-                }}
-            >
-                <Stack.Screen
-                    name="StockDetail"
-                    component={StockDetailScreen}
-                    options={{
-                        title: 'Stock Details',
-                        headerBackTitleVisible: false,
+                        headerBackVisible: false,
                     }}
                 />
             </Stack.Group>

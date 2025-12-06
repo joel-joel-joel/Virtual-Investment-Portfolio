@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     dashboardtitle: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: "800",
         fontStyle: "italic",
         marginBottom: 4,
