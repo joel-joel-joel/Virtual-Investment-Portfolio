@@ -18,7 +18,6 @@ export default function TabLayout() {
         { name: 'profile', icon: 'profile', title: 'Profile' },
     ];
 
-    // Get current tab from segments
     const currentTab = segments[1] || 'index';
 
     return (
@@ -35,7 +34,6 @@ export default function TabLayout() {
                 <Stack.Screen name="profile" />
             </Stack>
 
-            {/* Custom Tab Bar - No React Navigation indicator */}
             <View
                 style={[
                     styles.tabBar,

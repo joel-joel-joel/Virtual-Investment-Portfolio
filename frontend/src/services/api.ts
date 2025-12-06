@@ -2,35 +2,46 @@
  * Base API Configuration
  * Provides the foundation for all API service calls
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import * as SecureStore from 'expo-secure-store';
 
 // Base URL for the backend API
 export const API_BASE_URL = 'http://localhost:8080';
 
+const TOKEN_KEY = 'user_token';
+
 /**
- * Get JWT token from storage
- * TODO: Implement actual token storage (AsyncStorage for React Native)
+ * Get JWT token from SecureStore
  */
 const getAuthToken = async (): Promise<string | null> => {
-    return await AsyncStorage.getItem('jwt_token');
+  try {
+    return await SecureStore.getItemAsync(TOKEN_KEY);
+  } catch (error) {
+    console.error('Failed to get auth token:', error);
+    return null;
+  }
 };
 
 /**
- * Store JWT token in storage
- * TODO: Implement actual token storage
+ * Store JWT token in SecureStore
  */
 export const setAuthToken = async (token: string): Promise<void> => {
-  // Placeholder - implement with AsyncStorage
-    await AsyncStorage.setItem('jwt_token', token);
+  try {
+    await SecureStore.setItemAsync(TOKEN_KEY, token);
+  } catch (error) {
+    console.error('Failed to set auth token:', error);
+    throw error;
+  }
 };
 
 /**
- * Remove JWT token from storage
- * TODO: Implement actual token storage
+ * Remove JWT token from SecureStore
  */
 export const removeAuthToken = async (): Promise<void> => {
-     await AsyncStorage.removeItem('jwt_token');
+  try {
+    await SecureStore.deleteItemAsync(TOKEN_KEY);
+  } catch (error) {
+    console.error('Failed to remove auth token:', error);
+  }
 };
 
 /**

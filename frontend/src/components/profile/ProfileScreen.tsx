@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -7,64 +6,25 @@ import {
     ScrollView,
     TouchableOpacity,
     useColorScheme,
-    Image,
     Modal,
     Alert,
+    ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
 import { useRouter } from 'expo-router';
-
-
-interface UserAccount {
-    id: string;
-    name: string;
-    email: string;
-    image?: any;
-    broker?: string;
-}
-
-interface PortfolioStats {
-    totalValue: number;
-    totalInvested: number;
-    totalReturn: number;
-    returnPercent: number;
-    bestPerformer: string;
-    worstPerformer: string;
-}
-
-const userAccounts: UserAccount[] = [
-    {
-        id: '1',
-        name: 'Alex Morgan',
-        email: 'alex.morgan@email.com',
-        broker: 'Interactive Brokers',
-    },
-    {
-        id: '2',
-        name: 'Alex Morgan',
-        email: 'alex.investor@email.com',
-        broker: 'Commsec',
-    },
-];
-
-const portfolioStats: PortfolioStats = {
-    totalValue: 1027680,
-    totalInvested: 1000000,
-    totalReturn: 27680,
-    returnPercent: 2.768,
-    bestPerformer: 'NVDA',
-    worstPerformer: 'AMD',
-};
+import { useAuth } from '@/src/context/AuthContext';
+import { getUserDashboard } from '@/src/services/dashboardService';
+import type { DashboardDTO } from '@/src/types/api';
+import { logout as apiLogout } from '@/src/services/authService';
 
 const ProfileMenuOption = ({
-                               icon,
-                               label,
-                               value,
-                               onPress,
-                               colors,
-                           }: {
+    icon,
+    label,
+    value,
+    onPress,
+    colors,
+}: {
     icon: string;
     label: string;
     value?: string;
@@ -112,19 +72,44 @@ const ProfileMenuOption = ({
     );
 };
 
-export default function ProfileScreen({ navigation }: { navigation?: any }) {
+export default function ProfileScreen() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
-    const nav = useNavigation();
-    const [activeAccount, setActiveAccount] = useState(userAccounts[0]);
-    const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
+    const router = useRouter();
+    const { user, accounts, activeAccount, switchAccount, logout, refreshAccounts } = useAuth();
 
-    const handleAccountSwitch = (account: UserAccount) => {
-        setActiveAccount(account);
+    const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
+    const [dashboardData, setDashboardData] = useState<DashboardDTO | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (user && activeAccount) {
+            loadDashboardData();
+        }
+    }, [user, activeAccount]);
+
+    const loadDashboardData = async () => {
+        if (!user) return;
+
+        try {
+            setLoading(true);
+            const data = await getUserDashboard(user.userId);
+            setDashboardData(data);
+        } catch (error) {
+            console.error('Failed to load dashboard data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAccountSwitch = (accountId: string) => {
+        switchAccount(accountId);
         setShowAccountSwitcher(false);
     };
 
-    const router = useRouter();
+    const handleCreateAccount = () => {
+        router.push('/account/create');
+    };
 
     const handleSettingsPress = () => {
         router.push('/(tabs)/settings');
@@ -139,17 +124,37 @@ export default function ProfileScreen({ navigation }: { navigation?: any }) {
             'Logout',
             'Are you sure you want to logout?',
             [
-                { text: 'Cancel', onPress: () => {}, style: 'cancel' },
+                { text: 'Cancel', style: 'cancel' },
                 {
                     text: 'Logout',
-                    onPress: () => {
-                        Alert.alert('Logged out', 'You have been logged out successfully');
+                    onPress: async () => {
+                        try {
+                            await apiLogout();
+                            await logout();
+                            router.replace('/auth/login');
+                        } catch (error) {
+                            Alert.alert('Error', 'Failed to logout. Please try again.');
+                        }
                     },
                     style: 'destructive',
                 },
             ]
         );
     };
+
+    // Calculate portfolio stats from dashboard data
+    const portfolioStats = dashboardData ? {
+        totalValue: dashboardData.portfolioOverview.totalPortfolioValue + dashboardData.portfolioOverview.cashBalance,
+        totalInvested: dashboardData.portfolioOverview.totalCostBasis,
+        totalReturn: dashboardData.portfolioOverview.totalUnrealizedGain + dashboardData.portfolioOverview.totalRealizedGain,
+        returnPercent: dashboardData.portfolioPerformance.roiPercentage,
+        bestPerformer: dashboardData.portfolioOverview.holdings.length > 0
+            ? [...dashboardData.portfolioOverview.holdings].sort((a, b) => b.unrealizedGainPercent - a.unrealizedGainPercent)[0]?.stockSymbol || 'N/A'
+            : 'N/A',
+        worstPerformer: dashboardData.portfolioOverview.holdings.length > 0
+            ? [...dashboardData.portfolioOverview.holdings].sort((a, b) => a.unrealizedGainPercent - b.unrealizedGainPercent)[0]?.stockSymbol || 'N/A'
+            : 'N/A',
+    } : null;
 
     return (
         <View style={[styles.container, { backgroundColor: Colors.background }]}>
@@ -191,110 +196,134 @@ export default function ProfileScreen({ navigation }: { navigation?: any }) {
                         {/* User Info */}
                         <View style={styles.userInfo}>
                             <Text style={[styles.userName, { color: Colors.text }]}>
-                                {activeAccount.name}
+                                {user?.firstName || 'User'} {user?.lastName || ''}
                             </Text>
                             <Text style={[styles.userEmail, { color: Colors.text, opacity: 0.7 }]}>
-                                {activeAccount.email}
+                                {user?.email || 'No email'}
                             </Text>
-                            {activeAccount.broker && (
+                            {activeAccount && (
                                 <View style={[styles.brokerBadge, { backgroundColor: Colors.tint + '20' }]}>
                                     <MaterialCommunityIcons
-                                        name="office-building-outline"
+                                        name="wallet-outline"
                                         size={12}
                                         color={Colors.tint}
                                     />
                                     <Text style={[styles.brokerText, { color: Colors.tint }]}>
-                                        {activeAccount.broker}
+                                        {activeAccount.accountName}
                                     </Text>
                                 </View>
                             )}
                         </View>
                     </View>
 
-                    {/* Account Switcher Button */}
-                    {userAccounts.length > 1 && (
+                    {/* Account Switcher and Create Account Buttons */}
+                    <View style={styles.accountButtons}>
+                        {accounts.length > 1 && (
+                            <TouchableOpacity
+                                onPress={() => setShowAccountSwitcher(true)}
+                                style={[styles.accountButton, { backgroundColor: Colors.background, borderColor: Colors.border, flex: 1 }]}
+                            >
+                                <MaterialCommunityIcons
+                                    name="account-switch-outline"
+                                    size={16}
+                                    color={Colors.tint}
+                                />
+                                <Text style={[styles.accountButtonText, { color: Colors.tint }]}>
+                                    Switch Account
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                         <TouchableOpacity
-                            onPress={() => setShowAccountSwitcher(true)}
-                            style={[styles.switchAccountButton, { backgroundColor: Colors.background, borderColor: Colors.border }]}
+                            onPress={handleCreateAccount}
+                            style={[styles.accountButton, { backgroundColor: Colors.tint, flex: accounts.length > 1 ? 1 : undefined }]}
                         >
                             <MaterialCommunityIcons
-                                name="account-switch-outline"
+                                name="plus-circle"
                                 size={16}
-                                color={Colors.tint}
+                                color="white"
                             />
-                            <Text style={[styles.switchAccountText, { color: Colors.tint }]}>
-                                Switch Account
+                            <Text style={[styles.accountButtonText, { color: 'white' }]}>
+                                Create Account
                             </Text>
                         </TouchableOpacity>
-                    )}
+                    </View>
                 </View>
 
                 {/* Portfolio Analytics Summary */}
-                <View style={styles.analyticsSection}>
-                    <Text style={[styles.sectionTitle, { color: Colors.text }]}>
-                        Portfolio Summary
-                    </Text>
+                {loading ? (
+                    <View style={[styles.loadingContainer, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
+                        <ActivityIndicator size="large" color={Colors.tint} />
+                        <Text style={[styles.loadingText, { color: Colors.text, opacity: 0.6 }]}>
+                            Loading portfolio data...
+                        </Text>
+                    </View>
+                ) : portfolioStats ? (
+                    <View style={styles.analyticsSection}>
+                        <Text style={[styles.sectionTitle, { color: Colors.text }]}>
+                            Portfolio Summary
+                        </Text>
 
-                    {/* Main Stats */}
-                    <View style={[styles.statsGrid, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
-                        <View style={styles.statBlock}>
-                            <Text style={[styles.statLabel, { color: Colors.text, opacity: 0.6 }]}>
-                                Total Value
-                            </Text>
-                            <Text style={[styles.statValueLarge, { color: Colors.text }]}>
-                                A${(portfolioStats.totalValue / 1000).toFixed(0)}K
-                            </Text>
+                        {/* Main Stats */}
+                        <View style={[styles.statsGrid, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
+                            <View style={styles.statBlock}>
+                                <Text style={[styles.statLabel, { color: Colors.text, opacity: 0.6 }]}>
+                                    Total Value
+                                </Text>
+                                <Text style={[styles.statValueLarge, { color: Colors.text }]}>
+                                    A${(portfolioStats.totalValue / 1000).toFixed(0)}K
+                                </Text>
+                            </View>
+                            <View style={[styles.statDivider, { backgroundColor: Colors.border }]} />
+                            <View style={styles.statBlock}>
+                                <Text style={[styles.statLabel, { color: Colors.text, opacity: 0.6 }]}>
+                                    Total Return
+                                </Text>
+                                <Text style={[styles.statValueLarge, { color: portfolioStats.returnPercent >= 0 ? '#2E7D32' : '#C62828' }]}>
+                                    {portfolioStats.returnPercent >= 0 ? '+' : ''}{portfolioStats.returnPercent.toFixed(2)}%
+                                </Text>
+                            </View>
                         </View>
-                        <View style={[styles.statDivider, { backgroundColor: Colors.border }]} />
-                        <View style={styles.statBlock}>
-                            <Text style={[styles.statLabel, { color: Colors.text, opacity: 0.6 }]}>
-                                Total Return
-                            </Text>
-                            <Text style={[styles.statValueLarge, { color: '#2E7D32' }]}>
-                                +{portfolioStats.returnPercent.toFixed(2)}%
-                            </Text>
+
+                        {/* Detailed Stats */}
+                        <View style={[styles.detailedStats, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
+                            <View style={styles.detailRow}>
+                                <Text style={[styles.detailLabel, { color: Colors.text, opacity: 0.6 }]}>
+                                    Amount Invested
+                                </Text>
+                                <Text style={[styles.detailValue, { color: Colors.text }]}>
+                                    A${portfolioStats.totalInvested.toLocaleString('en-AU')}
+                                </Text>
+                            </View>
+                            <View style={[styles.detailDivider, { backgroundColor: Colors.border }]} />
+                            <View style={styles.detailRow}>
+                                <Text style={[styles.detailLabel, { color: Colors.text, opacity: 0.6 }]}>
+                                    Gain/Loss
+                                </Text>
+                                <Text style={[styles.detailValue, { color: portfolioStats.totalReturn >= 0 ? '#2E7D32' : '#C62828' }]}>
+                                    {portfolioStats.totalReturn >= 0 ? '+' : ''}A${portfolioStats.totalReturn.toLocaleString('en-AU')}
+                                </Text>
+                            </View>
+                            <View style={[styles.detailDivider, { backgroundColor: Colors.border }]} />
+                            <View style={styles.detailRow}>
+                                <Text style={[styles.detailLabel, { color: Colors.text, opacity: 0.6 }]}>
+                                    Best Performer
+                                </Text>
+                                <Text style={[styles.detailValue, { color: '#2E7D32' }]}>
+                                    {portfolioStats.bestPerformer}
+                                </Text>
+                            </View>
+                            <View style={[styles.detailDivider, { backgroundColor: Colors.border }]} />
+                            <View style={styles.detailRow}>
+                                <Text style={[styles.detailLabel, { color: Colors.text, opacity: 0.6 }]}>
+                                    Worst Performer
+                                </Text>
+                                <Text style={[styles.detailValue, { color: '#C62828' }]}>
+                                    {portfolioStats.worstPerformer}
+                                </Text>
+                            </View>
                         </View>
                     </View>
-
-                    {/* Detailed Stats */}
-                    <View style={[styles.detailedStats, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
-                        <View style={styles.detailRow}>
-                            <Text style={[styles.detailLabel, { color: Colors.text, opacity: 0.6 }]}>
-                                Amount Invested
-                            </Text>
-                            <Text style={[styles.detailValue, { color: Colors.text }]}>
-                                A${portfolioStats.totalInvested.toLocaleString('en-AU')}
-                            </Text>
-                        </View>
-                        <View style={[styles.detailDivider, { backgroundColor: Colors.border }]} />
-                        <View style={styles.detailRow}>
-                            <Text style={[styles.detailLabel, { color: Colors.text, opacity: 0.6 }]}>
-                                Gain/Loss
-                            </Text>
-                            <Text style={[styles.detailValue, { color: '#2E7D32' }]}>
-                                +A${portfolioStats.totalReturn.toLocaleString('en-AU')}
-                            </Text>
-                        </View>
-                        <View style={[styles.detailDivider, { backgroundColor: Colors.border }]} />
-                        <View style={styles.detailRow}>
-                            <Text style={[styles.detailLabel, { color: Colors.text, opacity: 0.6 }]}>
-                                Best Performer
-                            </Text>
-                            <Text style={[styles.detailValue, { color: '#2E7D32' }]}>
-                                {portfolioStats.bestPerformer}
-                            </Text>
-                        </View>
-                        <View style={[styles.detailDivider, { backgroundColor: Colors.border }]} />
-                        <View style={styles.detailRow}>
-                            <Text style={[styles.detailLabel, { color: Colors.text, opacity: 0.6 }]}>
-                                Worst Performer
-                            </Text>
-                            <Text style={[styles.detailValue, { color: '#C62828' }]}>
-                                {portfolioStats.worstPerformer}
-                            </Text>
-                        </View>
-                    </View>
-                </View>
+                ) : null}
 
                 {/* Menu Options */}
                 <View style={styles.menuSection}>
@@ -377,40 +406,35 @@ export default function ProfileScreen({ navigation }: { navigation?: any }) {
                     </View>
 
                     <View style={styles.modalContent}>
-                        {userAccounts.map(account => (
+                        {accounts.map(account => (
                             <TouchableOpacity
-                                key={account.id}
-                                onPress={() => handleAccountSwitch(account)}
+                                key={account.accountId}
+                                onPress={() => handleAccountSwitch(account.accountId)}
                                 style={[
                                     styles.accountOption,
                                     {
                                         backgroundColor: Colors.card,
-                                        borderColor: activeAccount.id === account.id ? Colors.tint : Colors.border,
-                                        borderWidth: activeAccount.id === account.id ? 2 : 1,
+                                        borderColor: activeAccount?.accountId === account.accountId ? Colors.tint : Colors.border,
+                                        borderWidth: activeAccount?.accountId === account.accountId ? 2 : 1,
                                     }
                                 ]}
                             >
                                 <View style={[styles.accountOptionImage, { backgroundColor: Colors.tint }]}>
                                     <MaterialCommunityIcons
-                                        name="account-circle"
-                                        size={40}
+                                        name="wallet-outline"
+                                        size={24}
                                         color="white"
                                     />
                                 </View>
                                 <View style={styles.accountOptionInfo}>
                                     <Text style={[styles.accountOptionName, { color: Colors.text }]}>
-                                        {account.name}
+                                        {account.accountName}
                                     </Text>
                                     <Text style={[styles.accountOptionEmail, { color: Colors.text, opacity: 0.6 }]}>
-                                        {account.email}
+                                        Balance: A${account.cashBalance.toLocaleString('en-AU')}
                                     </Text>
-                                    {account.broker && (
-                                        <Text style={[styles.accountOptionBroker, { color: Colors.text, opacity: 0.5 }]}>
-                                            {account.broker}
-                                        </Text>
-                                    )}
                                 </View>
-                                {activeAccount.id === account.id && (
+                                {activeAccount?.accountId === account.accountId && (
                                     <MaterialCommunityIcons
                                         name="check-circle"
                                         size={24}
@@ -426,253 +450,265 @@ export default function ProfileScreen({ navigation }: { navigation?: any }) {
     );
 }
 
-    const styles = StyleSheet.create({
-        container: {
-            flex: 1,
-            marginTop: -40,
-        },
-        header: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: 12,
-            paddingVertical: 16,
-        },
-        title: {
-            fontSize: 28,
-            fontWeight: '800',
-            fontStyle: 'italic',
-        },
-        settingsButton: {
-            width: 44,
-            height: 44,
-            borderRadius: 10,
-            borderWidth: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        scrollContent: {
-            paddingVertical: 0,
-            gap: 24,
-        },
-        profileCard: {
-            borderWidth: 1,
-            borderRadius: 16,
-            padding: 20,
-            gap: 16,
-        },
-        profileHeader: {
-            flexDirection: 'row',
-            gap: 16,
-            alignItems: 'flex-start',
-        },
-        profileImageContainer: {
-            width: 80,
-            height: 80,
-            borderRadius: 40,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        userInfo: {
-            flex: 1,
-            gap: 8,
-        },
-        userName: {
-            fontSize: 18,
-            fontWeight: '800',
-        },
-        userEmail: {
-            fontSize: 13,
-            fontWeight: '500',
-        },
-        brokerBadge: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 6,
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            borderRadius: 6,
-            alignSelf: 'flex-start',
-            marginTop: 4,
-        },
-        brokerText: {
-            fontSize: 11,
-            fontWeight: '600',
-        },
-        switchAccountButton: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            paddingVertical: 10,
-            borderRadius: 10,
-            borderWidth: 1,
-        },
-        switchAccountText: {
-            fontSize: 12,
-            fontWeight: '700',
-        },
-        analyticsSection: {
-            gap: 12,
-        },
-        sectionTitle: {
-            fontSize: 16,
-            fontWeight: '700',
-            fontStyle: 'italic',
-            paddingHorizontal: 12,
-        },
-        statsGrid: {
-            borderWidth: 1,
-            borderRadius: 12,
-            flexDirection: 'row',
-            overflow: 'hidden',
-        },
-        statBlock: {
-            flex: 1,
-            paddingVertical: 14,
-            paddingHorizontal: 12,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        statLabel: {
-            fontSize: 10,
-            fontWeight: '600',
-            marginBottom: 6,
-        },
-        statValueLarge: {
-            fontSize: 18,
-            fontWeight: '800',
-        },
-        statDivider: {
-            width: 1,
-        },
-        detailedStats: {
-            borderWidth: 1,
-            borderRadius: 12,
-            overflow: 'hidden',
-        },
-        detailRow: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingVertical: 12,
-            paddingHorizontal: 16,
-        },
-        detailLabel: {
-            fontSize: 12,
-            fontWeight: '600',
-        },
-        detailValue: {
-            fontSize: 13,
-            fontWeight: '700',
-        },
-        detailDivider: {
-            height: 1,
-        },
-        menuSection: {
-            gap: 10,
-        },
-        menuOption: {
-            borderWidth: 1,
-            borderRadius: 12,
-            padding: 14,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-        },
-        menuLeft: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 12,
-            flex: 1,
-        },
-        menuIconContainer: {
-            width: 40,
-            height: 40,
-            borderRadius: 10,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'transparent',
-        },
-        menuLabel: {
-            fontSize: 13,
-            fontWeight: '600',
-        },
-        menuRight: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-        },
-        menuValue: {
-            fontSize: 12,
-            fontWeight: '600',
-        },
-        logoutButton: {
-            borderWidth: 1,
-            borderRadius: 12,
-            paddingVertical: 12,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-        },
-        logoutButtonText: {
-            fontSize: 13,
-            fontWeight: '700',
-        },
-        modalOverlay: {
-            flex: 1,
-            paddingTop: 60,
-        },
-        modalHeader: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: 24,
-            paddingVertical: 16,
-            borderBottomWidth: 1,
-        },
-        modalTitle: {
-            fontSize: 20,
-            fontWeight: '800',
-        },
-        closeButton: {
-            padding: 8,
-        },
-        modalContent: {
-            paddingHorizontal: 24,
-            paddingVertical: 20,
-            gap: 12,
-        },
-        accountOption: {
-            borderWidth: 1,
-            borderRadius: 12,
-            padding: 14,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 12,
-        },
-        accountOptionImage: {
-            width: 50,
-            height: 50,
-            borderRadius: 25,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        accountOptionInfo: {
-            flex: 1,
-            gap: 4,
-        },
-        accountOptionName: {
-            fontSize: 13,
-            fontWeight: '700',
-        },
-        accountOptionEmail: {
-            fontSize: 11,
-            fontWeight: '500',
-        },
-        accountOptionBroker: {
-            fontSize: 10,
-            fontWeight: '500',
-        },
-    });
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        marginTop: -40,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 16,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: '800',
+        fontStyle: 'italic',
+    },
+    settingsButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 10,
+        borderWidth: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    scrollContent: {
+        paddingVertical: 0,
+        gap: 24,
+    },
+    profileCard: {
+        borderWidth: 1,
+        borderRadius: 16,
+        padding: 20,
+        gap: 16,
+    },
+    profileHeader: {
+        flexDirection: 'row',
+        gap: 16,
+        alignItems: 'flex-start',
+    },
+    profileImageContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    userInfo: {
+        flex: 1,
+        gap: 8,
+    },
+    userName: {
+        fontSize: 18,
+        fontWeight: '800',
+    },
+    userEmail: {
+        fontSize: 13,
+        fontWeight: '500',
+    },
+    brokerBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 6,
+        alignSelf: 'flex-start',
+        marginTop: 4,
+    },
+    brokerText: {
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    accountButtons: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    accountButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 10,
+        borderRadius: 10,
+        borderWidth: 1,
+    },
+    accountButtonText: {
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    loadingContainer: {
+        borderWidth: 1,
+        borderRadius: 12,
+        padding: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+    },
+    loadingText: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    analyticsSection: {
+        gap: 12,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        fontStyle: 'italic',
+        paddingHorizontal: 12,
+    },
+    statsGrid: {
+        borderWidth: 1,
+        borderRadius: 12,
+        flexDirection: 'row',
+        overflow: 'hidden',
+    },
+    statBlock: {
+        flex: 1,
+        paddingVertical: 14,
+        paddingHorizontal: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    statLabel: {
+        fontSize: 10,
+        fontWeight: '600',
+        marginBottom: 6,
+    },
+    statValueLarge: {
+        fontSize: 18,
+        fontWeight: '800',
+    },
+    statDivider: {
+        width: 1,
+    },
+    detailedStats: {
+        borderWidth: 1,
+        borderRadius: 12,
+        overflow: 'hidden',
+    },
+    detailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+    },
+    detailLabel: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    detailValue: {
+        fontSize: 13,
+        fontWeight: '700',
+    },
+    detailDivider: {
+        height: 1,
+    },
+    menuSection: {
+        gap: 10,
+    },
+    menuOption: {
+        borderWidth: 1,
+        borderRadius: 12,
+        padding: 14,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    menuLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
+    },
+    menuIconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+    },
+    menuLabel: {
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    menuRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    menuValue: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    logoutButton: {
+        borderWidth: 1,
+        borderRadius: 12,
+        paddingVertical: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    logoutButtonText: {
+        fontSize: 13,
+        fontWeight: '700',
+    },
+    modalOverlay: {
+        flex: 1,
+        paddingTop: 60,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '800',
+    },
+    closeButton: {
+        padding: 8,
+    },
+    modalContent: {
+        paddingHorizontal: 24,
+        paddingVertical: 20,
+        gap: 12,
+    },
+    accountOption: {
+        borderWidth: 1,
+        borderRadius: 12,
+        padding: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    accountOptionImage: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    accountOptionInfo: {
+        flex: 1,
+        gap: 4,
+    },
+    accountOptionName: {
+        fontSize: 13,
+        fontWeight: '700',
+    },
+    accountOptionEmail: {
+        fontSize: 11,
+        fontWeight: '500',
+    },
+});
