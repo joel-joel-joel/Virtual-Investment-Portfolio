@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
+import { useRouter } from 'expo-router';
 
 interface WatchlistStock {
     id: string;
@@ -142,8 +143,41 @@ const WatchlistCard = ({
     onRemove: (id: string) => void;
     onAddToPortfolio: (stock: WatchlistStock) => void;
 }) => {
+    const router = useRouter();
     const isPositive = stock.changePercent >= 0;
     const [expanded, setExpanded] = useState(false);
+
+    const handleInvest = () => {
+        const stockData = {
+            symbol: stock.symbol,
+            name: stock.name,
+            price: stock.price,
+            change: stock.change,
+            changePercent: stock.changePercent,
+            sector: stock.sector,
+            marketCap: '0',
+            peRatio: '0',
+            dividend: '0',
+            dayHigh: stock.dayHigh,
+            dayLow: stock.dayLow,
+            yearHigh: 0,
+            yearLow: 0,
+            description: '',
+            employees: '',
+            founded: '',
+            website: '',
+            nextEarningsDate: '',
+            nextDividendDate: '',
+            earningsPerShare: '',
+        };
+
+        router.push({
+            pathname: '/transaction/buy',
+            params: {
+                stock: JSON.stringify(stockData),
+            },
+        });
+    };
 
     return (
         <TouchableOpacity
@@ -227,7 +261,7 @@ const WatchlistCard = ({
                     {/* Action Buttons */}
                     <View style={styles.actionButtons}>
                         <TouchableOpacity
-                            onPress={() => onAddToPortfolio(stock)}
+                            onPress={handleInvest}
                             style={[styles.actionButton, { backgroundColor: colors.tint }]}
                         >
                             <MaterialCommunityIcons name="plus" size={16} color="white" />

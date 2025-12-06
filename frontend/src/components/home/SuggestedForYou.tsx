@@ -130,6 +130,7 @@ const STOCK_DATA: Record<string, any> = {
 };
 
 // ------------------------- SUGGESTION CARD -------------------------
+// @ts-ignore
 const SuggestionCard = ({ stock, reason, icon, sectorColor }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const router = useRouter();
@@ -330,6 +331,7 @@ export const SuggestedForYou = () => {
                 contentContainerStyle={styles.contentContainer}
             >
                 {suggestedStocks.map((stock) => {
+                    // @ts-ignore
                     const sectorTheme = sectorColors[stock.sector] || { color: "#000" };
                     return (
                         <SuggestionCard

@@ -130,6 +130,9 @@ export default function ProfileScreen({ navigation }: { navigation?: any }) {
         router.push('/(tabs)/settings');
     };
 
+    const handleTransactionHistoryPress = () => {
+        router.push('/transaction/history');
+    };
 
     const handleLogoutPress = () => {
         Alert.alert(
@@ -302,7 +305,7 @@ export default function ProfileScreen({ navigation }: { navigation?: any }) {
                     <ProfileMenuOption
                         icon="history"
                         label="Transaction History"
-                        onPress={() => Alert.alert('Transaction History', 'Coming soon!')}
+                        onPress={handleTransactionHistoryPress}
                         colors={Colors}
                     />
 

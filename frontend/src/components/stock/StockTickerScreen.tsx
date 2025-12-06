@@ -13,6 +13,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { getThemeColors } from '@/src/constants/colors';
 import { HeaderSection } from "@/src/components/home/HeaderSection";
+import TransactionHistory from '@/src/components/transaction/TransactionHistory';
 
 const screenWidth = Dimensions.get('window').width - 48;
 
@@ -44,7 +45,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
     const sectorColor = sectorColors[stock.sector] || sectorColors['Technology'];
     const [selectedTimeframe, setSelectedTimeframe] = useState('1M');
     const [isWatchlisted, setIsWatchlisted] = useState(false);
-    const [activeTab, setActiveTab] = useState<'overview' | 'news' | 'compare'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'news' | 'transactions' | 'compare'>('overview');
 
     const timeframes = ['1D', '1W', '1M', '3M', '1Y'];
     const isPositive = stock.changePercent >= 0;
@@ -150,7 +151,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
 
                 {/* Tabs */}
                 <View style={[styles.tabContainer, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
-                    {(['overview', 'news', 'compare'] as const).map(tab => (
+                    {(['overview', 'news', 'transactions', 'compare'] as const).map(tab => (
                         <TouchableOpacity
                             key={tab}
                             onPress={() => setActiveTab(tab)}
@@ -165,7 +166,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                                     { color: activeTab === tab ? Colors.tint : Colors.text, opacity: activeTab === tab ? 1 : 0.6 }
                                 ]}
                             >
-                                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                {tab === 'transactions' ? 'History' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -200,6 +201,15 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                         </View>
                     )}
 
+                    {activeTab === 'transactions' && (
+                        <View style={styles.statsSection}>
+                            <Text style={[styles.sectionTitle, { color: Colors.text }]}>
+                                Transaction History for {stock.symbol}
+                            </Text>
+                            <TransactionHistory stockSymbol={stock.symbol} showHeader={false} />
+                        </View>
+                    )}
+
                     {activeTab === 'compare' && (
                         <View style={styles.statsSection}>
                             <Text style={[styles.sectionTitle, { color: Colors.text }]}>
@@ -221,14 +231,29 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                 {/* Action Buttons */}
                 <View style={styles.actionButtonsContainer}>
                     <TouchableOpacity
-                        onPress={() => Alert.alert('Invest', `Buy ${stock.symbol}`)}
+                        onPress={() => {
+                            router.push({
+                                pathname: '/transaction/buy',
+                                params: {
+                                    stock: JSON.stringify(stock),
+                                },
+                            });
+                        }}
                         style={[styles.actionButton, { backgroundColor: Colors.tint }]}
                     >
                         <MaterialCommunityIcons name="plus" size={18} color="white" />
                         <Text style={styles.actionButtonText}>Invest</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        onPress={() => Alert.alert('Sell', `Sell ${stock.symbol}`)}
+                        onPress={() => {
+                            router.push({
+                                pathname: '/transaction/sell',
+                                params: {
+                                    stock: JSON.stringify(stock),
+                                    owned: '100', // Mock owned shares - would come from portfolio in real app
+                                },
+                            });
+                        }}
                         style={[styles.actionButton, { backgroundColor: '#FCE4E4' }]}
                     >
                         <MaterialCommunityIcons name="minus" size={18} color="#C62828" />

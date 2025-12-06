@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '../../constants/colors';
+import { useRouter } from 'expo-router';
 
 interface QuickAction {
     id: string;
@@ -22,30 +23,31 @@ interface QuickActionsRowProps {
     actions?: QuickAction[];
 }
 
-const defaultActions: QuickAction[] = [
+// We'll create this inside the component to access router
+const createDefaultActions = (router: any): QuickAction[] => [
     {
         id: 'add-transaction',
         label: 'Add Transaction',
         icon: 'plus-circle',
-        onPress: () => console.log('Add Transaction'),
+        onPress: () => router.push('/transaction/buy'),
     },
     {
         id: 'watchlist',
         label: 'Add to Watchlist',
         icon: 'heart-outline',
-        onPress: () => console.log('Add to Watchlist'),
+        onPress: () => router.push('/(tabs)/watchlist'),
     },
     {
         id: 'search',
         label: 'Search Stock',
         icon: 'magnify',
-        onPress: () => console.log('Search Stock'),
+        onPress: () => router.push('/(tabs)/search'),
     },
     {
         id: 'analytics',
         label: 'Analytics',
         icon: 'chart-line',
-        onPress: () => console.log('Analytics'),
+        onPress: () => router.push('/(tabs)/portfolio'),
     },
 ];
 
@@ -116,11 +118,15 @@ const QuickActionButton = ({
 };
 
 export const QuickActionsRow: React.FC<QuickActionsRowProps> = ({
-                                                                    actions = defaultActions,
+                                                                    actions,
                                                                 }) => {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
+    const router = useRouter();
     const scaleAnim = React.useRef(new Animated.Value(1)).current;
+
+    const defaultActions = createDefaultActions(router);
+    const finalActions = actions || defaultActions;
 
     return (
         <View style={styles.wrapper}>
@@ -134,7 +140,7 @@ export const QuickActionsRow: React.FC<QuickActionsRowProps> = ({
                     { paddingHorizontal: 24 }
                 ]}
             >
-                {actions.map((action) => (
+                {finalActions.map((action) => (
                     <QuickActionButton
                         key={action.id}
                         action={action}

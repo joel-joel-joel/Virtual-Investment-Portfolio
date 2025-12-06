@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
+import {HeaderSection} from "@/src/components/home/HeaderSection";
+import {router} from "expo-router";
 
 interface NotificationSettings {
     priceAlerts: boolean;
@@ -239,25 +241,31 @@ export default function SettingsScreen({ navigation }: { navigation?: any }) {
         }));
     };
 
+    const handleGoBack = () => {
+        router.back();
+    };
+
     return (
         <View style={[styles.container, { backgroundColor: Colors.background }]}>
             {/* Header */}
-            <View style={[styles.header, { borderBottomColor: Colors.border }]}>
+            <View style={[styles.topBar, { backgroundColor: Colors.background }]}>
                 <TouchableOpacity
-                    onPress={() => navigation?.goBack()}
-                    style={styles.backButton}
+                    onPress={handleGoBack}
+                    style={[styles.backButton, { backgroundColor: Colors.card }]}
                 >
                     <MaterialCommunityIcons
-                        name="arrow-left"
-                        size={24}
+                        name="chevron-left"
+                        size={28}
                         color={Colors.text}
                     />
                 </TouchableOpacity>
-                <Text style={[styles.title, { color: Colors.text }]}>
-                    Settings
-                </Text>
-                <View style={{ width: 40 }} />
+                <View style={styles.headerSpacer}>
+                    <HeaderSection />
+                </View>
             </View>
+            <Text style={styles.title}>
+                Settings
+            </Text>
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -646,7 +654,7 @@ export default function SettingsScreen({ navigation }: { navigation?: any }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        marginTop: 20,
+        marginTop: -5,
     },
     header: {
         flexDirection: 'row',
@@ -654,19 +662,31 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 24,
         paddingVertical: 8,
-        borderBottomWidth: 0.4,
+    },
+    topBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 0,
+        paddingTop: 12,
+        paddingBottom: 0,
     },
     backButton: {
-        padding: 8,
-        marginLeft: -8,
-        marginTop: 5,
+        width: 44,
+        height: 44,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        marginTop: -10,
+    },
+    headerSpacer: {
+        flex: 1,
+        marginLeft: -40,
+        marginTop: 0,
     },
     title: {
-        fontSize: 28,
-        fontWeight: '800',
-        flex: 1,
-        textAlign: 'center',
-        marginRight: -13,
+        fontSize: 28, fontWeight: "800", fontStyle: "italic", marginLeft: 10,
+        marginBottom: 0, marginTop: -10
     },
     scrollContent: {
         paddingVertical: 20,

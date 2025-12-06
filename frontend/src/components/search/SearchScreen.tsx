@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
+import { useRouter } from 'expo-router';
 
 interface Stock {
     id: string;
@@ -159,7 +160,40 @@ const SearchResultCard = ({
     isWatchlisted: boolean;
     onToggleWatchlist: (stockId: string) => void;
 }) => {
+    const router = useRouter();
     const isPositive = stock.changePercent >= 0;
+
+    const handleBuyStock = () => {
+        const stockData = {
+            symbol: stock.symbol,
+            name: stock.name,
+            price: stock.price,
+            change: stock.change,
+            changePercent: stock.changePercent,
+            sector: stock.sector,
+            marketCap: stock.marketCap,
+            peRatio: '0',
+            dividend: '0',
+            dayHigh: 0,
+            dayLow: 0,
+            yearHigh: 0,
+            yearLow: 0,
+            description: '',
+            employees: '',
+            founded: '',
+            website: '',
+            nextEarningsDate: '',
+            nextDividendDate: '',
+            earningsPerShare: '',
+        };
+
+        router.push({
+            pathname: '/transaction/buy',
+            params: {
+                stock: JSON.stringify(stockData),
+            },
+        });
+    };
 
     return (
         <TouchableOpacity
@@ -224,6 +258,7 @@ const SearchResultCard = ({
                     />
                 </TouchableOpacity>
                 <TouchableOpacity
+                    onPress={handleBuyStock}
                     style={[styles.actionButton, { backgroundColor: colors.tint }]}
                     activeOpacity={0.6}
                 >
@@ -598,7 +633,8 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     filterOption: {
-        paddingVertical: 200,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
         borderRadius: 8,
     },
     filterOptionText: {
