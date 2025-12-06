@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '../../constants/colors';
+import { useRouter } from 'expo-router';
 
 interface EarningsItem {
     id: number;
@@ -48,7 +49,41 @@ const getFormattedDate = (dateString: string) => {
 };
 
 const EarningsCard = ({ item, colors, sectorColor }: { item: EarningsItem; colors: any; sectorColor: any }) => {
+    const router = useRouter();
     const [expanded, setExpanded] = useState(false);
+
+    const handleViewDetails = () => {
+        const stockData = {
+            symbol: item.symbol,
+            name: item.company,
+            price: 150, // Mock price - would come from API in real app
+            change: 2.5,
+            changePercent: 1.7,
+            sector: item.sector,
+            marketCap: '0',
+            peRatio: '0',
+            dividend: '0',
+            dayHigh: 0,
+            dayLow: 0,
+            yearHigh: 0,
+            yearLow: 0,
+            description: '',
+            employees: '',
+            founded: '',
+            website: '',
+            nextEarningsDate: item.date,
+            nextDividendDate: '',
+            earningsPerShare: item.eps || item.expectedEps || '0',
+        };
+
+        router.push({
+            pathname: '/stock/[ticker]',
+            params: {
+                ticker: item.symbol,
+                stock: JSON.stringify(stockData),
+            },
+        });
+    };
 
     return (
         <TouchableOpacity
@@ -149,8 +184,11 @@ const EarningsCard = ({ item, colors, sectorColor }: { item: EarningsItem; color
                         </View>
                     )}
 
-                    <TouchableOpacity style={[styles.viewButton, { backgroundColor: colors.tint }]}>
-                        <Text style={styles.viewButtonText}>View Earnings Details →</Text>
+                    <TouchableOpacity
+                        onPress={handleViewDetails}
+                        style={[styles.viewButton, { backgroundColor: colors.tint }]}
+                    >
+                        <Text style={styles.viewButtonText}>View Stock Details →</Text>
                     </TouchableOpacity>
                 </View>
             )}
@@ -195,7 +233,7 @@ export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
                     name="calendar-range"
                     size={28}
                     color={Colors.tint}
-                    style={{ opacity: 0.7 }}
+                    style={{ opacity: 0.7}}
                 />
             </View>
 

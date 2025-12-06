@@ -235,14 +235,14 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '700',
         marginBottom: 12,
-        marginLeft: -5,
+        marginLeft: -12,
         fontStyle: "italic",
     },
     subtitle: {
         fontSize: 12,
         marginTop: -10,
         marginRight: -8,
-        marginLeft: -5,
+        marginLeft: -12,
     },
     sectorGroupHeader: {
         fontSize: 12,
@@ -257,7 +257,6 @@ const styles = StyleSheet.create({
     newsCard: {
         flexDirection: 'row',
         borderRadius: 12,
-        borderWidth: 1,
         padding: 12,
         marginBottom: 12,
         alignItems: 'center',

@@ -224,7 +224,7 @@ const SuggestionCard = ({ stock, reason, icon, sectorColor }) => {
                             name="lightbulb-on"
                             size={16}
                             color="#000"
-                            style={{ marginRight: 8 }}
+                            style={{ marginRight: 0 }}
                         />
                         <Text style={styles.insightTextBlack}>
                             {stock.insight}
@@ -364,8 +364,8 @@ export const SuggestedForYou = () => {
 const styles = StyleSheet.create({
     wrapper: { marginTop: 24, marginBottom: 20 },
     header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", paddingHorizontal: 24, paddingBottom: 12, borderBottomWidth: 1, marginBottom: 16 },
-    title: { fontSize: 20, fontWeight: "800", fontStyle: "italic", marginLeft: -9 },
-    subtitle: { fontSize: 12, marginTop: 4, marginLeft: -9 },
+    title: { fontSize: 20, fontWeight: "800", fontStyle: "italic", marginLeft: -3 },
+    subtitle: { fontSize: 12, marginTop: 4, marginLeft: -3 },
     cardsContainer: { paddingHorizontal: 24 },
     contentContainer: { gap: 12, paddingRight: 12 },
     suggestionCard: { width: width - 85, minHeight: 80, borderRadius: 16, borderWidth: 2, padding: 16, justifyContent: "flex-start" },

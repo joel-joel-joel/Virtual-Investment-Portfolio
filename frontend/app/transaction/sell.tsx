@@ -101,25 +101,23 @@ export default function SellTransactionPage() {
         <View style={{ flex: 1, backgroundColor: Colors.background, padding: 24 }}>
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Header with Back Button */}
-                <View style={styles.header}>
+                <View style={[styles.topBar, { backgroundColor: Colors.background }]}>
                     <TouchableOpacity
                         onPress={handleGoBack}
-                        style={[styles.backButton, { backgroundColor: Colors.card, borderColor: Colors.border }]}
+                        style={[styles.backButton, { backgroundColor: Colors.card }]}
                     >
                         <MaterialCommunityIcons
                             name="chevron-left"
-                            size={24}
+                            size={28}
                             color={Colors.text}
                         />
                     </TouchableOpacity>
-                    <View style={styles.headerTitleContainer}>
-                        <Text style={[styles.headerTitle, { color: Colors.text }]}>
-                            Sell Stock
-                        </Text>
+                    <View style={styles.headerSpacer}>
+                        <HeaderSection />
                     </View>
                 </View>
-
-                <HeaderSection />
+                <Text style={styles.headerTitle}>Buy Stock
+                </Text>
 
                 {stockData ? (
                     <>
@@ -398,21 +396,33 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         gap: 12,
     },
+    topBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 0,
+        paddingTop: 12,
+        paddingBottom: 0,
+    },
     backButton: {
         width: 44,
         height: 44,
         borderRadius: 10,
-        borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        flexShrink: 0,
+        marginTop: -10,
+    },
+    headerSpacer: {
+        flex: 1,
+        marginLeft: -32,
+        marginTop: 0,
     },
     headerTitleContainer: {
         flex: 1,
     },
     headerTitle: {
-        fontSize: 24,
-        fontWeight: '800',
-        fontStyle: 'italic',
+        fontSize: 28, fontWeight: "800", fontStyle: "italic", marginLeft: 10,
+        marginBottom: 15, marginTop: -20
     },
     stockCard: {
         borderWidth: 1,
@@ -487,6 +497,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 14,
         fontWeight: '700',
+        marginBottom: 12,
     },
     maxButton: {
         paddingHorizontal: 12,
