@@ -471,6 +471,7 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 10,
+        marginRight: -12,
         borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
@@ -533,8 +534,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         gap: 8,
         paddingVertical: 10,
+        paddingHorizontal: 16,
         borderRadius: 10,
-        borderWidth: 1,
     },
     accountButtonText: {
         fontSize: 12,

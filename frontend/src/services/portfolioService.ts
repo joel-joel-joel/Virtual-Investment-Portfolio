@@ -52,14 +52,18 @@ export const getAccountById = async (accountId: string): Promise<AccountDTO> => 
  * @returns Created account
  */
 export const createAccount = async (
-  account: CreateAccountRequest
+    account: CreateAccountRequest
 ): Promise<AccountDTO> => {
-  return apiFetch<AccountDTO>('/api/accounts', {
-    method: 'POST',
-    requireAuth: true,
-    body: JSON.stringify(account),
-  });
+    return apiFetch<AccountDTO>('/api/accounts', {
+        method: 'POST',
+        requireAuth: true,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(account),
+    });
 };
+
 
 /**
  * Update an existing account
