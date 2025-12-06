@@ -12,55 +12,20 @@ import java.util.UUID;
 @Table(name = "price_alerts")
 public class PriceAlert {
 
-    // This entity stores price alert thresholds for stocks
-    // Users can have multiple alerts, and we track whether each alert has been triggered
-
-    // Constructors
-    public PriceAlert(UUID priceAlertId, User user, Stock stock, BigDecimal targetPrice,
-                     AlertType alertType, Boolean isTriggered, LocalDateTime triggeredAt) {
-        this.priceAlertId = priceAlertId;
-        this.user = user;
-        this.stock = stock;
-        this.targetPrice = targetPrice;
-        this.alertType = alertType;
-        this.isTriggered = isTriggered;
-        this.triggeredAt = triggeredAt;
-    }
-
     public PriceAlert() {}
 
-
-    // Columns
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID priceAlertId;
-
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal targetPrice;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AlertType alertType;
-
-    @Column(nullable = false)
-    private Boolean isTriggered = false;
-
-    private LocalDateTime triggeredAt;
-
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-
-    public enum AlertType {
-        ABOVE,  // Alert when price goes above target
-        BELOW   // Alert when price goes below target
+    public PriceAlert(User user, Stock stock, String type, BigDecimal targetPrice) {
+        this.user = user;
+        this.stock = stock;
+        this.type = type;
+        this.targetPrice = targetPrice;
+        this.isActive = true;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID alertId;
 
-    // Relationships
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -69,107 +34,42 @@ public class PriceAlert {
     @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
 
+    @Column(nullable = false)
+    private String type;
 
-    // Getters and Setters
-    public UUID getPriceAlertId() {
-        return priceAlertId;
-    }
+    @Column(nullable = false)
+    private BigDecimal targetPrice;
 
-    public void setPriceAlertId(UUID priceAlertId) {
-        this.priceAlertId = priceAlertId;
-    }
+    @Column(nullable = false)
+    private Boolean isActive = true;
 
-    public User getUser() {
-        return user;
-    }
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+    private LocalDateTime triggeredAt;
 
-    public Stock getStock() {
-        return stock;
-    }
+    public UUID getAlertId() { return alertId; }
+    public void setAlertId(UUID alertId) { this.alertId = alertId; }
 
-    public void setStock(Stock stock) {
-        this.stock = stock;
-    }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    public BigDecimal getTargetPrice() {
-        return targetPrice;
-    }
+    public Stock getStock() { return stock; }
+    public void setStock(Stock stock) { this.stock = stock; }
 
-    public void setTargetPrice(BigDecimal targetPrice) {
-        this.targetPrice = targetPrice;
-    }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public AlertType getAlertType() {
-        return alertType;
-    }
+    public BigDecimal getTargetPrice() { return targetPrice; }
+    public void setTargetPrice(BigDecimal targetPrice) { this.targetPrice = targetPrice; }
 
-    public void setAlertType(AlertType alertType) {
-        this.alertType = alertType;
-    }
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 
-    public Boolean getIsTriggered() {
-        return isTriggered;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public void setIsTriggered(Boolean isTriggered) {
-        this.isTriggered = isTriggered;
-    }
-
-    public LocalDateTime getTriggeredAt() {
-        return triggeredAt;
-    }
-
-    public void setTriggeredAt(LocalDateTime triggeredAt) {
-        this.triggeredAt = triggeredAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-
-    // Helper Functions
-    @PrePersist
-    public void prePersist() {
-        if (this.isTriggered == null) {
-            this.isTriggered = false;
-        }
-
-        if (this.targetPrice == null) {
-            this.targetPrice = BigDecimal.ZERO;
-        }
-
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    // Business logic helper to trigger the alert
-    public void triggerAlert() {
-        this.isTriggered = true;
-        this.triggeredAt = LocalDateTime.now();
-    }
+    public LocalDateTime getTriggeredAt() { return triggeredAt; }
+    public void setTriggeredAt(LocalDateTime triggeredAt) { this.triggeredAt = triggeredAt; }
 }

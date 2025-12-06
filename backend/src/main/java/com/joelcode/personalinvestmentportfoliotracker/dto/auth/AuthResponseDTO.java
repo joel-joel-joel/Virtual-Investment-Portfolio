@@ -1,29 +1,41 @@
 package com.joelcode.personalinvestmentportfoliotracker.dto.auth;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 public class AuthResponseDTO {
 
-    // Authentication response DTO (output)
+    @JsonProperty("token")
     private String token;
-    private String tokenType = "Bearer";
-    private String username;
+
+    @JsonProperty("userId")
+    private UUID userId;
+
+    @JsonProperty("email")
     private String email;
 
-    // Constructors
-    public AuthResponseDTO(String token, String tokenType, String username, String email) {
-        this.token = token;
-        this.tokenType = tokenType;
-        this.username = username;
-        this.email = email;
-    }
+    @JsonProperty("expiresAt")
+    private LocalDateTime expiresAt;
 
     public AuthResponseDTO() {}
 
-    // Getters
-    public String getToken() {return token;}
+    public AuthResponseDTO(String token, UUID userId, String email, LocalDateTime expiresAt) {
+        this.token = token;
+        this.userId = userId;
+        this.email = email;
+        this.expiresAt = expiresAt;
+    }
 
-    public String getTokenType() {return tokenType;}
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
 
-    public String getUsername() {return username;}
+    public UUID getUserId() { return userId; }
+    public void setUserId(UUID userId) { this.userId = userId; }
 
-    public String getEmail() {return email;}
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public LocalDateTime getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
 }

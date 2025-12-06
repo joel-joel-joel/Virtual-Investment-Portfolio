@@ -59,6 +59,7 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+
     public enum Role {
         ROLE_USER,
         ROLE_ADMIN
@@ -115,6 +116,8 @@ public class User {
     public Role getRoles() {return roles;}
 
     public void setRoles(Role role) {this.roles = role;}
+
+    public LocalDateTime getCreatedAt() {return createdAt;}
 
     // Helper Functions
 

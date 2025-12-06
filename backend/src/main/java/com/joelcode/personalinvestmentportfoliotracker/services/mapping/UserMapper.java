@@ -28,8 +28,6 @@ public class UserMapper {
     // Convert user entity to user response DTO
     public static UserDTO toDTO(User user) {
         if (user == null) return null;
-        return new UserDTO(user.getUserId(),
-                user.getUsername(),
-                user.getEmail());
+        return new UserDTO(user);
     }
 }

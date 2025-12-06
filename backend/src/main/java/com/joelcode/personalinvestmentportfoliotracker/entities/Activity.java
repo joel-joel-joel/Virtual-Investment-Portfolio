@@ -11,34 +11,35 @@ import java.util.UUID;
 @Table(name = "activities")
 public class Activity {
 
-    // This entity tracks user actions (buy, sell, dividend, etc.)
-    // Activities are created automatically when users perform actions
-
-    // Constructors
-    public Activity(UUID activityId, User user, Stock stock, ActivityType activityType,
-                   String description, BigDecimal amount, LocalDateTime timestamp) {
-        this.activityId = activityId;
-        this.user = user;
-        this.stock = stock;
-        this.activityType = activityType;
-        this.description = description;
-        this.amount = amount;
-        this.timestamp = timestamp;
-    }
-
     public Activity() {}
 
+    public Activity(User user, String type, String stockCode, String companyName, String description, BigDecimal amount) {
+        this.user = user;
+        this.type = type;
+        this.stockCode = stockCode;
+        this.companyName = companyName;
+        this.description = description;
+        this.amount = amount;
+    }
 
-    // Columns
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID activityId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ActivityType activityType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(length = 500)
+    @Column(nullable = false)
+    private String type;
+
+    @Column(length = 20)
+    private String stockCode;
+
+    @Column(length = 255)
+    private String companyName;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(precision = 19, scale = 2)
@@ -46,97 +47,29 @@ public class Activity {
 
     @CreationTimestamp
     @Column(updatable = false)
-    private LocalDateTime timestamp;
+    private LocalDateTime createdAt;
 
-    public enum ActivityType {
-        BUY,
-        SELL,
-        DIVIDEND,
-        DEPOSIT,
-        WITHDRAWAL,
-        WATCHLIST_ADD,
-        WATCHLIST_REMOVE,
-        ALERT_TRIGGERED
-    }
+    public UUID getActivityId() { return activityId; }
+    public void setActivityId(UUID activityId) { this.activityId = activityId; }
 
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    // Relationships
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stock_id")
-    private Stock stock;
+    public String getStockCode() { return stockCode; }
+    public void setStockCode(String stockCode) { this.stockCode = stockCode; }
 
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
 
-    // Getters and Setters
-    public UUID getActivityId() {
-        return activityId;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setActivityId(UUID activityId) {
-        this.activityId = activityId;
-    }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Stock getStock() {
-        return stock;
-    }
-
-    public void setStock(Stock stock) {
-        this.stock = stock;
-    }
-
-    public ActivityType getActivityType() {
-        return activityType;
-    }
-
-    public void setActivityType(ActivityType activityType) {
-        this.activityType = activityType;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
-
-    // Helper Functions
-    @PrePersist
-    public void prePersist() {
-        if (this.timestamp == null) {
-            this.timestamp = LocalDateTime.now();
-        }
-
-        if (this.amount == null) {
-            this.amount = BigDecimal.ZERO;
-        }
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

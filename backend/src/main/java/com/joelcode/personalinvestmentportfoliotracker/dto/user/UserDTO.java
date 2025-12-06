@@ -2,6 +2,7 @@ package com.joelcode.personalinvestmentportfoliotracker.dto.user;
 
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class UserDTO {
@@ -10,12 +11,14 @@ public class UserDTO {
     private UUID userId;
     private String username;
     private String email;
+    private LocalDateTime createdAt;
 
     // Constructor
-    public UserDTO(UUID userId, String username, String email) {
+    public UserDTO(UUID userId, String username, String email, LocalDateTime createdAt) {
         this.userId = userId;
         this.username = username;
         this.email = email;
+        this.createdAt = createdAt;
     }
 
     public UserDTO(User user) {
@@ -42,6 +45,14 @@ public class UserDTO {
     public void setUsername(String username) {this.username = username;}
 
     public void setEmail(String email) {this.email = email;}
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
 
 }
