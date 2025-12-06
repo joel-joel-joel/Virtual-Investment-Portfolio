@@ -11,6 +11,7 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.auth.RefreshTokenRequ
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 import com.joelcode.personalinvestmentportfoliotracker.jwt.JwtTokenProvider;
+import com.joelcode.personalinvestmentportfoliotracker.model.CustomUserDetails;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -138,20 +140,19 @@ public class AuthController {
 
     // GET /api/auth/me - Get current user profile
     @GetMapping("/me")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserDTO> getCurrentUser(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        User dbUser = userRepository.findById(user.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public ResponseEntity<UserDTO> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        User user = userDetails.getUser();
 
         UserDTO dto = new UserDTO(
-                dbUser.getUserId(),
-                dbUser.getUsername(),
-                dbUser.getEmail(),
-                dbUser.getCreatedAt()
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getCreatedAt()
         );
         return ResponseEntity.ok(dto);
     }
+
 
     // POST /api/auth/refresh - Refresh JWT token
     @PostMapping("/refresh")
