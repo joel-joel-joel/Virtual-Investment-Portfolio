@@ -101,19 +101,58 @@
     - Review CorsConfig.java TODO
     - Address any incomplete implementations
 
-  Phase 3: Database & Migrations
+  Phase 3: Database & Migrations ✅ COMPLETED
 
-  - 3.1 Database Setup
-    - Create production database schema
-    - Review Hibernate ddl-auto settings:
-        - Dev: update ✅
-      - Prod: validate ✅ (correct - requires manual migrations)
-    - Create database migration scripts (Flyway or Liquibase recommended)
-    - Test database rollback procedures
-  - 3.2 Docker Compose for Development
-    - Start PostgreSQL: docker-compose up -d
-    - Verify database connectivity
-    - Run database initialization scripts if any
+  - ✅ 3.1 Database Setup
+    - ✅ Flyway dependencies added to pom.xml (flyway-core, flyway-database-postgresql)
+    - ✅ Flyway Maven plugin configured
+    - ✅ Reviewed Hibernate ddl-auto settings:
+        - Dev: validate ✅ (changed from 'update' to 'validate')
+        - Prod: validate ✅ (correct - requires manual migrations)
+    - ✅ Created database migration script: V1__Initial_Schema.sql
+        - All 13 tables created: users, accounts, stock, transactions, holdings, dividends,
+          dividend_payments, price_history, portfolio_snapshots, watchlist, price_alerts,
+          earnings, activities
+        - All foreign key constraints defined
+        - All indexes created for optimal query performance
+        - Unique constraints added where needed
+    - ✅ Flyway configuration added to application.yml:
+        - Dev: flyway.enabled=true, baseline-on-migrate=false
+        - Prod: flyway.enabled=true, validate-on-migrate=true
+        - Migration location: classpath:db/migration
+    - ⚠️ Database rollback procedures: Not implemented (Flyway Community doesn't support down migrations)
+        - Note: For rollbacks, would need Flyway Teams or manual rollback scripts
+
+  Files modified:
+  - backend/pom.xml: Added Flyway dependencies (lines 118-125) and Maven plugin (lines 209-217)
+  - backend/src/main/resources/application.yml: Added Flyway configuration for dev/prod profiles
+  - backend/src/main/resources/db/migration/V1__Initial_Schema.sql: Initial schema migration
+
+  - ✅ 3.2 Docker Compose for Development
+    - ✅ PostgreSQL running on port 5433 (to avoid conflict with native PostgreSQL on port 5432)
+    - ✅ Database connectivity verified
+    - ✅ Migration executed successfully: `mvn flyway:migrate`
+        - Schema version: v1
+        - All tables created successfully
+        - Flyway schema history table created
+    - ✅ Database connection tested:
+        - URL: jdbc:postgresql://localhost:5433/portfolio_dev
+        - User: devuser
+        - Database: portfolio_dev
+
+  Commands to run migrations:
+  ```bash
+  # Check migration status
+  mvn flyway:info -Dflyway.url=jdbc:postgresql://localhost:5433/portfolio_dev \
+    -Dflyway.user=devuser -Dflyway.password=devpass
+
+  # Run migrations
+  mvn flyway:migrate -Dflyway.url=jdbc:postgresql://localhost:5433/portfolio_dev \
+    -Dflyway.user=devuser -Dflyway.password=devpass
+
+  # Verify tables in database
+  docker exec portfolio_postgres psql -U devuser -d portfolio_dev -c "\dt"
+  ```
 
   Phase 4: Build & Test
 

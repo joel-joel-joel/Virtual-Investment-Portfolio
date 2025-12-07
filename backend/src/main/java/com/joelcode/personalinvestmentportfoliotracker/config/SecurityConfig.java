@@ -18,9 +18,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Optional;
 
-// This class configures spring security by enabling jwt authentication and filtering. It also allows H2 and Swagger UI
-// access
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -30,19 +29,17 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired(required = false)
+    private Optional<JwtAuthenticationFilter> jwtAuthenticationFilter;
 
     @Autowired
     private CorsConfigurationSource corsConfigurationSource;
 
-    // BCrypt password encoder with strength 12
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 
-    // Expose authentication manager
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -51,8 +48,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource)) // Apply CORS
-                .csrf(csrf -> csrf.disable()) // Disable CSRF
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
@@ -81,8 +78,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 );
 
-        // JWT filter
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        // JWT filter - only add if it's enabled
+        if (jwtAuthenticationFilter.isPresent()) {
+            http.addFilterBefore(jwtAuthenticationFilter.get(), UsernamePasswordAuthenticationFilter.class);
+        }
 
         // For H2 console
         http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
