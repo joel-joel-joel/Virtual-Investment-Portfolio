@@ -73,7 +73,6 @@
 
   File: backend/src/main/resources/application.yml:112
   - 1.5 Security Review
-    - Review CorsConfig.java (has TODO comment)
     - Ensure HTTPS is enforced in production
     - Configure secure JWT expiration (currently 24h dev, 1h prod)
     - Review Spring Security configuration for production hardening

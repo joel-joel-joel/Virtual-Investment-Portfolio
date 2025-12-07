@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -47,8 +48,10 @@ class TransactionControllerTest {
     void testGetAllTransactions_Success() {
         // Setup transaction list with sample transactions
         List<TransactionDTO> transactions = new ArrayList<>();
-        transactions.add(new TransactionDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.valueOf(50), BigDecimal.valueOf(20), Transaction.TransactionType.BUY));
-        transactions.add(new TransactionDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.valueOf(10), BigDecimal.valueOf(30), Transaction.TransactionType.SELL));
+        transactions.add(new TransactionDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                BigDecimal.valueOf(50), BigDecimal.valueOf(20), Transaction.TransactionType.BUY, LocalDateTime.now()));
+        transactions.add(new TransactionDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                BigDecimal.valueOf(10), BigDecimal.valueOf(30), Transaction.TransactionType.SELL, LocalDateTime.now()));
 
         // Map method return value to setup
         when(transactionService.getAllTransactions()).thenReturn(transactions);
@@ -82,7 +85,8 @@ class TransactionControllerTest {
     void testGetTransactionById_Success() {
         // Setup transaction DTO with sample data
         UUID transactionId = UUID.randomUUID();
-        TransactionDTO transaction = new TransactionDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.valueOf(50), BigDecimal.valueOf(20), Transaction.TransactionType.BUY);
+        TransactionDTO transaction = new TransactionDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                BigDecimal.valueOf(50), BigDecimal.valueOf(20), Transaction.TransactionType.BUY, LocalDateTime.now());
 
         // Map method return value to setup
         when(transactionService.getTransactionById(transactionId)).thenReturn(transaction);
@@ -117,7 +121,8 @@ class TransactionControllerTest {
         // Setup create request and expected transaction DTO
         UUID transactionId = UUID.randomUUID();
         TransactionCreateRequest request = new TransactionCreateRequest(UUID.randomUUID(), UUID.randomUUID(), BigDecimal.valueOf(50), BigDecimal.valueOf(20), Transaction.TransactionType.BUY);
-        TransactionDTO created = new TransactionDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.valueOf(50), BigDecimal.valueOf(20), Transaction.TransactionType.BUY);
+        TransactionDTO created = new TransactionDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                BigDecimal.valueOf(50), BigDecimal.valueOf(20), Transaction.TransactionType.BUY, LocalDateTime.now());
 
         // Map method return value to setup
         when(transactionService.createTransaction(request)).thenReturn(created);
