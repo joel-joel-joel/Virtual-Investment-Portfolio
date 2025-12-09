@@ -11,6 +11,8 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
 import { useRouter } from 'expo-router';
+import { addToWatchlist, removeFromWatchlist } from '@/src/services/portfolioService';
+import { getOrCreateStockBySymbol } from '@/src/services/entityService';
 
 interface Stock {
     id: string;
@@ -352,16 +354,35 @@ export default function SearchScreen() {
         setSearchQuery(query);
     };
 
-    const toggleWatchlist = (stockId: string) => {
-        setWatchlistedStocks(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(stockId)) {
-                newSet.delete(stockId);
+    const toggleWatchlist = async (stockId: string) => {
+        // Find the stock by ID to get its symbol
+        const stock = allStocks.find(s => s.id === stockId);
+        if (!stock) return;
+
+        try {
+            // Get or create stock in database
+            const dbStock = await getOrCreateStockBySymbol(stock.symbol);
+
+            if (watchlistedStocks.has(stockId)) {
+                // Remove from watchlist
+                await removeFromWatchlist(dbStock.stockId);
+                setWatchlistedStocks(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(stockId);
+                    return newSet;
+                });
             } else {
-                newSet.add(stockId);
+                // Add to watchlist
+                await addToWatchlist(dbStock.stockId);
+                setWatchlistedStocks(prev => {
+                    const newSet = new Set(prev);
+                    newSet.add(stockId);
+                    return newSet;
+                });
             }
-            return newSet;
-        });
+        } catch (error) {
+            console.error('Failed to toggle watchlist:', error);
+        }
     };
 
     // @ts-ignore

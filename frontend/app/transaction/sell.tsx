@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -8,11 +8,14 @@ import {
     TouchableOpacity,
     TextInput,
     Alert,
+    ActivityIndicator,
 } from 'react-native';
 import { getThemeColors } from '@/src/constants/colors';
 import { HeaderSection } from '@/src/components/home/HeaderSection';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { createTransaction, getAllAccounts } from '@/src/services/portfolioService';
+import { getOrCreateStockBySymbol } from '@/src/services/entityService';
 
 const sectorColors: Record<string, { color: string; bgLight: string }> = {
     'Technology': { color: '#0369A1', bgLight: '#EFF6FF' },
@@ -46,6 +49,24 @@ export default function SellTransactionPage() {
     const [shares, setShares] = useState('');
     const [priceType, setPriceType] = useState<'market' | 'limit'>('market');
     const [limitPrice, setLimitPrice] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [accounts, setAccounts] = useState<any[]>([]);
+    const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchAccounts = async () => {
+            try {
+                const accountData = await getAllAccounts();
+                setAccounts(accountData);
+                if (accountData.length > 0) {
+                    setSelectedAccount(accountData[0].accountId);
+                }
+            } catch (error) {
+                console.error('Failed to fetch accounts:', error);
+            }
+        };
+        fetchAccounts();
+    }, []);
 
     const currentPrice = stockData?.price || 0;
     const shareCount = parseFloat(shares) || 0;
@@ -60,9 +81,14 @@ export default function SellTransactionPage() {
         router.back();
     };
 
-    const handleSell = () => {
+    const handleSell = async () => {
         if (!stockData) {
             Alert.alert('Error', 'No stock selected');
+            return;
+        }
+
+        if (!selectedAccount) {
+            Alert.alert('Error', 'Please select an account');
             return;
         }
 
@@ -88,9 +114,26 @@ export default function SellTransactionPage() {
                 { text: 'Cancel', style: 'cancel' },
                 {
                     text: 'Confirm',
-                    onPress: () => {
-                        Alert.alert('Success', `Successfully sold ${shareCount} shares of ${stockData.symbol}!`);
-                        router.back();
+                    onPress: async () => {
+                        setLoading(true);
+                        try {
+                            // Get or create stock in database by symbol
+                            const stock = await getOrCreateStockBySymbol(stockData.symbol);
+
+                            await createTransaction({
+                                stockId: stock.stockId,
+                                accountId: selectedAccount,
+                                shareQuantity: shareCount,
+                                pricePerShare: effectivePrice,
+                                transactionType: 'SELL'
+                            });
+                            Alert.alert('Success', `Successfully sold ${shareCount} shares of ${stockData.symbol}!`);
+                            router.back();
+                        } catch (error: any) {
+                            Alert.alert('Error', error.message || 'Failed to complete transaction');
+                        } finally {
+                            setLoading(false);
+                        }
                     },
                 },
             ]

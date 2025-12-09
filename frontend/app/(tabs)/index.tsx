@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {View, ScrollView, useColorScheme} from "react-native";
 import { getThemeColors } from "@/src/constants/colors";
 import { HeaderSection } from "@/src/components/home/HeaderSection";
@@ -10,38 +10,66 @@ import { SuggestedForYou } from '@/src/components/home/SuggestedForYou';
 import {StockTicker} from "@/src/components/home/StockTicker";
 import { EarningsCalendar } from "@/src/components/home/EarningsCalender";
 import {QuickActionsRow} from "@/src/components/home/QuickActions";
+import { getAllNewsSafe } from '@/src/services/newsService';
+import { NewsArticleDTO } from '@/src/types/api';
 
 
 export default function HomeScreen() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
+    const [newsItems, setNewsItems] = useState<any[]>([]);
+    const [loadingNews, setLoadingNews] = useState(true);
 
-    const newsItems = [
-        {
-            id: 1,
-            title: "Fed Signals Rate Cuts Ahead",
-            description: "Federal Reserve indicates potential interest rate reductions...",
-            image: require('../../assets/images/apple.png'),
-            content: "The Federal Reserve has signaled that interest rate cuts may be coming...",
-            sector: "Markets"
-        },
-        {
-            id: 2,
-            title: "Tech Stocks Rally on AI News",
-            description: "Technology sector leads market as AI developments continue...",
-            image: require('../../assets/images/apple.png'),
-            content: "Major technology companies announced breakthrough developments...",
-            sector: "Technology"
-        },
-        {
-            id: 3,
-            title: "Earnings Season Exceeds Expectations",
-            description: "Companies report stronger than expected Q3 earnings...",
-            image: require('../../assets/images/apple.png'),
-            content: "Corporate earnings for the third quarter have exceeded analyst expectations...",
-            sector: "Healthcare"
-        },
-    ];
+    // Fetch news from API
+    useEffect(() => {
+        const fetchNews = async () => {
+            try {
+                const newsData = await getAllNewsSafe(10);
+                const formattedNews = newsData.map((article: NewsArticleDTO, index: number) => ({
+                    id: index + 1,
+                    title: article.title,
+                    description: article.summary,
+                    image: article.imageUrl || require('../../assets/images/apple.png'),
+                    content: article.summary, // Use summary as content for now
+                    sector: article.sector
+                }));
+                setNewsItems(formattedNews);
+            } catch (error) {
+                console.error('Failed to fetch news:', error);
+                // Fallback to mock data if API fails
+                setNewsItems([
+                    {
+                        id: 1,
+                        title: "Fed Signals Rate Cuts Ahead",
+                        description: "Federal Reserve indicates potential interest rate reductions...",
+                        image: require('../../assets/images/apple.png'),
+                        content: "The Federal Reserve has signaled that interest rate cuts may be coming...",
+                        sector: "Markets"
+                    },
+                    {
+                        id: 2,
+                        title: "Tech Stocks Rally on AI News",
+                        description: "Technology sector leads market as AI developments continue...",
+                        image: require('../../assets/images/apple.png'),
+                        content: "Major technology companies announced breakthrough developments...",
+                        sector: "Technology"
+                    },
+                    {
+                        id: 3,
+                        title: "Earnings Season Exceeds Expectations",
+                        description: "Companies report stronger than expected Q3 earnings...",
+                        image: require('../../assets/images/apple.png'),
+                        content: "Corporate earnings for the third quarter have exceeded analyst expectations...",
+                        sector: "Healthcare"
+                    },
+                ]);
+            } finally {
+                setLoadingNews(false);
+            }
+        };
+
+        fetchNews();
+    }, []);
 
     const watchlistStocks = [
         { id: 1, symbol: "AAPL", price: "A$150.25", change: "+2.5%", sector: "Technology" },

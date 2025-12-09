@@ -28,6 +28,7 @@ interface AccountDTO {
 export default function CreateAccountScreen() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
+    const router = useRouter();
 
     const [accountName, setAccountName] = useState('');
     const [initialBalance, setInitialBalance] = useState('');
@@ -89,6 +90,19 @@ export default function CreateAccountScreen() {
                 contentContainerStyle={styles.scrollContent}
                 keyboardShouldPersistTaps="handled"
             >
+                {/* Back Button */}
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={[styles.backButton, { backgroundColor: Colors.card, borderColor: Colors.border }]}
+                >
+                    <MaterialCommunityIcons name="chevron-left" size={24} color={Colors.text} />
+                </TouchableOpacity>
+
+                {/* Header */}
+                <Text style={[styles.header, { color: Colors.text }]}>
+                    Create Investment Account
+                </Text>
+
                 {/* Info */}
                 <View style={[styles.infoCard, { backgroundColor: Colors.tint + '15', borderColor: Colors.tint + '30' }]}>
                     <MaterialCommunityIcons name="information-outline" size={20} color={Colors.tint} />
@@ -150,18 +164,35 @@ export default function CreateAccountScreen() {
                         </TouchableOpacity>
                     </View>
                 ) : (
-                    // Toggle / portfolio UI
-                    <View style={styles.toggleContainer}>
-                        <Text style={[styles.toggleText, { color: Colors.text }]}>
-                            Account &#34;{createdAccount.accountName}&#34; is ready!
+                    // Success UI
+                    <View style={styles.successContainer}>
+                        <View style={[styles.successIcon, { backgroundColor: '#E7F5E7' }]}>
+                            <MaterialCommunityIcons name="check-circle" size={56} color="#2E7D32" />
+                        </View>
+                        <Text style={[styles.successTitle, { color: Colors.text }]}>
+                            Account Created!
                         </Text>
-                        {/* Replace with your actual toggle component */}
-                        <TouchableOpacity
-                            style={[styles.createButton, { backgroundColor: Colors.tint }]}
-                            onPress={() => Alert.alert('Toggle pressed')}
-                        >
-                            <Text style={styles.createButtonText}>Go to Portfolio</Text>
-                        </TouchableOpacity>
+                        <Text style={[styles.successText, { color: Colors.text }]}>
+                            &#34;{createdAccount.accountName}&#34; is ready to use
+                        </Text>
+                        <View style={styles.buttonRow}>
+                            <TouchableOpacity
+                                style={[styles.secondaryButton, { borderColor: Colors.tint }]}
+                                onPress={() => router.back()}
+                            >
+                                <MaterialCommunityIcons name="arrow-left" size={18} color={Colors.tint} />
+                                <Text style={[styles.secondaryButtonText, { color: Colors.tint }]}>
+                                    Go Back
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.primaryButton, { backgroundColor: Colors.tint }]}
+                                onPress={() => router.push('/(tabs)')}
+                            >
+                                <Text style={styles.primaryButtonText}>View Portfolio</Text>
+                                <MaterialCommunityIcons name="arrow-right" size={18} color="white" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 )}
 
@@ -171,10 +202,26 @@ export default function CreateAccountScreen() {
     );
 }
 
-// Styles (keep your existing ones)
+// Styles
 const styles = StyleSheet.create({
     container: { flex: 1 },
     scrollContent: { paddingHorizontal: 24, paddingTop: 24 },
+    backButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        marginTop: 45,
+        marginBottom: 16
+    },
+    header: {
+        fontSize: 28,
+        fontWeight: '800',
+        fontStyle: 'italic',
+        marginBottom: 8
+    },
     infoCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16, borderRadius: 12, borderWidth: 1, marginBottom: 24 },
     infoText: { flex: 1, fontSize: 12, fontWeight: '600', lineHeight: 18 },
     formContainer: { gap: 24 },
@@ -185,6 +232,62 @@ const styles = StyleSheet.create({
     currencySymbol: { fontSize: 14, fontWeight: '700', opacity: 0.7 },
     createButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12, marginTop: 32 },
     createButtonText: { color: 'white', fontSize: 15, fontWeight: '700' },
-    toggleContainer: { marginTop: 32, alignItems: 'center', gap: 16 },
-    toggleText: { fontSize: 16, fontWeight: '600' },
+    successContainer: {
+        marginTop: 32,
+        alignItems: 'center',
+        gap: 16
+    },
+    successIcon: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8
+    },
+    successTitle: {
+        fontSize: 24,
+        fontWeight: '800',
+        marginBottom: 4
+    },
+    successText: {
+        fontSize: 15,
+        fontWeight: '500',
+        opacity: 0.7,
+        marginBottom: 16
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        gap: 12,
+        width: '100%',
+        marginTop: 16
+    },
+    secondaryButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        paddingVertical: 14,
+        borderRadius: 12,
+        borderWidth: 2
+    },
+    secondaryButtonText: {
+        fontSize: 14,
+        fontWeight: '700'
+    },
+    primaryButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        paddingVertical: 14,
+        borderRadius: 12
+    },
+    primaryButtonText: {
+        color: 'white',
+        fontSize: 14,
+        fontWeight: '700'
+    },
 });

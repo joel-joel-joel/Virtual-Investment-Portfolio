@@ -41,6 +41,19 @@ export const getStockById = async (stockId: string): Promise<StockDTO> => {
 };
 
 /**
+ * Get or create a stock by its symbol
+ * If stock doesn't exist in database, creates it using FinnHub data
+ * @param symbol - Stock ticker symbol (e.g., "AAPL", "MSFT")
+ * @returns Stock details
+ */
+export const getOrCreateStockBySymbol = async (symbol: string): Promise<StockDTO> => {
+  return apiFetch<StockDTO>(`/api/stocks/symbol/${symbol}`, {
+    method: 'GET',
+    requireAuth: true,
+  });
+};
+
+/**
  * Get current price for a stock
  * Fetches from FinnHub in real-time, falls back to database value
  * @param stockId - UUID of the stock
@@ -98,12 +111,12 @@ export const deleteStock = async (stockId: string): Promise<void> => {
 };
 
 // ============================================================================
-// FinnHub Real-Time Data (No Authentication Required)
+// FinnHub Real-Time Data (Requires Authentication)
 // ============================================================================
 
 /**
  * Get real-time stock quote from FinnHub
- * No authentication required - public endpoint
+ * Requires authentication
  * @param symbol - Stock ticker symbol (e.g., "AAPL", "MSFT")
  * @returns Real-time quote data
  */
@@ -112,13 +125,13 @@ export const getStockQuote = async (
 ): Promise<FinnhubQuoteDTO> => {
   return apiFetch<FinnhubQuoteDTO>(`/api/stocks/finnhub/quote/${symbol}`, {
     method: 'GET',
-    requireAuth: false,
+    requireAuth: true,
   });
 };
 
 /**
  * Get company profile from FinnHub
- * No authentication required - public endpoint
+ * Requires authentication
  * @param symbol - Stock ticker symbol (e.g., "AAPL", "MSFT")
  * @returns Company profile data
  */
@@ -129,7 +142,7 @@ export const getCompanyProfile = async (
     `/api/stocks/finnhub/profile/${symbol}`,
     {
       method: 'GET',
-      requireAuth: false,
+      requireAuth: true,
     }
   );
 };

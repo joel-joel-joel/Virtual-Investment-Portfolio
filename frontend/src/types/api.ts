@@ -71,6 +71,7 @@ export interface NewsArticleDTO {
   summary: string;           // Article description/summary
   url: string;               // Full URL to article
   publishedAt: string;       // ISO 8601 timestamp, e.g., "2025-12-06T10:30:00Z"
+  imageUrl?: string;         // Optional image URL for the article
 }
 
 // ============================================================================
@@ -163,12 +164,13 @@ export interface CreateTransactionRequest {
 export interface PortfolioOverviewDTO {
   userId: string;                 // UUID
   accountId: string;              // UUID (null for user-level aggregation)
-  totalPortfolioValue: number;    // BigDecimal
+  totalPortfolioValue: number;    // BigDecimal - Total value including cash and holdings
+  holdingsValue: number;          // BigDecimal - Value of holdings only (without cash)
   totalCostBasis: number;         // BigDecimal
   totalUnrealizedGain: number;    // BigDecimal
   totalRealizedGain: number;      // BigDecimal
   totalDividends: number;         // BigDecimal
-  cashBalance: number;            // BigDecimal
+  cashBalance: number;            // BigDecimal - Wallet balance
   holdings: HoldingDTO[];
 }
 

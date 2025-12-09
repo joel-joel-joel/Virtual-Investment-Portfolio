@@ -13,11 +13,13 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '../../constants/colors';
 
+import { NewsArticleDTO } from '../../types/api';
+
 interface NewsItem {
     id: number;
     title: string;
     description: string;
-    image: NodeRequire;
+    image: NodeRequire | string;
     content: string;
     sector: string;
 }
@@ -114,7 +116,7 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
                             activeOpacity={0.7}
                         >
                             <Image
-                                source={item.image as any}
+                                source={typeof item.image === 'string' ? { uri: item.image } : item.image}
                                 style={styles.newsImage}
                                 resizeMode="cover"
                             />
@@ -180,7 +182,7 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
                         {/* Image */}
                         {activeNews && (
                             <Image
-                                source={activeNews.image as any}
+                                source={typeof activeNews.image === 'string' ? { uri: activeNews.image } : activeNews.image}
                                 style={styles.expandedImage}
                                 resizeMode="cover"
                             />

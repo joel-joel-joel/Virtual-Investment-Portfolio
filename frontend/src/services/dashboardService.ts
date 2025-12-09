@@ -28,7 +28,7 @@ import type {
 export const getUserDashboard = async (
   userId: string
 ): Promise<DashboardDTO> => {
-  return apiFetch<DashboardDTO>(`/dashboard/user/${userId}`, {
+  return apiFetch<DashboardDTO>(`/api/dashboard/user/${userId}`, {
     method: 'GET',
     requireAuth: true,
   });
@@ -42,7 +42,7 @@ export const getUserDashboard = async (
 export const getAccountDashboard = async (
   accountId: string
 ): Promise<DashboardDTO> => {
-  return apiFetch<DashboardDTO>(`/dashboard/account/${accountId}`, {
+  return apiFetch<DashboardDTO>(`/api/dashboard/account/${accountId}`, {
     method: 'GET',
     requireAuth: true,
   });

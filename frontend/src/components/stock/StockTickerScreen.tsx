@@ -17,7 +17,8 @@ import { getThemeColors } from '@/src/constants/colors';
 import { HeaderSection } from "@/src/components/home/HeaderSection";
 import TransactionHistory from '@/src/components/transaction/TransactionHistory';
 import { Svg, Polyline, Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
-import { getPriceHistoryForStock, filterPriceHistoryByTimeRange, type PriceHistoryDTO } from '@/src/services';
+import { getPriceHistoryForStock, filterPriceHistoryByTimeRange, type PriceHistoryDTO, addToWatchlist, removeFromWatchlist, isInWatchlist } from '@/src/services';
+import { getOrCreateStockBySymbol } from '@/src/services/entityService';
 
 const screenWidth = Dimensions.get('window').width - 48;
 
@@ -74,6 +75,23 @@ export default function StockTickerScreen({ route }: { route?: any }) {
     // Get stock data from route params (needs to be before effects that use it)
     const stock = route?.params?.stock;
 
+    // Check if stock is in watchlist on component mount
+    useEffect(() => {
+        const checkWatchlistStatus = async () => {
+            if (stock?.symbol) {
+                try {
+                    // Get or create stock in database to ensure it has a stockId
+                    const dbStock = await getOrCreateStockBySymbol(stock.symbol);
+                    const inWatchlist = await isInWatchlist(dbStock.stockId);
+                    setIsWatchlisted(inWatchlist);
+                } catch (error) {
+                    console.error('Failed to check watchlist status:', error);
+                }
+            }
+        };
+        checkWatchlistStatus();
+    }, [stock?.symbol]);
+
     // Fetch price history from backend when stock changes
     useEffect(() => {
         if (stock?.stockId) {
@@ -127,6 +145,26 @@ export default function StockTickerScreen({ route }: { route?: any }) {
 
         return () => animation.removeAllListeners();
     }, [priceData, animation]);
+
+    // Handle watchlist toggle
+    const handleWatchlistToggle = async () => {
+        try {
+            // Get or create stock in database
+            const dbStock = await getOrCreateStockBySymbol(stock.symbol);
+
+            if (isWatchlisted) {
+                // Remove from watchlist
+                await removeFromWatchlist(dbStock.stockId);
+                setIsWatchlisted(false);
+            } else {
+                // Add to watchlist
+                await addToWatchlist(dbStock.stockId);
+                setIsWatchlisted(true);
+            }
+        } catch (error) {
+            console.error('Failed to toggle watchlist:', error);
+        }
+    };
 
     if (!stock) {
         return (
@@ -210,7 +248,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                             </Text>
                         </View>
                         <TouchableOpacity
-                            onPress={() => setIsWatchlisted(!isWatchlisted)}
+                            onPress={handleWatchlistToggle}
                             style={[styles.favoriteButton, { backgroundColor: isWatchlisted ? Colors.tint : Colors.tint + '15' }]}
                         >
                             <MaterialCommunityIcons
