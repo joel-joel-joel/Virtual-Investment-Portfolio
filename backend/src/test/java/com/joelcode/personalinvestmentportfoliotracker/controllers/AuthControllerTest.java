@@ -148,13 +148,14 @@ class AuthControllerTest {
         when(jwtTokenProvider.getExpirationDate("mock-jwt-token")).thenReturn(LocalDateTime.now().plusHours(24));
 
         // Run method
-        ResponseEntity<AuthResponseDTO> response = authController.register(request);
+        ResponseEntity<?> responseEntity = authController.register(request);
 
         // Assert response variables are correct
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("mock-jwt-token", response.getBody().getToken());
-        assertEquals("newuser@example.com", response.getBody().getEmail());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getBody());
+        AuthResponseDTO response = (AuthResponseDTO) responseEntity.getBody();
+        assertEquals("mock-jwt-token", response.getToken());
+        assertEquals("newuser@example.com", response.getEmail());
         verify(userRepository, times(1)).existsByUsername("newuser");
         verify(userRepository, times(1)).existsByEmail("newuser@example.com");
         verify(userRepository, times(1)).save(any(User.class));
@@ -169,11 +170,10 @@ class AuthControllerTest {
         when(userRepository.existsByUsername("existing_user")).thenReturn(true);
 
         // Run method
-        ResponseEntity<AuthResponseDTO> response = authController.register(request);
+        ResponseEntity<?> response = authController.register(request);
 
         // Assert response is bad request
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNull(response.getBody());
         verify(userRepository, times(1)).existsByUsername("existing_user");
         verify(userRepository, never()).existsByEmail(anyString());
         verify(userRepository, never()).save(any(User.class));
@@ -188,11 +188,10 @@ class AuthControllerTest {
         when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
 
         // Run method
-        ResponseEntity<AuthResponseDTO> response = authController.register(request);
+        ResponseEntity<?> response = authController.register(request);
 
         // Assert response is bad request
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNull(response.getBody());
         verify(userRepository, times(1)).existsByUsername("newuser");
         verify(userRepository, times(1)).existsByEmail("existing@example.com");
         verify(userRepository, never()).save(any(User.class));
@@ -213,8 +212,8 @@ class AuthControllerTest {
         when(jwtTokenProvider.getExpirationDate(anyString())).thenReturn(LocalDateTime.now().plusHours(24));
 
         // Run methods
-        ResponseEntity<AuthResponseDTO> response1 = authController.register(request1);
-        ResponseEntity<AuthResponseDTO> response2 = authController.register(request2);
+        ResponseEntity<?> response1 = authController.register(request1);
+        ResponseEntity<?> response2 = authController.register(request2);
 
         // Assert response variables and verify repository interactions
         assertEquals(HttpStatus.OK, response1.getStatusCode());

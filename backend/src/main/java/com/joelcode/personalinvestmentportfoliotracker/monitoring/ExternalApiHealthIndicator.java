@@ -65,6 +65,8 @@ public class ExternalApiHealthIndicator implements HealthIndicator {
             marketAuxApiClient.getAllNews(1);
             return true;
         } catch (Exception e) {
+            // Log the error for debugging but don't fail the health check completely
+            System.err.println("MarketAux API health check failed: " + e.getMessage());
             return false;
         }
     }

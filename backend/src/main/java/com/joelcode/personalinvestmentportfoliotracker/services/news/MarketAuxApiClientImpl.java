@@ -33,7 +33,7 @@ public class MarketAuxApiClientImpl implements MarketAuxApiClient {
     public List<NewsArticleDTO> getNewsByIndustries(String[] industries, int limit) {
         try {
             String industriesParam = String.join(",", industries);
-            String url = UriComponentsBuilder.fromHttpUrl(baseUrl + "/news")
+            String url = UriComponentsBuilder.fromHttpUrl(baseUrl + "/news/all")
                     .queryParam("industries", industriesParam)
                     .queryParam("limit", limit)
                     .queryParam("api_token", apiKey)
@@ -49,7 +49,7 @@ public class MarketAuxApiClientImpl implements MarketAuxApiClient {
     @Override
     public List<NewsArticleDTO> getAllNews(int limit) {
         try {
-            String url = UriComponentsBuilder.fromHttpUrl(baseUrl + "/news")
+            String url = UriComponentsBuilder.fromHttpUrl(baseUrl + "/news/all")
                     .queryParam("limit", limit)
                     .queryParam("api_token", apiKey)
                     .toUriString();
