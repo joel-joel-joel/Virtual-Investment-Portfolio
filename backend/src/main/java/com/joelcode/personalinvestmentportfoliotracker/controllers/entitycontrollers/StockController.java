@@ -45,6 +45,31 @@ public class StockController {
         }
     }
 
+    // Get or create stock by symbol
+    @GetMapping("/symbol/{symbol}")
+    public ResponseEntity<StockDTO> getOrCreateStockBySymbol(@PathVariable String symbol) {
+        StockDTO stock = stockService.getStockBySymbol(symbol);
+        if (stock != null) {
+            return ResponseEntity.ok(stock);
+        } else {
+            // Stock doesn't exist, create it
+            try {
+                FinnhubCompanyProfileDTO profile = finnhubApiClient.getCompanyProfile(symbol);
+                FinnhubQuoteDTO quote = finnhubApiClient.getQuote(symbol);
+
+                StockCreateRequest request = new StockCreateRequest();
+                request.setStockCode(symbol.toUpperCase());
+                request.setCompanyName(profile.getCompanyName());
+                request.setStockValue(quote.getCurrentPrice());
+
+                StockDTO created = stockService.createStock(request);
+                return ResponseEntity.ok(created);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+    }
+
     // Create new stock
     @PostMapping
     public ResponseEntity<StockDTO> createStock(@Valid @RequestBody StockCreateRequest request) {

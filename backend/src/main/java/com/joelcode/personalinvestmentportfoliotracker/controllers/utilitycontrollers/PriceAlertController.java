@@ -5,6 +5,7 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.pricealert.PriceAlert
 import com.joelcode.personalinvestmentportfoliotracker.entities.PriceAlert;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
+import com.joelcode.personalinvestmentportfoliotracker.model.CustomUserDetails;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.PriceAlertRepository;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,8 @@ public class PriceAlertController {
     public ResponseEntity<List<PriceAlertDTO>> getUserAlerts(
             @RequestParam(required = false) Boolean active,
             Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
         List<PriceAlert> alerts;
         if (active != null) {
@@ -71,7 +73,8 @@ public class PriceAlertController {
     public ResponseEntity<?> createPriceAlert(
             @Valid @RequestBody PriceAlertCreateRequest request,
             Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
         // Validate stock exists
         Stock stock = stockRepository.findById(request.getStockId())
@@ -108,7 +111,8 @@ public class PriceAlertController {
     public ResponseEntity<Void> deletePriceAlert(
             @PathVariable UUID alertId,
             Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
         PriceAlert alert = priceAlertRepository.findById(alertId)
                 .orElseThrow(() -> new RuntimeException("Alert not found"));

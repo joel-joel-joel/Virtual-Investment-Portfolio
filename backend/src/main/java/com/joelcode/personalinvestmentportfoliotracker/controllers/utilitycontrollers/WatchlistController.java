@@ -4,6 +4,7 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.watchlist.WatchlistIt
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Watchlist;
+import com.joelcode.personalinvestmentportfoliotracker.model.CustomUserDetails;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.StockRepository;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.WatchlistRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.finnhub.FinnhubApiClient;
@@ -40,7 +41,8 @@ public class WatchlistController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<WatchlistItemDTO>> getWatchlist(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
         List<Watchlist> watchlist = watchlistRepository.findByUser_UserId(user.getUserId());
         List<WatchlistItemDTO> items = watchlist.stream()
@@ -77,7 +79,8 @@ public class WatchlistController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> addToWatchlist(@RequestBody Map<String, String> request, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
         
         String stockIdStr = request.get("stockId");
         if (stockIdStr == null) {
@@ -125,7 +128,8 @@ public class WatchlistController {
     @DeleteMapping("/{stockId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> removeFromWatchlist(@PathVariable UUID stockId, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
         if (!watchlistRepository.existsByUser_UserIdAndStock_StockId(user.getUserId(), stockId)) {
             return ResponseEntity.notFound().build();
@@ -139,7 +143,8 @@ public class WatchlistController {
     @GetMapping("/check/{stockId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Boolean>> isInWatchlist(@PathVariable UUID stockId, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
         boolean inWatchlist = watchlistRepository.existsByUser_UserIdAndStock_StockId(user.getUserId(), stockId);
         return ResponseEntity.ok(Map.of("inWatchlist", inWatchlist));
     }

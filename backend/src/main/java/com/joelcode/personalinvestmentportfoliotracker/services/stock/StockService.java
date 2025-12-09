@@ -16,6 +16,8 @@ public interface StockService {
 
     StockDTO getStockById(UUID id);
 
+    StockDTO getStockBySymbol(String symbol);
+
     List<StockDTO> getAllStocks();
 
     BigDecimal getCurrentPrice(UUID stockId);

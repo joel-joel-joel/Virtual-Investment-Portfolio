@@ -86,7 +86,8 @@ public class MarketAuxApiClientImpl implements MarketAuxApiClient {
                     article.getTitle(),
                     article.getDescription(),
                     article.getUrl(),
-                    article.getPublishedOn()
+                    article.getPublishedOn(),
+                    article.getImageUrl()
             );
             newsArticles.add(newsArticle);
         }

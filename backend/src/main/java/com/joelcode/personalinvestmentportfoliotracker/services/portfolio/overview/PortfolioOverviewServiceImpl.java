@@ -90,6 +90,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
                 account.getUserid(),
                 account.getAccountId(),
                 totalPortfolioValue,
+                holdingsValue,  // Holdings value (without cash)
                 totalInvested,
                 totalUnrealizedGain,
                 totalRealizedGain,
@@ -106,6 +107,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
         User user = userValidationService.validateUserExists(userId);
 
         BigDecimal totalPortfolioValue = BigDecimal.ZERO;
+        BigDecimal holdingsValue = BigDecimal.ZERO;
         BigDecimal totalInvested = BigDecimal.ZERO;
         BigDecimal totalUnrealizedGain = BigDecimal.ZERO;
         BigDecimal totalRealizedGain = BigDecimal.ZERO;
@@ -119,6 +121,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
             PortfolioOverviewDTO accountOverview = getPortfolioOverviewForAccount(account.getAccountId());
 
             totalPortfolioValue = totalPortfolioValue.add(accountOverview.getTotalPortfolioValue());
+            holdingsValue = holdingsValue.add(accountOverview.getHoldingsValue());
             totalInvested = totalInvested.add(accountOverview.getTotalCostBasis());
             totalUnrealizedGain = totalUnrealizedGain.add(accountOverview.getTotalUnrealizedGain());
             totalRealizedGain = totalRealizedGain.add(accountOverview.getTotalRealizedGain());
@@ -135,6 +138,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
                 userId,
                 null,
                 totalPortfolioValue,
+                holdingsValue,  // Holdings value (without cash)
                 totalInvested,
                 totalUnrealizedGain,
                 totalRealizedGain,

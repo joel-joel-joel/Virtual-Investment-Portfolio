@@ -206,7 +206,8 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> changePassword(
             @Valid @RequestBody ChangePasswordRequest request,
             Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
         User dbUser = userRepository.findById(user.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

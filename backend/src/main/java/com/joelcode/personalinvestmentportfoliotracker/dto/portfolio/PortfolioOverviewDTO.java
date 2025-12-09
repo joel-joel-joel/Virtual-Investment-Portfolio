@@ -11,7 +11,8 @@ public class PortfolioOverviewDTO {
     // Portfolio overview response DTO (output)
     private UUID userId;
     private UUID accountId;
-    private BigDecimal totalPortfolioValue;
+    private BigDecimal totalPortfolioValue;  // Total value including cash and holdings
+    private BigDecimal holdingsValue;        // Value of holdings only (without cash)
     private BigDecimal totalCostBasis;
     private BigDecimal totalUnrealizedGain;
     private BigDecimal totalRealizedGain;
@@ -20,12 +21,13 @@ public class PortfolioOverviewDTO {
     private List<HoldingDTO> holdings;
 
     // Constructor
-    public PortfolioOverviewDTO (UUID userId, UUID accountId, BigDecimal totalPortfolioValue, BigDecimal totalCostBasis,
-                                 BigDecimal totalUnrealizedGain, BigDecimal totalRealizedGain,
+    public PortfolioOverviewDTO (UUID userId, UUID accountId, BigDecimal totalPortfolioValue, BigDecimal holdingsValue,
+                                 BigDecimal totalCostBasis, BigDecimal totalUnrealizedGain, BigDecimal totalRealizedGain,
                                  BigDecimal totalDividends, BigDecimal cashBalance, List<HoldingDTO> holdings) {
         this.userId = userId;
         this.accountId = accountId;
         this.totalPortfolioValue = totalPortfolioValue;
+        this.holdingsValue = holdingsValue;
         this.totalCostBasis = totalCostBasis;
         this.totalUnrealizedGain = totalUnrealizedGain;
         this.totalRealizedGain = totalRealizedGain;
@@ -48,6 +50,10 @@ public class PortfolioOverviewDTO {
     public BigDecimal getTotalPortfolioValue() {return totalPortfolioValue;}
 
     public void setTotalPortfolioValue(BigDecimal totalPortfolioValue) {this.totalPortfolioValue = totalPortfolioValue;}
+
+    public BigDecimal getHoldingsValue() {return holdingsValue;}
+
+    public void setHoldingsValue(BigDecimal holdingsValue) {this.holdingsValue = holdingsValue;}
 
     public BigDecimal getTotalCostBasis() {return totalCostBasis;}
 

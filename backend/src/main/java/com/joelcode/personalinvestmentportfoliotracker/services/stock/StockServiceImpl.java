@@ -68,6 +68,13 @@ public class StockServiceImpl implements StockService {
         return StockMapper.toDTO(stock);
     }
 
+    // Find stock by symbol
+    @Override
+    public StockDTO getStockBySymbol(String symbol) {
+        Optional<Stock> stock = stockRepository.findByStockCode(symbol.toUpperCase());
+        return stock.map(StockMapper::toDTO).orElse(null);
+    }
+
     // Generate a list of all the sticks inclusive of their information
     @Override
     public List<StockDTO> getAllStocks() {

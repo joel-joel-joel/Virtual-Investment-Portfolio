@@ -6,6 +6,7 @@ import com.joelcode.personalinvestmentportfoliotracker.entities.Transaction;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.TransactionRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.TransactionMapper;
 import com.joelcode.personalinvestmentportfoliotracker.services.transaction.TransactionService;
+import com.joelcode.personalinvestmentportfoliotracker.services.transaction.TransactionProcessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,9 @@ public class TransactionController {
 
     @Autowired
     public TransactionService transactionService;
+
+    @Autowired
+    public TransactionProcessorService transactionProcessorService;
 
     @Autowired
     public TransactionRepository transactionRepository;
@@ -43,10 +47,10 @@ public class TransactionController {
         }
     }
 
-    // Create a new transaction
+    // Create a new transaction and process it (updates account balance and holdings)
     @PostMapping
     public ResponseEntity<TransactionDTO> createTransaction(@RequestBody TransactionCreateRequest request) {
-        TransactionDTO created = transactionService.createTransaction(request);
+        TransactionDTO created = transactionProcessorService.processTransaction(request);
         return ResponseEntity.ok(created);
     }
 

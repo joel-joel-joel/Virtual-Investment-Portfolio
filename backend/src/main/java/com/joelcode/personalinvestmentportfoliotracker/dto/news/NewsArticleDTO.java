@@ -19,14 +19,18 @@ public class NewsArticleDTO {
     @JsonProperty("publishedAt")
     private String publishedAt;
 
+    @JsonProperty("imageUrl")
+    private String imageUrl;
+
     public NewsArticleDTO() {}
 
-    public NewsArticleDTO(String sector, String title, String summary, String url, String publishedAt) {
+    public NewsArticleDTO(String sector, String title, String summary, String url, String publishedAt, String imageUrl) {
         this.sector = sector;
         this.title = title;
         this.summary = summary;
         this.url = url;
         this.publishedAt = publishedAt;
+        this.imageUrl = imageUrl;
     }
 
     public String getSector() { return sector; }
@@ -43,4 +47,7 @@ public class NewsArticleDTO {
 
     public String getPublishedAt() { return publishedAt; }
     public void setPublishedAt(String publishedAt) { this.publishedAt = publishedAt; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }
