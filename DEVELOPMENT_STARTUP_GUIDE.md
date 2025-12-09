@@ -360,6 +360,8 @@ docker exec -it portfolio_postgres_migration_test psql -U devuser -d portfolio_d
 3. **Frontend can run independently** for UI development
 4. **Database persists** between restarts (use `docker-compose down -v` to reset)
 5. **Hot reload enabled** for both frontend (Expo) and backend (Spring DevTools)
+6. **JWT Filter is disabled in dev mode** - This allows authentication to work without requiring tokens for public endpoints
+7. **After making backend changes**, restart the Spring Boot application in IntelliJ to see the changes
 
 ---
 

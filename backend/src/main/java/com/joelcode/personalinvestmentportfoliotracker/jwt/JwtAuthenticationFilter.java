@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @Component
 @Profile("!test")
-@ConditionalOnProperty(name = "jwt.filter.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "jwt.filter.enabled", havingValue = "true", matchIfMissing = false)
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired

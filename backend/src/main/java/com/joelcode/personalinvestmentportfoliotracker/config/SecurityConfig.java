@@ -79,7 +79,9 @@ public class SecurityConfig {
                 );
 
         // JWT filter - only add if it's enabled
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        if (jwtAuthenticationFilter != null) {
+            http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        }
 
 
         // For H2 console

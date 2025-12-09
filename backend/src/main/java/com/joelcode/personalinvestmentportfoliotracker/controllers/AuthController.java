@@ -94,20 +94,20 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegistrationRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegistrationRequest request) {
 
         // Check if username already exists
         if (userRepository.existsByUsername(request.getUsername())) {
             return ResponseEntity
                     .badRequest()
-                    .body(null); // or throw a custom exception if you prefer
+                    .body(Map.of("error", "Username already exists"));
         }
 
         // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity
                     .badRequest()
-                    .body(null); // or throw a custom exception
+                    .body(Map.of("error", "Email already exists"));
         }
 
         // Create new user
@@ -124,7 +124,7 @@ public class AuthController {
         String token = jwtTokenProvider.generateToken(user);
 
         // Calculate token expiration time
-        LocalDateTime expiresAt = jwtTokenProvider.getExpirationDate(token); // implement this in your jwtService
+        LocalDateTime expiresAt = jwtTokenProvider.getExpirationDate(token);
 
         // Build response DTO
         AuthResponseDTO responseDTO = new AuthResponseDTO(
