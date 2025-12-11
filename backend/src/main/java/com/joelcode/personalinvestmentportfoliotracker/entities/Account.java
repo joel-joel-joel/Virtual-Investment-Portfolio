@@ -19,10 +19,10 @@ public class Account {
 
     // Constructors
 
-    public Account(UUID accountId, String accountName, BigDecimal accountBalance, User user) {
+    public Account(UUID accountId, String accountName, BigDecimal cashBalance, User user) {
         this.accountId = accountId;
         this.accountName = accountName;
-        this.accountBalance = accountBalance;
+        this.cashBalance = cashBalance;
         this.user = user;
     }
 
@@ -38,7 +38,7 @@ public class Account {
     private String accountName;
 
     @Column(nullable = false)
-    private BigDecimal accountBalance = BigDecimal.ZERO;
+    private BigDecimal cashBalance = BigDecimal.ZERO;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -69,9 +69,9 @@ public class Account {
 
     public void setAccountName(String accountName) {this.accountName = accountName;}
 
-    public BigDecimal getAccountBalance() {return accountBalance;}
+    public BigDecimal getAccountBalance() {return cashBalance;}
 
-    public void setAccountBalance(BigDecimal accountBalance) {this.accountBalance = accountBalance;}
+    public void setAccountBalance(BigDecimal cashBalance) {this.cashBalance = cashBalance;}
 
     public User getUser() {return user;}
 
@@ -98,6 +98,13 @@ public class Account {
 
     public void setCreatedAt(LocalDateTime createdAt) {this.createdAt = createdAt;}
 
+    public BigDecimal getCashBalance() {
+        return cashBalance;
+    }
+
+    public void setCashBalance(BigDecimal cashBalance) {
+        this.cashBalance = cashBalance;
+    }
 
     // Helper Methods
     public void addTransaction(Transaction transaction) {
@@ -109,4 +116,6 @@ public class Account {
         transactions.remove(transaction);
         transaction.setAccount(null);
     }
+
 }
+

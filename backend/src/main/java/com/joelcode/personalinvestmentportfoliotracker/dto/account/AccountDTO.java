@@ -27,7 +27,7 @@ public class AccountDTO {
         this.accountName = account.getAccountName();
         this.accountId = account.getAccountId();
         this.user = new UserDTO(account.getUser());
-        this.cashBalance = account.getAccountBalance();
+        this.cashBalance = account.getCashBalance();
     }
 
     public AccountDTO() {}

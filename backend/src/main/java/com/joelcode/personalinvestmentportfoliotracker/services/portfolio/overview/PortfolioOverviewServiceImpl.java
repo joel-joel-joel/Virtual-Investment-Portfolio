@@ -63,35 +63,41 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
         // Get holdings as DTOs
         List<HoldingDTO> holdings = holdingService.getHoldingsForAccount(accountId);
 
+        // Calculate holdings value (current market value of all positions)
         BigDecimal holdingsValue = holdings.stream()
-                .map(h -> h.getCurrentPrice().multiply(h.getQuantity()))
+                .map(h -> safe(h.getCurrentPrice()).multiply(safe(h.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Calculate total invested for each holding
-        BigDecimal totalInvested = holdings.stream()
-                .map(h -> h.getAverageCostBasis().multiply(h.getQuantity()))
+        // Calculate total cost basis (total amount invested)
+        BigDecimal totalCostBasis = holdings.stream()
+                .map(h -> safe(h.getAverageCostBasis()).multiply(safe(h.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal totalRealizedGain = BigDecimal.ZERO;
+        // Calculate unrealized gain (current value - cost basis)
+        BigDecimal totalUnrealizedGain = holdingsValue.subtract(totalCostBasis);
 
-        BigDecimal totalUnrealizedGain = holdingsValue.subtract(totalInvested);
+        // Calculate realized gain (from closed positions)
+        BigDecimal totalRealizedGain = holdings.stream()
+                .map(h -> safe(h.getRealizedGain()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal cashBalance = account.getAccountBalance() != null ? account.getAccountBalance() : BigDecimal.ZERO;
+        // Get cash balance
+        BigDecimal cashBalance = safe(account.getAccountBalance());
 
+        // Calculate total portfolio value (holdings + cash)
         BigDecimal totalPortfolioValue = holdingsValue.add(cashBalance);
 
-        // Calculate total dividends
+        // Calculate total dividends using totalAmount
         BigDecimal totalDividends = dividendPaymentService.getDividendPaymentsForAccount(accountId).stream()
-                .map(dto -> dto.getDividendPerShare() != null ? dto.getDividendPerShare() : BigDecimal.ZERO)
+                .map(dto -> safe(dto.getTotalAmount()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
 
         return new PortfolioOverviewDTO(
                 account.getUserid(),
                 account.getAccountId(),
                 totalPortfolioValue,
-                holdingsValue,  // Holdings value (without cash)
-                totalInvested,
+                holdingsValue,
+                totalCostBasis,
                 totalUnrealizedGain,
                 totalRealizedGain,
                 totalDividends,
@@ -108,7 +114,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
 
         BigDecimal totalPortfolioValue = BigDecimal.ZERO;
         BigDecimal holdingsValue = BigDecimal.ZERO;
-        BigDecimal totalInvested = BigDecimal.ZERO;
+        BigDecimal totalCostBasis = BigDecimal.ZERO;
         BigDecimal totalUnrealizedGain = BigDecimal.ZERO;
         BigDecimal totalRealizedGain = BigDecimal.ZERO;
         BigDecimal totalDividends = BigDecimal.ZERO;
@@ -122,7 +128,7 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
 
             totalPortfolioValue = totalPortfolioValue.add(accountOverview.getTotalPortfolioValue());
             holdingsValue = holdingsValue.add(accountOverview.getHoldingsValue());
-            totalInvested = totalInvested.add(accountOverview.getTotalCostBasis());
+            totalCostBasis = totalCostBasis.add(accountOverview.getTotalCostBasis());
             totalUnrealizedGain = totalUnrealizedGain.add(accountOverview.getTotalUnrealizedGain());
             totalRealizedGain = totalRealizedGain.add(accountOverview.getTotalRealizedGain());
             totalDividends = totalDividends.add(accountOverview.getTotalDividends());
@@ -138,13 +144,18 @@ public class PortfolioOverviewServiceImpl implements PortfolioOverviewService {
                 userId,
                 null,
                 totalPortfolioValue,
-                holdingsValue,  // Holdings value (without cash)
-                totalInvested,
+                holdingsValue,
+                totalCostBasis,
                 totalUnrealizedGain,
                 totalRealizedGain,
                 totalDividends,
                 cashBalance,
                 allHoldings
         );
+    }
+
+    // Helper to safely return BigDecimal or ZERO if null
+    private BigDecimal safe(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
     }
 }

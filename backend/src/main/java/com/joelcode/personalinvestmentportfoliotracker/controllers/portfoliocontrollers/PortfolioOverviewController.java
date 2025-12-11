@@ -20,7 +20,7 @@ public class PortfolioOverviewController {
     PortfolioOverviewService portfolioOverviewService;
 
     // Get portfolio overview for a specific account
-    @GetMapping("/account/{accountId}")
+    @GetMapping("/portfolio/overview/account/{accountId}")
     public ResponseEntity<PortfolioOverviewDTO> getPortfolioOverview(@PathVariable UUID accountId) {
         PortfolioOverviewDTO overview = portfolioOverviewService.getPortfolioOverviewForAccount(accountId);
         if (overview != null) {
@@ -31,7 +31,7 @@ public class PortfolioOverviewController {
     }
 
     // Get portfolio performance for a user (aggregates across all accounts)
-    @GetMapping("/user/{userId}")
+    @GetMapping("/portfolio/overview/user/{userId}")
     public ResponseEntity<PortfolioOverviewDTO> getPortfolioOverviewForUser(@PathVariable UUID userId) {
         PortfolioOverviewDTO overview = portfolioOverviewService.getPortfolioOverviewForUser(userId);
         if (overview != null) {

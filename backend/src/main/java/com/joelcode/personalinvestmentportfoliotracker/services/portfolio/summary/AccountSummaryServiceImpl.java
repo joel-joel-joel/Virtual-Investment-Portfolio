@@ -7,13 +7,14 @@ import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepository;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepository;
-import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentCalculationService;
+import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentService;
 import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
 import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidationService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -27,18 +28,18 @@ public class AccountSummaryServiceImpl implements AccountSummaryService{
     private final AccountRepository accountRepository;
     private final HoldingRepository holdingRepository;
     private final StockService stockService;
-    private final DividendPaymentCalculationService dividendPaymentCalculationService;
+    private final DividendPaymentService dividendPaymentService;
     private final UserValidationService userValidationService;
 
 
     // Constructor
     public AccountSummaryServiceImpl (AccountRepository accountRepository, HoldingRepository holdingRepository,
-                                      StockService stockService, DividendPaymentCalculationService dividendPaymentCalculationService,
+                                      StockService stockService, DividendPaymentService dividendPaymentService,
                                       UserValidationService userValidationService) {
         this.accountRepository = accountRepository;
         this.holdingRepository = holdingRepository;
         this.stockService = stockService;
-        this.dividendPaymentCalculationService = dividendPaymentCalculationService;
+        this.dividendPaymentService = dividendPaymentService;
         this.userValidationService = userValidationService;
     }
 
@@ -52,49 +53,76 @@ public class AccountSummaryServiceImpl implements AccountSummaryService{
 
         List<Holding> holdings = holdingRepository.findByAccount_AccountId(accountId);
 
-        BigDecimal totalInvested = BigDecimal.ZERO;
-        BigDecimal totalMarketValue = BigDecimal.ZERO;
+        // Calculate holdings value (current market value of all positions)
+        BigDecimal holdingsValue = BigDecimal.ZERO;
+
+        // Calculate total cost basis (total amount invested)
+        BigDecimal totalCostBasis = BigDecimal.ZERO;
 
         List<HoldingSummaryDTO> holdingSummaries = new ArrayList<>();
 
         for (Holding h : holdings) {
-
             BigDecimal currentPrice = stockService.getCurrentPrice(h.getStock().getStockId());
-            BigDecimal marketValue = currentPrice.multiply(h.getQuantity());
+            BigDecimal quantity = safe(h.getQuantity());
+            BigDecimal averageCostBasis = safe(h.getAverageCostBasis());
 
-            BigDecimal invested = h.getAverageCostBasis().multiply(h.getQuantity());
-            BigDecimal gain = marketValue.subtract(invested);
+            // Market value for this holding
+            BigDecimal marketValue = currentPrice.multiply(quantity);
 
-            totalInvested = totalInvested.add(invested);
-            totalMarketValue = totalMarketValue.add(marketValue);
+            // Cost basis for this holding
+            BigDecimal costBasis = averageCostBasis.multiply(quantity);
+
+            // Unrealized gain for this holding
+            BigDecimal unrealizedGain = marketValue.subtract(costBasis);
+
+            // Add to totals
+            holdingsValue = holdingsValue.add(marketValue);
+            totalCostBasis = totalCostBasis.add(costBasis);
 
             HoldingSummaryDTO dto = new HoldingSummaryDTO();
             dto.setStockId(h.getStock().getStockId());
             dto.setStockCode(h.getStock().getStockCode());
-            dto.setQuantity(h.getQuantity());
-            dto.setAverageCost(h.getAverageCostBasis());
+            dto.setQuantity(quantity);
+            dto.setAverageCost(averageCostBasis);
             dto.setMarketPrice(currentPrice);
             dto.setMarketValue(marketValue);
-            dto.setUnrealizedGain(gain);
+            dto.setUnrealizedGain(unrealizedGain);
 
             holdingSummaries.add(dto);
-
         }
 
-        // calculate dividend
-        BigDecimal totalDividends = dividendPaymentCalculationService.calculateTotalDividends(accountId);
+        // Calculate total unrealized gain (holdings value - cost basis)
+        BigDecimal totalUnrealizedGain = holdingsValue.subtract(totalCostBasis);
 
-        // Calculate cash
-        BigDecimal cash = account.getAccountBalance() != null ? account.getAccountBalance() : BigDecimal.ZERO;
+        // Get total dividends using totalAmount
+        BigDecimal totalDividends = dividendPaymentService.getDividendPaymentsForAccount(accountId).stream()
+                .map(dto -> safe(dto.getTotalAmount()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Get cash balance
+        BigDecimal cashBalance = safe(account.getAccountBalance());
+
+        // Calculate total portfolio value (holdings + cash)
+        BigDecimal totalPortfolioValue = holdingsValue.add(cashBalance);
+
+        // Calculate ROI: (Total Return / Cost Basis) × 100
+        // For summary, Total Return = Unrealized Gain + Dividends
+        BigDecimal totalReturn = totalUnrealizedGain.add(totalDividends);
+        BigDecimal roiPercentage = BigDecimal.ZERO;
+        if (totalCostBasis.compareTo(BigDecimal.ZERO) > 0) {
+            roiPercentage = totalReturn
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(totalCostBasis, 2, RoundingMode.HALF_UP);
+        }
 
         // Build summary
         AccountSummaryDTO summary = new AccountSummaryDTO();
         summary.setAccountId(accountId);
-        summary.setTotalCostBasis(totalInvested);
-        summary.setTotalMarketValue(totalMarketValue);
-        summary.setTotalUnrealizedGain(totalMarketValue.subtract(totalInvested));
+        summary.setTotalCostBasis(totalCostBasis);
+        summary.setTotalMarketValue(holdingsValue);
+        summary.setTotalUnrealizedGain(totalUnrealizedGain);
         summary.setTotalDividends(totalDividends);
-        summary.setTotalCashBalance(cash);
+        summary.setTotalCashBalance(cashBalance);
         summary.setHoldings(holdingSummaries);
 
         return summary;
@@ -111,5 +139,8 @@ public class AccountSummaryServiceImpl implements AccountSummaryService{
                 .collect(Collectors.toList());
     }
 
-
+    // Helper to safely return BigDecimal or ZERO if null
+    private BigDecimal safe(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
 }
