@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { Svg, Polyline, Circle, Defs, LinearGradient, Stop } from "react-native-svg";
 import { getThemeColors } from "../../../src/constants/colors";
+import { getAccountOverview } from "@/src/services/portfolioService";
+import { useAuth } from "@/src/context/AuthContext";
 
 const screenWidth = Dimensions.get("window").width - 48;
 const chartHeight = 140;
@@ -29,12 +31,52 @@ const filterOptions = ["1W", "1M", "3M", "6M", "1Y"];
 export const Dashboard = () => {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
+    const { activeAccount } = useAuth();
 
     const chartWidth = screenWidth - chartPadding * 2;
 
     const initialFilter = filterOptions[0];
     const [selectedFilter, setSelectedFilter] = useState(initialFilter);
     const [priceData, setPriceData] = useState(chartDataSets[initialFilter]);
+
+    const [totalPortfolioValue, setTotalPortfolioValue] = useState<number | null>(null);
+    const [cashBalance, setCashBalance] = useState<number | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [absoluteGain, setAbsoluteGain] = useState<number | null>(null);
+    const [percentageGain, setPercentageGain] = useState<number | null>(null);
+
+
+    useEffect(() => {
+        if (activeAccount?.accountId) {
+            fetchAccountOverview();
+        }
+    }, [activeAccount?.accountId]);
+
+    async function fetchAccountOverview() {
+        if (!activeAccount?.accountId) return;
+
+        try {
+            const data = await getAccountOverview(activeAccount.accountId);
+
+            setTotalPortfolioValue(Number(data.totalPortfolioValue));
+            setCashBalance(Number(data.cashBalance));
+
+            // ✅ Calculate absolute and percentage gains
+            const absGain = Number(data.totalUnrealizedGain);
+            const percGain = data.totalCostBasis > 0
+                ? (Number(data.totalUnrealizedGain) / Number(data.totalCostBasis)) * 100
+                : 0;
+
+            setAbsoluteGain(absGain);
+            setPercentageGain(percGain);
+
+        } catch (error) {
+            console.error("Error fetching portfolio overview:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
 
 
     const animation = useRef(new Animated.Value(0)).current;
@@ -89,11 +131,26 @@ export const Dashboard = () => {
                     </Text>
                     <View style={styles.currencyRow}>
                         <Text style={[styles.currency, { color: Colors.text }]}>A$</Text>
-                        <Text style={[styles.cashamount, { color: Colors.text }]}>1,000,000.00</Text>
+                        <View style={styles.currencyRow}>
+                            <Text style={[styles.currency, { color: Colors.text }]}>A$</Text>
+                            <Text style={[styles.cashamount, { color: Colors.text }]}>
+                                {isLoading || totalPortfolioValue === null
+                                    ? "Loading..."
+                                    : totalPortfolioValue.toLocaleString("en-AU", {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })
+                                }
+                            </Text>
+                        </View>
                     </View>
                     <Text style={[styles.dashboarddetails, { color: Colors.text }]}>
-                        Gain: A$27.68 (0.89%), Today
+                        {isLoading || absoluteGain === null || percentageGain === null
+                            ? "Loading..."
+                            : `Gain: A$${absoluteGain.toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${percentageGain.toFixed(2)}%), Today`
+                        }
                     </Text>
+
                 </View>
 
                 {/* SVG Line Chart */}
