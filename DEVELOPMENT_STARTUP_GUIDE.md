@@ -58,8 +58,7 @@ docker-compose -f compose.migration.yml up -d
 
 **Verify Docker is running:**
 ```bash
-docker ps
-```
+docker ps```
 
 You should see `portfolio_postgres_migration_test` container running.
 
