@@ -178,7 +178,6 @@ After running `npm start`, Expo will show you options:
 - Press **`w`** or navigate to: http://localhost:8081
 
 **For Mobile Development:**
-- Install **Expo Go** app on your phone
 - Scan the QR code shown in the terminal
 
 ---
