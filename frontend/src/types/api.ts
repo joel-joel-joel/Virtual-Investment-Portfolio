@@ -168,7 +168,8 @@ export interface HoldingDTO {
   currentPrice: number;           // BigDecimal
   currentValue: number;           // BigDecimal
   unrealizedGain: number;         // BigDecimal
-  unrealizedGainPercent: number;  // BigDecimal
+  unrealizedGainPercent: number;
+  companyName: string;
   sector: string;                // e.g., "Technology", "Healthcare"
 }
 

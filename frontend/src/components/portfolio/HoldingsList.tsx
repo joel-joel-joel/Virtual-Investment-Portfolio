@@ -247,7 +247,7 @@ export const HoldingsList: React.FC<HoldingsListProps> = ({
 
     // Fetch holdings from backend (only if not provided)
     const fetchHoldings = useCallback(async () => {
-        if (providedHoldings) return; // Skip if parent provides holdings
+        if (providedHoldings) return;
 
         if (!user || !activeAccount) {
             setInternalHoldings([])
@@ -259,40 +259,34 @@ export const HoldingsList: React.FC<HoldingsListProps> = ({
             setError(null);
             const data = await getAccountHoldings(activeAccount.accountId);
 
+            console.log('📥 Raw API response:', JSON.stringify(data, null, 2));  // ✅ ADD THIS
+
             // Transform backend data to component format
-            // Fetch stock details for each holding
-            const transformedData: Holding[] = await Promise.all(
-                data.map(async (item) => {
-                    // Use backend-calculated values
-                    const currentValue = item.currentValue || (item.quantity * item.currentPrice);
-                    const amountInvested = item.totalCostBasis;
-                    const returnAmount = item.unrealizedGain;
-                    const returnPercent = item.unrealizedGainPercent;
+            const transformedData: Holding[] = data.map((item) => {
+                console.log(`🔍 Processing ${item.stockSymbol}:`, {
+                    companyName: item.companyName,
+                    sector: item.sector,
+                });  // ✅ ADD THIS
 
-                    // Fetch stock details to get company name
-                    let companyName = item.stockSymbol;
-                    let sector = item.sector || 'Unknown'; // Use sector from backend
+                const currentValue = item.currentValue || (item.quantity * item.currentPrice);
+                const amountInvested = item.totalCostBasis;
+                const returnAmount = item.unrealizedGain;
+                const returnPercent = item.unrealizedGainPercent;
 
-                    try {
-                        const stockDetails = await getStockById(item.stockId);
-                        companyName = stockDetails.companyName;
-                    } catch {
-                        // If stock fetch fails, use fallback values
-                    }
+                return {
+                    id: item.holdingId,
+                    symbol: item.stockSymbol,
+                    company: item.companyName || item.stockSymbol,
+                    shares: item.quantity,
+                    amountInvested,
+                    currentValue,
+                    returnAmount,
+                    returnPercent,
+                    sector: item.sector || 'Unknown',
+                };
+            });
 
-                    return {
-                        id: item.holdingId,
-                        symbol: item.stockSymbol,
-                        company: companyName,
-                        shares: item.quantity,
-                        amountInvested,
-                        currentValue,
-                        returnAmount,
-                        returnPercent,
-                        sector: sector,
-                    };
-                })
-            );
+            console.log('📋 Final transformed holdings:', transformedData);  // ✅ ADD THIS
 
             setInternalHoldings(transformedData);
         } catch (error: any) {
@@ -343,6 +337,7 @@ export const HoldingsList: React.FC<HoldingsListProps> = ({
                 return 0;
         }
     });
+
 
     // Loading state
     if (loading) {

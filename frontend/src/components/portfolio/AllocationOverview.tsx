@@ -22,7 +22,7 @@ interface AllocationItem {
 
 interface SliceData extends AllocationItem {
     startAngle: number;
-    endAngle: nu
+    endAngle: number;
     color: string;
 }
 

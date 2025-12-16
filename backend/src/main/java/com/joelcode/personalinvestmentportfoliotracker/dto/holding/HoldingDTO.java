@@ -22,13 +22,14 @@ public class HoldingDTO {
     private BigDecimal currentValue;
     private BigDecimal unrealizedGain;
     private BigDecimal unrealizedGainPercent;
+    private String companyName;
     private String sector;
 
     // Constructor
     public HoldingDTO(UUID holdingId, UUID accountId, UUID stockId, String stockSymbol, BigDecimal quantity,
                       BigDecimal averageCostBasis, BigDecimal totalCostBasis, BigDecimal realizedGain,
                       LocalDateTime firstPurchaseDate, BigDecimal currentPrice, BigDecimal currentValue,
-                      BigDecimal unrealizedGain, BigDecimal unrealizedGainPercent, String sector) {
+                      BigDecimal unrealizedGain, BigDecimal unrealizedGainPercent, String companyName, String sector) {
         this.holdingId = holdingId;
         this.accountId = accountId;
         this.stockId = stockId;
@@ -59,6 +60,7 @@ public class HoldingDTO {
         this.currentValue = holding.getCurrentValue(currentPrice);
         this.unrealizedGain = holding.getUnrealizedGain(currentPrice);
         this.unrealizedGainPercent = holding.getUnrealizedGainPercent(currentPrice);
+        this.companyName = holding.getStock().getCompanyName();  // Add this
         this.sector = holding.getStock().getIndustry() != null ? holding.getStock().getIndustry() : "Unknown";
     }
 
@@ -144,4 +146,8 @@ public class HoldingDTO {
     public String getSector() {return sector;}
 
     public void setSector(String sector) {this.sector = sector;}
+
+    public String getCompanyName() {return companyName;}
+
+    public void setCompanyName(String companyName) {this.companyName = companyName;}
 }

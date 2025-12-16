@@ -58,6 +58,7 @@ public class HoldingMapper {
                 holding.getCurrentValue(currentPrice),
                 holding.getUnrealizedGain(currentPrice),
                 holding.getUnrealizedGainPercent(currentPrice),
+                holding.getStock().getCompanyName(),
                 sector
         );
     }

@@ -45,10 +45,10 @@ class HoldingControllerTest {
         holdings.add(new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(20), null ,null, null, LocalDateTime.now(),
                 BigDecimal.valueOf(10), BigDecimal.valueOf(1000), null, null,
-                "Tech"));
+                "bleh", "Tech"));
         holdings.add(new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(50), null ,null, null, LocalDateTime.now(),
-                BigDecimal.valueOf(20), BigDecimal.valueOf(1500), null, null,
+                BigDecimal.valueOf(20), BigDecimal.valueOf(1500), null, null, "bleh",
                 "Tech"));
 
         when(holdingService.getAllHoldings()).thenReturn(holdings);
@@ -84,7 +84,7 @@ class HoldingControllerTest {
         UUID holdingId = UUID.randomUUID();
         HoldingDTO holding = new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(100), null ,null, null, LocalDateTime.now(),
-                BigDecimal.valueOf(150), BigDecimal.valueOf(1200), null, null,
+                BigDecimal.valueOf(150), BigDecimal.valueOf(1200), null, null,"bleh",
                 "Tech");
 
         when(holdingService.getHoldingById(holdingId)).thenReturn(holding);
@@ -123,7 +123,7 @@ class HoldingControllerTest {
                 "Tech");
         HoldingDTO created = new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(100), BigDecimal.valueOf(20) ,BigDecimal.valueOf(1000), null, LocalDateTime.now(),
-                BigDecimal.valueOf(10), BigDecimal.valueOf(1000), null, null,
+                BigDecimal.valueOf(10), BigDecimal.valueOf(1000), null, null,"bleh",
                 "Tech");
 
         when(holdingService.createHolding(request)).thenReturn(created);
@@ -148,7 +148,7 @@ class HoldingControllerTest {
                 BigDecimal.valueOf(1000), BigDecimal.valueOf(100));
         HoldingDTO updated = new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(150), BigDecimal.valueOf(20) ,BigDecimal.valueOf(1000), BigDecimal.valueOf(100), LocalDateTime.now(),
-                BigDecimal.valueOf(10), BigDecimal.valueOf(1000), null, null,
+                BigDecimal.valueOf(10), BigDecimal.valueOf(1000), null, null,"bleh",
                 "Tech");
 
         when(holdingService.updateHolding(holdingId, request)).thenReturn(updated);
@@ -205,7 +205,7 @@ class HoldingControllerTest {
         List<HoldingDTO> holdings = new ArrayList<>();
         holdings.add(new HoldingDTO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "APPL",
                 BigDecimal.valueOf(100), BigDecimal.valueOf(20) ,BigDecimal.valueOf(1000), null, LocalDateTime.now(),
-                BigDecimal.valueOf(10), BigDecimal.valueOf(1000), null, null,
+                BigDecimal.valueOf(10), BigDecimal.valueOf(1000), null, null,"bleh",
                 "Tech"));
         when(holdingService.getHoldingsForAccount(accountId)).thenReturn(holdings);
 

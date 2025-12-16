@@ -12,6 +12,7 @@ import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepos
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountValidationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.HoldingMapper;
 import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryServiceImpl;
+import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class HoldingServiceImpl implements HoldingService {
     private final PriceHistoryServiceImpl priceHistoryService;
     private final WebSocketController webSocketController;
     private final SimpMessagingTemplate messagingTemplate;
+    private final StockService stockService;
 
     // Constructor
     public HoldingServiceImpl(HoldingRepository holdingRepository,
@@ -41,13 +43,15 @@ public class HoldingServiceImpl implements HoldingService {
                               AccountValidationService accountValidationService,
                               PriceHistoryServiceImpl priceHistoryService,
                               WebSocketController webSocketController,
-                              SimpMessagingTemplate messagingTemplate) {
+                              SimpMessagingTemplate messagingTemplate,
+                              StockService stockService) {
         this.holdingRepository = holdingRepository;
         this.holdingValidationService = holdingValidationService;
         this.accountValidationService = accountValidationService;
         this.priceHistoryService = priceHistoryService;
         this.webSocketController = webSocketController;
         this.messagingTemplate = messagingTemplate;
+        this.stockService = stockService;
     }
 
     // Interface function
@@ -296,6 +300,10 @@ public class HoldingServiceImpl implements HoldingService {
         // Stream through holdings and map to DTOs with current price
         List<HoldingDTO> holdingDTOs = account.getHoldings().stream()
                 .map(h -> {
+                    // Populate missing industry data from FinnHub if needed
+                    if (h.getStock().getIndustry() == null) {
+                        stockService.populateMissingIndustryData(h.getStock());
+                    }
                     BigDecimal currentPrice = priceHistoryService.getCurrentPrice(h.getStock().getStockId());
                     return HoldingMapper.toDTO(h, currentPrice);
                 })
