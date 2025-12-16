@@ -1,3 +1,4 @@
+import { getSectorColor } from '@/src/services/sectorColorService';
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
     View,
@@ -39,14 +40,6 @@ interface SearchFilters {
     marketCap: string | null;
 }
 
-const sectorColors = {
-    'Technology': { color: '#0369A1', bgLight: '#EFF6FF' },
-    'Semiconductors': { color: '#B45309', bgLight: '#FEF3C7' },
-    'FinTech': { color: '#15803D', bgLight: '#F0FDF4' },
-    'Consumer/Tech': { color: '#6D28D9', bgLight: '#F5F3FF' },
-    'Healthcare': { color: '#BE123C', bgLight: '#FFE4E6' },
-    'Retail': { color: '#EA580C', bgLight: '#FFEDD5' },
-};
 
 const recentSearches = ['AAPL', 'NVDA', 'MSFT', 'TSLA'];
 const sectors = ['Technology', 'Semiconductors', 'FinTech', 'Consumer/Tech', 'Healthcare', 'Retail'];
@@ -624,7 +617,7 @@ export default function SearchScreen() {
                             Popular Stocks
                         </Text>
                         {allStocks.slice(0, 5).map(stock => {
-                            const sectorColor = sectorColors[stock.sector as keyof typeof sectorColors] || sectorColors['Technology'];
+                            const sectorColor = getSectorColor(stock.sector);
                             return (
                                 <SearchResultCard
                                     key={stock.id}
@@ -656,7 +649,7 @@ export default function SearchScreen() {
                         </Text>
                     </View>
                     {filteredStocks.map(stock => {
-                        const sectorColor = sectorColors[stock.sector as keyof typeof sectorColors] || sectorColors['Technology'];
+                        const sectorColor = getSectorColor(stock.sector);
                         return (
                             <SearchResultCard
                                 key={stock.id}

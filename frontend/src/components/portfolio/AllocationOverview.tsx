@@ -12,6 +12,7 @@ import { Svg, Path, G } from 'react-native-svg';
 import { getThemeColors } from '../../constants/colors';
 import { apiFetch } from '../../services/api';
 import type { PortfolioOverviewDTO, HoldingDTO } from '../../types/api';
+import { getSectorColorPalette } from '@/src/services/sectorColorService';
 
 interface AllocationItem {
     stockCode: string;
@@ -21,18 +22,10 @@ interface AllocationItem {
 
 interface SliceData extends AllocationItem {
     startAngle: number;
-    endAngle: number;
+    endAngle: nu
     color: string;
 }
 
-const chartColors = [
-    "#0369A1",
-    "#EF6C00",
-    "#15803D",
-    "#6D28D9",
-    "#BE123C",
-    "#7C3AED",
-];
 
 interface AllocationOverviewProps {
     accountId: string;
@@ -43,6 +36,7 @@ export const AllocationOverview: React.FC<AllocationOverviewProps> = ({ accountI
     const Colors = getThemeColors(colorScheme);
 
     const [allocationData, setAllocationData] = useState<AllocationItem[]>([]);
+    const [chartColors, setChartColors] = useState<string[]>([]);
     const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -102,19 +96,31 @@ export const AllocationOverview: React.FC<AllocationOverviewProps> = ({ accountI
         fetchData();
     }, [accountId]);
 
-    // Calculate allocation percentages from holdings
+// Calculate allocation percentages from holdings
     const calculateAllocation = (holdings: HoldingDTO[]): AllocationItem[] => {
-        if (holdings.length === 0) return [];
+        if (holdings.length === 0) {
+            setChartColors([]);
+            return [];
+        }
 
         const totalValue = holdings.reduce((sum, h) => sum + h.currentValue, 0);
 
-        if (totalValue === 0) return [];
+        if (totalValue === 0) {
+            setChartColors([]);
+            return [];
+        }
 
-        return holdings.map(holding => ({
+        const allocations = holdings.map(holding => ({
             stockCode: holding.stockSymbol,
             currentValue: holding.currentValue,
             percentage: (holding.currentValue / totalValue) * 100,
         }));
+
+        // Generate colors for each stock based on stock code
+        const colors = getSectorColorPalette(allocations.map(a => a.stockCode));
+        setChartColors(colors);
+
+        return allocations;
     };
 
     // Calculate total value from allocation data

@@ -12,6 +12,7 @@ export interface StockDTO {
   stockCode: string;         // e.g., "AAPL"
   companyName: string;       // e.g., "Apple Inc."
   stockValue: number;        // Decimal value, e.g., 195.50
+  industry?: string;         // e.g., "Technology"
 }
 
 export interface CreateStockRequest {
@@ -111,17 +112,8 @@ export interface FinnhubCandleDTO {
 // News Types
 // ============================================================================
 
-export type FrontendSector =
-  | 'Technology'
-  | 'Semiconductors'
-  | 'FinTech'
-  | 'Consumer/Tech'
-  | 'Healthcare'
-  | 'Retail'
-  | 'Other';
-
 export interface NewsArticleDTO {
-  sector: FrontendSector;    // Mapped frontend sector
+  sector: string;            // Raw Finnhub sector/industry (e.g., "Technology", "Financial Services")
   title: string;             // Article headline
   summary: string;           // Article description/summary
   url: string;               // Full URL to article
@@ -177,6 +169,7 @@ export interface HoldingDTO {
   currentValue: number;           // BigDecimal
   unrealizedGain: number;         // BigDecimal
   unrealizedGainPercent: number;  // BigDecimal
+  sector: string;                // e.g., "Technology", "Healthcare"
 }
 
 export interface CreateHoldingRequest {
@@ -271,9 +264,10 @@ export interface WatchlistDTO {
     stockCode: string;
     companyName: string;
     currentPrice: number | null;
-    change: number | null;
-    changePercent: number | null;
+    priceChange: number | null;  // ✅ Backend uses "priceChange"
+    priceChangePercent: number | null;  // ✅ Backend uses "priceChangePercent"
     addedAt: string;
+    sector?: string;  // ✅ Added sector field
 }
 
 export interface AddToWatchlistRequest {

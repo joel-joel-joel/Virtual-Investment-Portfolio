@@ -1,5 +1,6 @@
 package com.joelcode.personalinvestmentportfoliotracker.controllers.utilitycontrollers;
 
+import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCompanyProfileDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.watchlist.WatchlistItemDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
@@ -49,15 +50,30 @@ public class WatchlistController {
         List<WatchlistItemDTO> items = watchlist.stream()
                 .map(w -> {
                     Stock stock = w.getStock();
+
+                    // Get current price from Finnhub
                     BigDecimal currentPrice = finnhubApiClient.getCurrentPrice(stock.getStockCode());
                     if (currentPrice == null) {
                         currentPrice = stock.getStockValue();
                     }
+
+                    // Calculate change
                     BigDecimal previousPrice = stock.getStockValue();
                     BigDecimal change = currentPrice.subtract(previousPrice);
                     BigDecimal changePercent = previousPrice.compareTo(BigDecimal.ZERO) > 0
                             ? change.divide(previousPrice, 4, java.math.RoundingMode.HALF_UP).multiply(new BigDecimal(100))
                             : BigDecimal.ZERO;
+
+                    // ✅ Get sector from Finnhub profile
+                    String sector = "Other";
+                    try {
+                        FinnhubCompanyProfileDTO profile = finnhubApiClient.getCompanyProfile(stock.getStockCode());
+                        if (profile != null && profile.getIndustry() != null) {
+                            sector = profile.getIndustry();
+                        }
+                    } catch (Exception e) {
+                        // Fallback to "Other" if profile fetch fails
+                    }
 
                     return new WatchlistItemDTO(
                             w.getWatchlistId(),
@@ -68,7 +84,8 @@ public class WatchlistController {
                             currentPrice,
                             change,
                             changePercent,
-                            w.getAddedAt()
+                            w.getAddedAt(),
+                            sector  // ✅ Include sector
                     );
                 })
                 .collect(Collectors.toList());

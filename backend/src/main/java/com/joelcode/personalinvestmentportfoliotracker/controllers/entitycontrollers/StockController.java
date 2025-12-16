@@ -63,6 +63,7 @@ public class StockController {
                 request.setStockCode(symbol.toUpperCase());
                 request.setCompanyName(profile.getCompanyName());
                 request.setStockValue(quote.getCurrentPrice());
+                request.setIndustry(profile.getIndustry());
 
                 StockDTO created = stockService.createStock(request);
                 return ResponseEntity.ok(created);

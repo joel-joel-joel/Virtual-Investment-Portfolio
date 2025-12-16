@@ -155,6 +155,26 @@ public class StockServiceImpl implements StockService {
         }
     }
 
+    // Helper method to fetch and populate missing industry data from FinnHub
+    @Override
+    public void populateMissingIndustryData(Stock stock) {
+        if (stock == null || stock.getIndustry() != null) {
+            return; // Skip if stock is null or industry is already set
+        }
+
+        try {
+            // Fetch company profile from FinnHub
+            var profile = finnhubApiClient.getCompanyProfile(stock.getStockCode());
+            if (profile != null && profile.getIndustry() != null) {
+                stock.setIndustry(profile.getIndustry());
+                stockRepository.save(stock);
+            }
+        } catch (Exception e) {
+            // Silently ignore if FinnHub call fails
+            System.err.println("Failed to fetch industry for " + stock.getStockCode() + ": " + e.getMessage());
+        }
+    }
+
 
     // Delete stock
     @Override

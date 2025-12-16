@@ -22,12 +22,13 @@ public class HoldingDTO {
     private BigDecimal currentValue;
     private BigDecimal unrealizedGain;
     private BigDecimal unrealizedGainPercent;
+    private String sector;
 
     // Constructor
     public HoldingDTO(UUID holdingId, UUID accountId, UUID stockId, String stockSymbol, BigDecimal quantity,
                       BigDecimal averageCostBasis, BigDecimal totalCostBasis, BigDecimal realizedGain,
                       LocalDateTime firstPurchaseDate, BigDecimal currentPrice, BigDecimal currentValue,
-                      BigDecimal unrealizedGain, BigDecimal unrealizedGainPercent) {
+                      BigDecimal unrealizedGain, BigDecimal unrealizedGainPercent, String sector) {
         this.holdingId = holdingId;
         this.accountId = accountId;
         this.stockId = stockId;
@@ -41,6 +42,7 @@ public class HoldingDTO {
         this.currentValue = currentValue;
         this.unrealizedGain = unrealizedGain;
         this.unrealizedGainPercent = unrealizedGainPercent;
+        this.sector = sector;
     }
 
     public HoldingDTO(Holding holding, BigDecimal currentPrice) {
@@ -57,6 +59,7 @@ public class HoldingDTO {
         this.currentValue = holding.getCurrentValue(currentPrice);
         this.unrealizedGain = holding.getUnrealizedGain(currentPrice);
         this.unrealizedGainPercent = holding.getUnrealizedGainPercent(currentPrice);
+        this.sector = holding.getStock().getIndustry() != null ? holding.getStock().getIndustry() : "Unknown";
     }
 
     public HoldingDTO() {}
@@ -137,4 +140,8 @@ public class HoldingDTO {
     public BigDecimal setCurrentPrice(BigDecimal currentPrice) {return this.currentPrice = currentPrice;}
 
     public BigDecimal setCurrentValue(BigDecimal currentValue) {return this.currentValue = currentValue;}
+
+    public String getSector() {return sector;}
+
+    public void setSector(String sector) {this.sector = sector;}
 }

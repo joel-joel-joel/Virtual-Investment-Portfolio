@@ -34,7 +34,8 @@ class HoldingMapperTest {
                 stock.getStockId(),
                 BigDecimal.valueOf(100),
                 BigDecimal.valueOf(150.0),
-                BigDecimal.valueOf(15000.0)
+                BigDecimal.valueOf(15000.0),
+                stock.getIndustry()
         );
 
         // Act
@@ -60,7 +61,8 @@ class HoldingMapperTest {
                 UUID.randomUUID(),
                 BigDecimal.valueOf(100),
                 BigDecimal.valueOf(150.0),
-                BigDecimal.valueOf(15000.0)
+                BigDecimal.valueOf(15000.0),
+                stock.getIndustry()
         );
 
         // Act & Assert
@@ -78,7 +80,8 @@ class HoldingMapperTest {
                 UUID.randomUUID(),
                 BigDecimal.valueOf(100),
                 BigDecimal.valueOf(150.0),
-                BigDecimal.valueOf(15000.0)
+                BigDecimal.valueOf(15000.0),
+                null
         );
 
         // Act & Assert

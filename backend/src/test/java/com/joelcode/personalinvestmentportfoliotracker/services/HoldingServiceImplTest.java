@@ -81,7 +81,8 @@ public class HoldingServiceImplTest {
                 stockId,
                 BigDecimal.valueOf(100),
                 BigDecimal.valueOf(120),
-                BigDecimal.valueOf(12000)
+                BigDecimal.valueOf(12000),
+                "Tech"
         );
 
         when(holdingValidationService.validateAccountExists(accountId)).thenReturn(testAccount);

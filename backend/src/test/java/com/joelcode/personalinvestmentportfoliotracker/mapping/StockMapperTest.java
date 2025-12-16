@@ -21,7 +21,7 @@ class StockMapperTest {
     void testToEntity_Success() {
         // Arrange
         StockCreateRequest request = new StockCreateRequest(UUID.randomUUID(), "Apple Inc", "AAPL",
-                BigDecimal.valueOf(20));
+                BigDecimal.valueOf(20), "Tech");
         request.setStockValue(BigDecimal.valueOf(150.0));
 
         // Act
@@ -49,7 +49,7 @@ class StockMapperTest {
         stock.setStockCode("MSFT");
         stock.setCompanyName("Microsoft");
 
-        StockUpdateRequest request = new StockUpdateRequest("MSFT-UPDATED", "Microsoft Corp", UUID.randomUUID());
+        StockUpdateRequest request = new StockUpdateRequest("MSFT-UPDATED", "Microsoft Corp", UUID.randomUUID(), "Tech");
 
         // Act
         StockMapper.updateEntity(stock, request);
@@ -66,7 +66,7 @@ class StockMapperTest {
         stock.setStockCode("GOOGL");
         stock.setCompanyName("Google");
 
-        StockUpdateRequest request = new StockUpdateRequest("GOOGL", null, UUID.randomUUID());
+        StockUpdateRequest request = new StockUpdateRequest("GOOGL", null, UUID.randomUUID(), "Tech");
 
         // Act
         StockMapper.updateEntity(stock, request);
@@ -83,7 +83,7 @@ class StockMapperTest {
         stock.setStockCode("TSLA");
         stock.setCompanyName("Tesla");
 
-        StockUpdateRequest request = new StockUpdateRequest(null, null, null);
+        StockUpdateRequest request = new StockUpdateRequest(null, null, null, null);
 
         // Act
         StockMapper.updateEntity(stock, request);

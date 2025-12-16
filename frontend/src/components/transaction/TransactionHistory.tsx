@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
 import { getAccountTransactions } from '@/src/services/portfolioService';
 import { getStockById } from '@/src/services/entityService';
+import { getSectorColor } from '@/src/services/sectorColorService';
 
 interface Transaction {
     id: string;
@@ -28,14 +29,7 @@ interface Transaction {
     sector: string;
 }
 
-const sectorColors: Record<string, { color: string; bgLight: string }> = {
-    'Technology': { color: '#0369A1', bgLight: '#EFF6FF' },
-    'Semiconductors': { color: '#B45309', bgLight: '#FEF3C7' },
-    'FinTech': { color: '#15803D', bgLight: '#F0FDF4' },
-    'Consumer/Tech': { color: '#6D28D9', bgLight: '#F5F3FF' },
-    'Healthcare': { color: '#BE123C', bgLight: '#FFE4E6' },
-    'Markets': { color: '#7C3AED', bgLight: '#F5F3FF' },
-};
+
 
 type SortOption = 'date' | 'symbol' | 'type' | 'amount';
 type FilterOption = 'all' | 'buy' | 'sell';
@@ -48,7 +42,7 @@ interface TransactionHistoryProps {
 
 const TransactionCard = ({ transaction, colors }: { transaction: Transaction; colors: any }) => {
     const router = useRouter();
-    const sectorColor = sectorColors[transaction.sector] || sectorColors['Technology'];
+    const sectorColor = getSectorColor(transaction.sector);
     const isBuy = transaction.type === 'buy';
 
     const handleStockPress = () => {

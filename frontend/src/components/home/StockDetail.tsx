@@ -12,6 +12,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '../../constants/colors';
 import {LineChart} from "recharts";
+import { getSectorColor } from '../../services/sectorColorService';
 
 interface StockDetailProps {
     symbol: string;
@@ -49,15 +50,8 @@ export const StockDetailScreen: React.FC<StockDetailProps> = ({
     const isPositive = change >= 0;
     const timeframes = ['1D', '1W', '1M', '3M', '1Y'] as const;
 
-    const sectorColors: Record<string, { color: string; bgLight: string }> = {
-        'Technology': { color: '#0369A1', bgLight: '#EFF6FF' },
-        'Semiconductors': { color: '#B45309', bgLight: '#FEF3C7' },
-        'FinTech': { color: '#15803D', bgLight: '#F0FDF4' },
-        'Consumer/Tech': { color: '#6D28D9', bgLight: '#F5F3FF' },
-        'Healthcare': { color: '#BE123C', bgLight: '#FFE4E6' },
-    };
-
-    const sectorColor = sectorColors[sector] || sectorColors['Technology'];
+    // Get dynamic color for sector
+    const sectorColor = getSectorColor(sector);
 
     return (
         <ScrollView style={[styles.container, { backgroundColor: Colors.background }]} showsVerticalScrollIndicator={false}>

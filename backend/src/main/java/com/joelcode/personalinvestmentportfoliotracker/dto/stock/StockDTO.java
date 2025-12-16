@@ -12,6 +12,7 @@ public class StockDTO {
     private String stockCode;
     private String companyName;
     private BigDecimal stockValue;
+    private String industry;
 
     // Constructor
     public StockDTO(UUID stockId, String stockCode, String companyName, BigDecimal stockValue) {
@@ -19,6 +20,15 @@ public class StockDTO {
         this.stockCode = stockCode;
         this.companyName = companyName;
         this.stockValue = stockValue;
+        this.industry = null;
+    }
+
+    public StockDTO(UUID stockId, String stockCode, String companyName, BigDecimal stockValue, String industry) {
+        this.stockId = stockId;
+        this.stockCode = stockCode;
+        this.companyName = companyName;
+        this.stockValue = stockValue;
+        this.industry = industry;
     }
 
     public StockDTO(Stock stock) {
@@ -26,6 +36,7 @@ public class StockDTO {
         this.stockCode = stock.getStockCode();
         this.companyName = stock.getCompanyName();
         this.stockValue = stock.getStockValue();
+        this.industry = stock.getIndustry();
     }
 
     public StockDTO() {}
@@ -38,4 +49,8 @@ public class StockDTO {
     public String getCompanyName() {return companyName;}
 
     public BigDecimal getStockValue() {return stockValue;}
+
+    public String getIndustry() {return industry;}
+
+    public void setIndustry(String industry) {this.industry = industry;}
 }

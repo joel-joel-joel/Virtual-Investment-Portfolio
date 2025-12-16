@@ -20,6 +20,7 @@ import { Svg, Polyline, Circle, Defs, LinearGradient, Stop } from 'react-native-
 import { getPriceHistoryForStock, filterPriceHistoryByTimeRange, type PriceHistoryDTO, addToWatchlist, removeFromWatchlist, isInWatchlist } from '@/src/services';
 import { getOrCreateStockBySymbol } from '@/src/services/entityService';
 import type { FinnhubCompanyProfileDTO, FinnhubQuoteDTO, FinnhubMetricsDTO, FinnhubCandleDTO } from '@/src/types/api';
+import { getSectorColor } from '@/src/services/sectorColorService';
 
 const screenWidth = Dimensions.get('window').width - 48;
 
@@ -35,14 +36,6 @@ const chartDataSets: Record<string, number[]> = {
     '1Y': [100, 110, 115, 120, 130, 140, 150],
 };
 
-const sectorColors: Record<string, { color: string; bgLight: string }> = {
-    'Technology': { color: '#0369A1', bgLight: '#EFF6FF' },
-    'Semiconductors': { color: '#B45309', bgLight: '#FEF3C7' },
-    'FinTech': { color: '#15803D', bgLight: '#F0FDF4' },
-    'Consumer/Tech': { color: '#6D28D9', bgLight: '#F5F3FF' },
-    'Healthcare': { color: '#BE123C', bgLight: '#FFE4E6' },
-    'Retail': { color: '#EA580C', bgLight: '#FFEDD5' },
-};
 
 // Popular stocks for comparison
 const availableStocks = [
@@ -366,7 +359,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
         );
     }
 
-    const sectorColor = sectorColors[stock.sector] || sectorColors['Technology'];
+    const sectorColor = getSectorColor(stock.sector);
     const timeframes = ['1D', '1W', '1M', '3M', '1Y'] as const;
     const isPositive = priceChangePercent >= 0;
 
@@ -737,7 +730,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                                 <View style={[styles.searchResults, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
                                     <ScrollView style={styles.searchResultsList} nestedScrollEnabled>
                                         {searchResults.slice(0, 5).map((result) => {
-                                            const resultSectorColor = sectorColors[result.sector as keyof typeof sectorColors] || sectorColors['Technology'];
+                                            const resultSectorColor = getSectorColor(result.sector);
                                             return (
                                                 <TouchableOpacity
                                                     key={result.symbol}
@@ -791,7 +784,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                                                 <Text style={[styles.comparisonValue, { color: sectorColor.color }]}>
                                                     A${currentPrice.toFixed(2)}
                                                 </Text>
-                                                <Text style={[styles.comparisonValue, { color: sectorColors[compareStock.sector as keyof typeof sectorColors]?.color || Colors.text }]}>
+                                                <Text style={[styles.comparisonValue, {color: getSectorColor(compareStock.sector).color}]}>
                                                     A${(compareStock.price || 0).toFixed(2)}
                                                 </Text>
                                             </View>

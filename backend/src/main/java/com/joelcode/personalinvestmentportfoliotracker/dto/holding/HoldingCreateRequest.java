@@ -27,13 +27,17 @@ public class HoldingCreateRequest {
     @DecimalMin(value = "0.01", message = "Total cost basis must be greater than zero")
     private BigDecimal totalCostBasis;
 
+    @NotNull(message = "Industry is required")
+    private String sector;
+
     // Constructor
-    public HoldingCreateRequest(UUID accountId, UUID stockId, BigDecimal quantity, BigDecimal averageCostBasis, BigDecimal totalCostBasis) {
+    public HoldingCreateRequest(UUID accountId, UUID stockId, BigDecimal quantity, BigDecimal averageCostBasis, BigDecimal totalCostBasis, String sector) {
         this.accountId = accountId;
         this.stockId = stockId;
         this.quantity = quantity;
         this.averageCostBasis = averageCostBasis;
         this.totalCostBasis = totalCostBasis;
+        this.sector = sector;
     }
 
     public HoldingCreateRequest() {}
@@ -60,5 +64,9 @@ public class HoldingCreateRequest {
     public void setTotalCostBasis(BigDecimal totalCostBasis) {this.totalCostBasis = totalCostBasis;}
 
     public HoldingCreateRequest setAccountId(String accountId) {this.accountId = UUID.fromString(accountId); return this;}
+
+    public String getSector() {return sector;}
+
+    public void setSector(String sector) {this.sector = sector;}
 
 }

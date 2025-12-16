@@ -44,6 +44,9 @@ public class Stock {
     @Column (nullable = false)
     private BigDecimal dividendPerShare = BigDecimal.ZERO;
 
+    @Column (nullable = true, length = 100)
+    private String industry;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
@@ -102,6 +105,10 @@ public class Stock {
     public BigDecimal getDividendPerShare() {return dividendPerShare;}
 
     public void setDividendPerShare(BigDecimal dividendPerShare) {this.dividendPerShare = dividendPerShare;}
+
+    public String getIndustry() {return industry;}
+
+    public void setIndustry(String industry) {this.industry = industry;}
 
 
     // Helper Functions

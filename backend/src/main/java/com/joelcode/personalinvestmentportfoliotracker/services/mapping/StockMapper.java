@@ -15,6 +15,7 @@ public class StockMapper {
         stock.setStockCode(request.getStockCode());
         stock.setCompanyName(request.getCompanyName());
         stock.setStockValue(request.getStockValue());
+        stock.setIndustry(request.getIndustry());
         return stock;
     }
 
@@ -22,14 +23,12 @@ public class StockMapper {
     public static void updateEntity(Stock stock, StockUpdateRequest request){
         if (request.getStockCode() != null) {stock.setStockCode(request.getStockCode());}
         if (request.getCompanyName() != null) {stock.setCompanyName(request.getCompanyName());}
+        if (request.getIndustry() != null) {stock.setIndustry(request.getIndustry());}
     }
 
     // Convert stock entity from stock response DTO
     public static StockDTO toDTO(Stock stock){
         if (stock == null) return null;
-        return new StockDTO(stock.getStockId(),
-                stock.getStockCode(),
-                stock.getCompanyName(),
-                stock.getStockValue());
+        return new StockDTO(stock);
     }
 }

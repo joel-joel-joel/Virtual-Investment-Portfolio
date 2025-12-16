@@ -4,6 +4,7 @@ import { StatusBar, View, ActivityIndicator, Text, StyleSheet } from "react-nati
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
+import { initializeSectorColors } from "../src/services/sectorColorService";
 
 // Loading screen component
 function LoadingScreen() {
@@ -20,6 +21,13 @@ function ProtectedRoutes() {
     const { isAuthenticated, isLoading } = useAuth();
     const segments = useSegments();
     const router = useRouter();
+
+    // Initialize sector color system on app start
+    useEffect(() => {
+        initializeSectorColors().catch(error =>
+            console.error('Failed to initialize sector colors:', error)
+        );
+    }, []);
 
     useEffect(() => {
         if (isLoading) return; // Don't navigate while checking auth state

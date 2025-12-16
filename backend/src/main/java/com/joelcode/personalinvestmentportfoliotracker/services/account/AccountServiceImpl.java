@@ -16,6 +16,7 @@ import com.joelcode.personalinvestmentportfoliotracker.services.mapping.HoldingM
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.TransactionMapper;
 import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryService;
 import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryServiceImpl;
+import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,19 +39,22 @@ public class AccountServiceImpl implements AccountService {
     private final HoldingMapper holdingMapper;
     private final PriceHistoryService priceHistoryService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final StockService stockService;
 
 
     // Constructor
     public AccountServiceImpl(AccountRepository accountRepository, AccountValidationService accountValidationService,
                               TransactionMapper transactionMapper, HoldingMapper holdingMapper,
                               PriceHistoryService priceHistoryService,
-                              SimpMessagingTemplate messagingTemplate) {
+                              SimpMessagingTemplate messagingTemplate,
+                              StockService stockService) {
         this.accountRepository = accountRepository;
         this.accountValidationService = accountValidationService;
         this.transactionMapper = transactionMapper;
         this.holdingMapper = holdingMapper;
         this.priceHistoryService = priceHistoryService;
         this.messagingTemplate = messagingTemplate;
+        this.stockService = stockService;
     }
 
 
@@ -194,6 +198,10 @@ public class AccountServiceImpl implements AccountService {
         // Stream through holdings and map to DTOs with current price
         List<HoldingDTO> holdingDTOs = account.getHoldings().stream()
                 .map(h -> {
+                    // Populate missing industry data from FinnHub if needed
+                    if (h.getStock().getIndustry() == null) {
+                        stockService.populateMissingIndustryData(h.getStock());
+                    }
                     BigDecimal currentPrice = priceHistoryService.getCurrentPrice(h.getStock().getStockId());
                     return HoldingMapper.toDTO(h, currentPrice);
                 })

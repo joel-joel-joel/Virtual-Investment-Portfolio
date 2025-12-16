@@ -1,3 +1,4 @@
+import { getSectorColor } from '@/src/services/sectorColorService';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
@@ -36,14 +37,6 @@ interface HoldingsListProps {
     onRefresh?: () => void;
 }
 
-const sectorColors = {
-    "Technology": { color: "#0369A1", bgLight: "#EFF6FF" },
-    "Semiconductors": { color: "#B45309", bgLight: "#FEF3C7" },
-    "FinTech": { color: "#15803D", bgLight: "#F0FDF4" },
-    "Consumer/Tech": { color: "#6D28D9", bgLight: "#F5F3FF" },
-    "Healthcare": { color: "#BE123C", bgLight: "#FFE4E6" },
-    "Markets": { color: "#7C3AED", bgLight: "#F3E8FF" },
-};
 
 const HoldingCard = ({
                          holding,
@@ -278,13 +271,11 @@ export const HoldingsList: React.FC<HoldingsListProps> = ({
 
                     // Fetch stock details to get company name
                     let companyName = item.stockSymbol;
-                    let sector = 'Unknown';
+                    let sector = item.sector || 'Unknown'; // Use sector from backend
 
                     try {
                         const stockDetails = await getStockById(item.stockId);
                         companyName = stockDetails.companyName;
-                        // Note: Backend StockDTO doesn't include sector, using default
-                        sector = 'Technology';
                     } catch {
                         // If stock fetch fails, use fallback values
                     }
@@ -500,7 +491,7 @@ export const HoldingsList: React.FC<HoldingsListProps> = ({
                     }
                 >
                     {sortedHoldings.map((holding) => {
-                        const sectorColor = sectorColors[holding.sector as keyof typeof sectorColors] || sectorColors['Technology'];
+                        const sectorColor = getSectorColor(holding.sector);
                         return (
                             <HoldingCard
                                 key={holding.id}

@@ -30,17 +30,22 @@ public class StockCreateRequest {
     @Positive(message = "Stock value must be positive")
     private BigDecimal stockValue;
 
+    @Size(max = 100, message = "Industry must be at most 100 characters")
+    private String industry;
+
     // Jackson-compatible constructor
     @JsonCreator
     public StockCreateRequest(
             @JsonProperty ("stockiD") UUID stockId,
             @JsonProperty ("companyName") String companyName,
             @JsonProperty ("stockCode") String stockCode,
-            @JsonProperty ("stockValue") BigDecimal stockValue){
+            @JsonProperty ("stockValue") BigDecimal stockValue,
+            @JsonProperty ("industry") String industry){
         this.stockId = stockId;
         this.companyName = companyName;
         this.stockCode = stockCode;
         this.stockValue = stockValue;
+        this.industry = industry;
     }
 
     public StockCreateRequest() {}
@@ -61,4 +66,8 @@ public class StockCreateRequest {
     public void setStockCode(String stockCode) {this.stockCode = stockCode;}
 
     public void setStockValue(BigDecimal stockValue) {this.stockValue = stockValue;}
+
+    public String getIndustry() {return industry;}
+
+    public void setIndustry(String industry) {this.industry = industry;}
 }

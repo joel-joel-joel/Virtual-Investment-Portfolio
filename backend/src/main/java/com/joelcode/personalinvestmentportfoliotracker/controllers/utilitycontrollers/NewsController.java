@@ -19,7 +19,11 @@ public class NewsController {
     @Autowired
     private MarketAuxApiClient marketAuxApiClient;
 
-    // Get all news with optional limit
+    /**
+     * Get all news with optional limit
+     * @param limit Maximum number of articles to return
+     * @return List of news articles
+     */
     @GetMapping
     public ResponseEntity<List<NewsArticleDTO>> getAllNews(
             @RequestParam(value = "limit", defaultValue = "50") int limit
@@ -32,7 +36,13 @@ public class NewsController {
         }
     }
 
-    // Get news by sector
+    /**
+     * Get news by sector/industry from Finnhub
+     * Supports any raw Finnhub sector name (e.g., "Technology", "Financial Services", etc.)
+     * @param sector Finnhub sector/industry name
+     * @param limit Maximum number of articles to return
+     * @return List of news articles for the specified sector
+     */
     @GetMapping("/sector/{sector}")
     public ResponseEntity<List<NewsArticleDTO>> getNewsBySector(
             @PathVariable String sector,
@@ -46,26 +56,22 @@ public class NewsController {
         }
     }
 
-    // Get news by multiple sectors
+    /**
+     * Get news by multiple sectors/industries
+     * Supports any raw Finnhub sector names
+     * @param sectors Comma-separated list of Finnhub sector/industry names
+     * @param limit Maximum number of articles to return
+     * @return List of news articles from all specified sectors
+     */
     @GetMapping("/sectors")
     public ResponseEntity<List<NewsArticleDTO>> getNewsByMultipleSectors(
             @RequestParam(value = "sectors") String[] sectors,
             @RequestParam(value = "limit", defaultValue = "50") int limit
     ) {
         try {
-            // Convert sectors to industries for API call
-            List<String> industries = new ArrayList<>();
-            for (String sector : sectors) {
-                String[] sectorIndustries = getSectorIndustries(sector);
-                for (String industry : sectorIndustries) {
-                    if (!industries.contains(industry)) {
-                        industries.add(industry);
-                    }
-                }
-            }
-
+            // Pass raw sectors directly to API (no mapping needed anymore)
             List<NewsArticleDTO> news = marketAuxApiClient.getNewsByIndustries(
-                    industries.toArray(new String[0]),
+                    sectors,
                     limit
             );
             return ResponseEntity.ok(news);
@@ -74,15 +80,34 @@ public class NewsController {
         }
     }
 
-    private String[] getSectorIndustries(String sector) {
-        return switch (sector) {
-            case "Technology" -> new String[]{"technology", "communication services"};
-            case "Semiconductors" -> new String[]{"technology"};
-            case "FinTech" -> new String[]{"financial", "financial services"};
-            case "Consumer/Tech" -> new String[]{"services", "consumer cyclical", "consumer defensive"};
-            case "Healthcare" -> new String[]{"healthcare"};
-            case "Retail" -> new String[]{"consumer goods", "consumer cyclical", "consumer defensive"};
-            default -> new String[]{};
-        };
+    /**
+     * Get all unique sectors/industries from recent news
+     * Returns the set of all sectors currently being used in news articles
+     * Useful for dynamically discovering available sectors
+     * @param limit Number of news articles to scan for sectors
+     * @return List of unique sector names
+     */
+    @GetMapping("/sectors/unique")
+    public ResponseEntity<List<String>> getUniqueSectors(
+            @RequestParam(value = "limit", defaultValue = "500") int limit
+    ) {
+        try {
+            List<NewsArticleDTO> allNews = marketAuxApiClient.getAllNews(limit);
+
+            // Extract unique sectors
+            List<String> uniqueSectors = new ArrayList<>();
+            for (NewsArticleDTO article : allNews) {
+                String sector = article.getSector();
+                if (sector != null && !sector.isBlank() && !uniqueSectors.contains(sector)) {
+                    uniqueSectors.add(sector);
+                }
+            }
+
+            // Sort for consistent output
+            uniqueSectors.sort(String::compareTo);
+            return ResponseEntity.ok(uniqueSectors);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(List.of());
+        }
     }
 }

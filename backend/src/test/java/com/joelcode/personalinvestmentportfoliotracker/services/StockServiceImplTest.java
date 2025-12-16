@@ -54,7 +54,8 @@ public class StockServiceImplTest {
                 stockId,
                 "Apple Inc.",
                 "AAPL",
-                BigDecimal.valueOf(150.0)
+                BigDecimal.valueOf(150.0),
+                "Tech"
         );
 
         when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
@@ -93,7 +94,8 @@ public class StockServiceImplTest {
         StockUpdateRequest request = new StockUpdateRequest(
                 "AAPL",
                 "Apple Inc.",
-                stockId
+                stockId,
+                "Tech"
         );
 
         when(stockValidationService.validateStockExists(stockId)).thenReturn(testStock);

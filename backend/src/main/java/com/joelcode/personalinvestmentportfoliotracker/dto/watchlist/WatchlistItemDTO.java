@@ -34,10 +34,15 @@ public class WatchlistItemDTO {
     @JsonProperty("addedAt")
     private LocalDateTime addedAt;
 
+    // ✅ ADD THIS FIELD
+    @JsonProperty("sector")
+    private String sector;
+
     public WatchlistItemDTO() {}
 
     public WatchlistItemDTO(UUID watchlistId, UUID userId, UUID stockId, String stockCode, String companyName,
-                           BigDecimal currentPrice, BigDecimal priceChange, BigDecimal priceChangePercent, LocalDateTime addedAt) {
+                            BigDecimal currentPrice, BigDecimal priceChange, BigDecimal priceChangePercent,
+                            LocalDateTime addedAt) {
         this.watchlistId = watchlistId;
         this.userId = userId;
         this.stockId = stockId;
@@ -49,6 +54,23 @@ public class WatchlistItemDTO {
         this.addedAt = addedAt;
     }
 
+    // ✅ ADD THIS CONSTRUCTOR WITH SECTOR
+    public WatchlistItemDTO(UUID watchlistId, UUID userId, UUID stockId, String stockCode, String companyName,
+                            BigDecimal currentPrice, BigDecimal priceChange, BigDecimal priceChangePercent,
+                            LocalDateTime addedAt, String sector) {
+        this.watchlistId = watchlistId;
+        this.userId = userId;
+        this.stockId = stockId;
+        this.stockCode = stockCode;
+        this.companyName = companyName;
+        this.currentPrice = currentPrice;
+        this.priceChange = priceChange;
+        this.priceChangePercent = priceChangePercent;
+        this.addedAt = addedAt;
+        this.sector = sector;
+    }
+
+    // Existing getters and setters...
     public UUID getWatchlistId() { return watchlistId; }
     public void setWatchlistId(UUID watchlistId) { this.watchlistId = watchlistId; }
 
@@ -75,4 +97,8 @@ public class WatchlistItemDTO {
 
     public LocalDateTime getAddedAt() { return addedAt; }
     public void setAddedAt(LocalDateTime addedAt) { this.addedAt = addedAt; }
+
+    // ✅ ADD THESE GETTER/SETTER
+    public String getSector() { return sector; }
+    public void setSector(String sector) { this.sector = sector; }
 }

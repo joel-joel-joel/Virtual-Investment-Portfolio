@@ -1,3 +1,4 @@
+import { getSectorColor } from '@/src/services/sectorColorService';
 import React, { useState } from 'react';
 import {
     View,
@@ -28,18 +29,9 @@ interface ExpandableNewsCardProps {
     news: NewsItem[];
 }
 
-// Sector color mapping
-const sectorColors = {
-    "Technology": { color: "#0369A1" },
-    "Semiconductors": { color: "#B45309" },
-    "FinTech": { color: "#15803D" },
-    "Consumer/Tech": { color: "#6D28D9" },
-    "Healthcare": { color: "#BE123C"},
-    "Markets": { color: "#7C3AED" },
-};
 
 const SectorBadge = ({ sector }: { sector: string }) => {
-    const sectorColor = sectorColors[sector as keyof typeof sectorColors] || sectorColors["Technology"];
+    const sectorColor = getSectorColor(sector);
 
     return (
         <View style={[styles.sectorBadge, { backgroundColor: "white" }]}>
@@ -100,8 +92,9 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
                 {/* Flat list of news with colored sector badges */}
                 {news.map((item) => {
                     // Get sector colors, fallback to Technology if undefined
-                    const sectorTheme = sectorColors[item.sector as keyof typeof sectorColors] || sectorColors["Technology"];
+                    const sectorTheme = getSectorColor(item.sector);
 
+                    // @ts-ignore
                     // @ts-ignore
                     return (
                         <TouchableOpacity

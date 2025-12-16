@@ -21,16 +21,20 @@ public class StockUpdateRequest {
     @Size(max = 100, message = "Company name must be at most 100 characters")
     private String companyName;
 
+    @Size(max = 100, message = "Industry must be at most 100 characters")
+    private String industry;
 
     // Jackson-compatible constructor
     @JsonCreator
     public StockUpdateRequest(
             @JsonProperty("stockCode") String stockCode,
             @JsonProperty ("companyName") String companyName,
-            @JsonProperty ("stockId") UUID stockId){
+            @JsonProperty ("stockId") UUID stockId,
+            @JsonProperty ("industry") String industry){
         this.stockCode = stockCode;
         this.stockId = stockId;
         this.companyName = companyName;
+        this.industry = industry;
     }
 
     // Getters and setters
@@ -45,5 +49,9 @@ public class StockUpdateRequest {
     public String getCompanyName() {return companyName;}
 
     public void setCompanyName(String companyName) {this.companyName = companyName;}
+
+    public String getIndustry() {return industry;}
+
+    public void setIndustry(String industry) {this.industry = industry;}
 
 }

@@ -43,6 +43,7 @@ public class HoldingMapper {
     // Convert holding entity to holding response DTO
     public static HoldingDTO toDTO(Holding holding, BigDecimal currentPrice) {
         if (holding == null) return null;
+        String sector = holding.getStock().getIndustry() != null ? holding.getStock().getIndustry() : "Unknown";
         return new HoldingDTO(
                 holding.getHoldingId(),
                 holding.getAccount().getAccountId(),
@@ -56,7 +57,8 @@ public class HoldingMapper {
                 currentPrice,
                 holding.getCurrentValue(currentPrice),
                 holding.getUnrealizedGain(currentPrice),
-                holding.getUnrealizedGainPercent(currentPrice)
+                holding.getUnrealizedGainPercent(currentPrice),
+                sector
         );
     }
 }

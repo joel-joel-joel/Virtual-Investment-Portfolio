@@ -119,7 +119,7 @@ export default function LoginScreen() {
             />
           </View>
           <Text style={[styles.title, { color: Colors.text }]}>
-            Portfolio Tracker
+            Pegasus
           </Text>
           <Text style={[styles.subtitle, { color: Colors.text, opacity: 0.6 }]}>
             {isLogin ? 'Welcome back!' : 'Create your account'}

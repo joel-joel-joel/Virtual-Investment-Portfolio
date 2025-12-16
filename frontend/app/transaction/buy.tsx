@@ -18,16 +18,8 @@ import { createTransaction } from '@/src/services/portfolioService';
 import { getOrCreateStockBySymbol } from '@/src/services/entityService';
 import { useAuth } from '@/src/context/AuthContext';
 import type { FinnhubCompanyProfileDTO, FinnhubQuoteDTO, CreateTransactionRequest, TransactionType } from '@/src/types/api';
+import { getSectorColor } from '@/src/services/sectorColorService';
 
-const sectorColors: Record<string, { color: string; bgLight: string }> = {
-    'Technology': { color: '#0369A1', bgLight: '#EFF6FF' },
-    'Semiconductors': { color: '#B45309', bgLight: '#FEF3C7' },
-    'FinTech': { color: '#15803D', bgLight: '#F0FDF4' },
-    'Consumer/Tech': { color: '#6D28D9', bgLight: '#F5F3FF' },
-    'Healthcare': { color: '#BE123C', bgLight: '#FFE4E6' },
-    'Retail': { color: '#EA580C', bgLight: '#FFEDD5' },
-    'Markets': { color: '#7C3AED', bgLight: '#F5F3FF' },
-};
 
 export default function BuyTransactionPage() {
     const colorScheme = useColorScheme();
@@ -120,7 +112,7 @@ export default function BuyTransactionPage() {
     const estimatedFees = totalCost * 0.001;
     const totalAmount = totalCost + estimatedFees;
 
-    const sectorColor = displayStockData ? (sectorColors[displayStockData.sector] || sectorColors['Technology']) : sectorColors['Technology'];
+    const sectorColor = displayStockData ? getSectorColor(displayStockData.sector) : { bgLight: '#fff', color: '#000' };
 
     const handleGoBack = () => {
         router.back();

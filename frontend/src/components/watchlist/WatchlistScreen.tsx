@@ -15,6 +15,7 @@ import { getThemeColors } from '@/src/constants/colors';
 import { useRouter } from 'expo-router';
 import { getWatchlist, removeFromWatchlist } from '@/src/services/portfolioService';
 import { useFocusEffect } from '@react-navigation/native';
+import { getSectorColor } from '@/src/services/sectorColorService';
 
 interface WatchlistStock {
     watchlistId: string;
@@ -26,16 +27,21 @@ interface WatchlistStock {
     change: number;
     changePercent: number;
     addedAt: string;
+    sector?: string;
 }
+
+// Dynamic sector colors are now fetched from sectorColorService
 
 const WatchlistCard = ({
                            stock,
                            colors,
+                           sectorColor,
                            onRemove,
                            isRemoving,
                        }: {
     stock: WatchlistStock;
     colors: any;
+    sectorColor: any;
     onRemove: (stockId: string) => void;
     isRemoving: boolean;
 }) => {
@@ -61,9 +67,29 @@ const WatchlistCard = ({
         });
     };
 
+    const handleNavigateToStock = () => {
+        const stockData = {
+            symbol: stock.symbol,
+            name: stock.name,
+            price: stock.price,
+            change: stock.change,
+            changePercent: stock.changePercent,
+            sector: stock.sector || 'Other',
+        };
+
+        router.push({
+            pathname: '/stock/[ticker]',
+            params: {
+                ticker: stock.symbol,
+                stock: JSON.stringify(stockData),
+            },
+        });
+    };
+
     return (
         <TouchableOpacity
             onPress={() => !isRemoving && setExpanded(!expanded)}
+            onLongPress={handleNavigateToStock}
             style={[
                 styles.watchlistCard,
                 {
@@ -79,13 +105,13 @@ const WatchlistCard = ({
             {/* Header Row */}
             <View style={styles.cardHeader}>
                 <View style={styles.cardLeft}>
-                    <View style={[styles.sectorBadge, { backgroundColor: '#EFF6FF' }]}>
-                        <Text style={[styles.sectorBadgeText, { color: '#0369A1' }]}>
+                    <View style={[styles.sectorBadge, { backgroundColor: sectorColor.bgLight }]}>
+                        <Text style={[styles.sectorBadgeText, { color: sectorColor.color }]}>
                             {stock.symbol.slice(0, 1)}
                         </Text>
                     </View>
                     <View style={styles.stockInfo}>
-                        <Text style={[styles.symbol, { color: '#0369A1' }]}>
+                        <Text style={[styles.symbol, { color: sectorColor.color }]}>
                             {stock.symbol}
                         </Text>
                         <Text style={[styles.name, { color: colors.text, opacity: 0.7 }]} numberOfLines={1}>
@@ -121,7 +147,7 @@ const WatchlistCard = ({
                                 Change
                             </Text>
                             <Text style={[styles.rangeValue, { color: isPositive ? '#2E7D32' : '#C62828' }]}>
-                                {isPositive ? '+' : ''}A${stock.change.toFixed(2)}
+                                {isPositive ? '+' : ''}A${Math.abs(stock.change).toFixed(2)}
                             </Text>
                         </View>
                         <View style={styles.rangeItem}>
@@ -132,6 +158,16 @@ const WatchlistCard = ({
                                 A${stock.price.toFixed(2)}
                             </Text>
                         </View>
+                        {stock.sector && (
+                            <View style={styles.rangeItem}>
+                                <Text style={[styles.rangeLabel, { color: colors.text, opacity: 0.6 }]}>
+                                    Sector
+                                </Text>
+                                <Text style={[styles.rangeValue, { color: sectorColor.color }]}>
+                                    {stock.sector}
+                                </Text>
+                            </View>
+                        )}
                     </View>
 
                     {/* Action Buttons */}
@@ -191,12 +227,22 @@ export default function WatchlistScreen() {
             if (showLoading) setLoading(true);
             const data = await getWatchlist();
 
+            console.log('Raw watchlist data from API:', JSON.stringify(data, null, 2));
+
             // Transform API data to component format with null safety
             const formattedData: WatchlistStock[] = data.map(item => {
-                // Safe parsing with fallback values
+                // Safe parsing with fallback values and detailed logging
                 const price = item.currentPrice != null ? parseFloat(item.currentPrice.toString()) : 0;
-                const change = item.change != null ? parseFloat(item.change.toString()) : 0;
-                const changePercent = item.changePercent != null ? parseFloat(item.changePercent.toString()) : 0;
+                const change = item.priceChange != null ? parseFloat(item.priceChange.toString()) : 0;  // ✅ Fixed: was item.change
+                const changePercent = item.priceChangePercent != null ? parseFloat(item.priceChangePercent.toString()) : 0;  // ✅ Fixed: was item.changePercent
+
+                console.log(`Stock ${item.stockCode}: price=${price}, change=${change}, changePercent=${changePercent}`);
+
+                // Fetch sector from profile if available
+                let sector = 'Other';
+                if (item.sector) {
+                    sector = item.sector;
+                }
 
                 return {
                     watchlistId: item.watchlistId || '',
@@ -208,6 +254,7 @@ export default function WatchlistScreen() {
                     change,
                     changePercent,
                     addedAt: item.addedAt || new Date().toISOString(),
+                    sector,
                 };
             });
 
@@ -471,15 +518,19 @@ export default function WatchlistScreen() {
                         />
                     }
                 >
-                    {sortedWatchlist.map(stock => (
-                        <WatchlistCard
-                            key={stock.watchlistId}
-                            stock={stock}
-                            colors={Colors}
-                            onRemove={handleRemoveFromWatchlist}
-                            isRemoving={removingStockId === stock.stockId}
-                        />
-                    ))}
+                    {sortedWatchlist.map(stock => {
+                        const sectorColor = getSectorColor(stock.sector);
+                        return (
+                            <WatchlistCard
+                                key={stock.watchlistId}
+                                stock={stock}
+                                colors={Colors}
+                                sectorColor={sectorColor}
+                                onRemove={handleRemoveFromWatchlist}
+                                isRemoving={removingStockId === stock.stockId}
+                            />
+                        );
+                    })}
                 </ScrollView>
             ) : (
                 <View style={styles.emptyState}>

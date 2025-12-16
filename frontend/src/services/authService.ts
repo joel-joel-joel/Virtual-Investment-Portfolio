@@ -8,18 +8,14 @@
  */
 
 import { apiFetch, setAuthToken, removeAuthToken } from './api';
-import type { LoginRequest, RegisterRequest, AuthResponse } from '../types/api';
+import type { LoginRequest, RegisterRequest, AuthResponse, UserDTO } from '../types/api';
 
 // ============================================================================
 // Type Definitions
 // ============================================================================
 
-export interface UserProfile {
-  userId: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  createdAt?: string;
+export interface UserProfile extends UserDTO {
+  // Extended from UserDTO which includes: userId, username, email, fullName, createdAt
 }
 
 // ============================================================================
@@ -41,18 +37,32 @@ export const login = async (
   credentials: LoginRequest
 ): Promise<AuthResponse> => {
   try {
-    const response = await apiFetch<AuthResponse>('/api/auth/login', {
+    const response = await apiFetch<any>('/api/auth/login', {
       method: 'POST',
       requireAuth: false,
       body: JSON.stringify(credentials),
     });
 
+    // Extract token from response (LoginResponseDTO has 'token' field)
+    if (!response.token) {
+      throw new Error('No token received from server');
+    }
+
     // Store the JWT token
     await setAuthToken(response.token);
 
-    return response;
+    // Return response in AuthResponse format
+    return {
+      token: response.token,
+      userId: response.userId || '',
+      email: response.email || credentials.email,
+    };
   } catch (error) {
-    throw new Error('Login failed: Invalid credentials');
+    // Pass through the actual error message from backend
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Login failed: Unable to connect to server');
   }
 };
 
@@ -71,22 +81,32 @@ export const register = async (
     userData: RegisterRequest
 ): Promise<AuthResponse> => {
     try {
-        const response = await apiFetch<AuthResponse>('/api/auth/register', {
+        const response = await apiFetch<any>('/api/auth/register', {
             method: 'POST',
             requireAuth: false,
             body: JSON.stringify(userData),
         });
 
+        // Extract token from response
+        if (!response.token) {
+            throw new Error('No token received from server');
+        }
+
         // Store the JWT token
         await setAuthToken(response.token);
 
-        return response;
+        // Return response in AuthResponse format
+        return {
+            token: response.token,
+            userId: response.userId || '',
+            email: response.email || userData.email,
+        };
     } catch (error) {
         // Re-throw the actual error message from the backend
         if (error instanceof Error) {
             throw error;
         }
-        throw new Error('Registration failed: Unknown error');
+        throw new Error('Registration failed: Unable to connect to server');
     }
 };
 

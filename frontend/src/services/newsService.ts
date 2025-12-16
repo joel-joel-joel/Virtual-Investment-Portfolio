@@ -5,10 +5,7 @@
  */
 
 import { apiFetch, buildQueryString } from './api';
-import {
-  NewsArticleDTO,
-  FrontendSector,
-} from '../types/api';
+import { NewsArticleDTO } from '../types/api';
 
 // ============================================================================
 // News Endpoints (No Authentication Required)
@@ -32,12 +29,12 @@ export const getAllNews = async (
 
 /**
  * Get news articles filtered by a specific sector
- * @param sector - Frontend sector name (e.g., "Technology", "FinTech")
+ * @param sector - Sector name from Finnhub (e.g., "Technology", "Financial Services")
  * @param limit - Maximum number of articles to return (default: 50)
  * @returns Array of news articles for the specified sector
  */
 export const getNewsBySector = async (
-  sector: FrontendSector,
+  sector: string,
   limit: number = 50
 ): Promise<NewsArticleDTO[]> => {
   const queryString = buildQueryString({ limit });
@@ -53,12 +50,12 @@ export const getNewsBySector = async (
 
 /**
  * Get news articles filtered by multiple sectors
- * @param sectors - Array of frontend sector names
+ * @param sectors - Array of sector names from Finnhub
  * @param limit - Maximum number of articles to return (default: 50)
  * @returns Array of news articles from all selected sectors
  */
 export const getNewsByMultipleSectors = async (
-  sectors: FrontendSector[],
+  sectors: string[],
   limit: number = 50
 ): Promise<NewsArticleDTO[]> => {
   const queryString = buildQueryString({
@@ -73,88 +70,18 @@ export const getNewsByMultipleSectors = async (
 };
 
 // ============================================================================
-// Convenience Functions
-// ============================================================================
-
-/**
- * Get news for Technology sector
- * @param limit - Maximum number of articles (default: 50)
- * @returns Technology news articles
- */
-export const getTechnologyNews = async (
-  limit: number = 50
-): Promise<NewsArticleDTO[]> => {
-  return getNewsBySector('Technology', limit);
-};
-
-/**
- * Get news for Semiconductors sector
- * @param limit - Maximum number of articles (default: 50)
- * @returns Semiconductors news articles
- */
-export const getSemiconductorsNews = async (
-  limit: number = 50
-): Promise<NewsArticleDTO[]> => {
-  return getNewsBySector('Semiconductors', limit);
-};
-
-/**
- * Get news for FinTech sector
- * @param limit - Maximum number of articles (default: 50)
- * @returns FinTech news articles
- */
-export const getFinTechNews = async (
-  limit: number = 50
-): Promise<NewsArticleDTO[]> => {
-  return getNewsBySector('FinTech', limit);
-};
-
-/**
- * Get news for Consumer/Tech sector
- * @param limit - Maximum number of articles (default: 50)
- * @returns Consumer/Tech news articles
- */
-export const getConsumerTechNews = async (
-  limit: number = 50
-): Promise<NewsArticleDTO[]> => {
-  return getNewsBySector('Consumer/Tech', limit);
-};
-
-/**
- * Get news for Healthcare sector
- * @param limit - Maximum number of articles (default: 50)
- * @returns Healthcare news articles
- */
-export const getHealthcareNews = async (
-  limit: number = 50
-): Promise<NewsArticleDTO[]> => {
-  return getNewsBySector('Healthcare', limit);
-};
-
-/**
- * Get news for Retail sector
- * @param limit - Maximum number of articles (default: 50)
- * @returns Retail news articles
- */
-export const getRetailNews = async (
-  limit: number = 50
-): Promise<NewsArticleDTO[]> => {
-  return getNewsBySector('Retail', limit);
-};
-
-// ============================================================================
 // Error Handling Wrappers
 // ============================================================================
 
 /**
  * Get news by sector with fallback handling
  * Returns empty array if the sector is invalid or API fails
- * @param sector - Frontend sector name
+ * @param sector - Sector name from Finnhub
  * @param limit - Maximum number of articles
  * @returns News articles or empty array on error
  */
 export const getNewsBySectorSafe = async (
-  sector: FrontendSector,
+  sector: string,
   limit: number = 50
 ): Promise<NewsArticleDTO[]> => {
   try {
@@ -193,49 +120,44 @@ export const getAllNewsSafe = async (
  */
 export const groupNewsBySector = (
   articles: NewsArticleDTO[]
-): Record<FrontendSector, NewsArticleDTO[]> => {
-  const grouped: Record<string, NewsArticleDTO[]> = {
-    Technology: [],
-    Semiconductors: [],
-    FinTech: [],
-    'Consumer/Tech': [],
-    Healthcare: [],
-    Retail: [],
-    Other: [],
-  };
+): Record<string, NewsArticleDTO[]> => {
+  const grouped: Record<string, NewsArticleDTO[]> = {};
 
   articles.forEach((article) => {
-    if (grouped[article.sector]) {
-      grouped[article.sector].push(article);
-    } else {
-      grouped.Other.push(article);
+    if (!grouped[article.sector]) {
+      grouped[article.sector] = [];
     }
+    grouped[article.sector].push(article);
   });
 
-  return grouped as Record<FrontendSector, NewsArticleDTO[]>;
+  return grouped;
 };
 
 /**
- * Filter out "Other" sector news
+ * Filter articles with empty sector
  * @param articles - Array of news articles
- * @returns Articles excluding "Other" sector
+ * @returns Articles with non-empty sectors
  */
-export const excludeOtherSectorNews = (
+export const filterArticlesWithSector = (
   articles: NewsArticleDTO[]
 ): NewsArticleDTO[] => {
-  return articles.filter((article) => article.sector !== 'Other');
+  return articles.filter((article) => article.sector && article.sector.trim());
 };
 
 /**
  * Get unique sectors from news articles
  * @param articles - Array of news articles
- * @returns Array of unique sectors
+ * @returns Array of unique sectors (sorted)
  */
 export const getUniqueSectors = (
   articles: NewsArticleDTO[]
-): FrontendSector[] => {
-  const sectors = new Set(articles.map((article) => article.sector));
-  return Array.from(sectors);
+): string[] => {
+  const sectors = new Set(
+    articles
+      .map((article) => article.sector)
+      .filter((s) => s && s.trim())
+  );
+  return Array.from(sectors).sort();
 };
 
 /**

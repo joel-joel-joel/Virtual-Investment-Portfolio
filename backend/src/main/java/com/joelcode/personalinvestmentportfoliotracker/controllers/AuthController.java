@@ -61,36 +61,40 @@ public class AuthController {
     //Login to existing account - POST /api/auth/login
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequest request) {
+        try {
+            // Find user by email first
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
-        // Find user by email first
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            // Create a new authentication with username and password. Check validity with authenticationmanager
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            user.getUsername(),
+                            request.getPassword()
+                    )
+            );
 
-        // Create a new authentication with username and password. Check validity with authenticationmanager
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        user.getUsername(),
-                        request.getPassword()
-                )
-        );
+            // Store authentication object into context holder
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Store authentication object into context holder
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Generate token for the user
+            String token = jwtTokenProvider.generateToken(user);
 
-        // Generate token for the user
-        String token = jwtTokenProvider.generateToken(user);
+            // Create new login response DTO for frontend with user information and roles
+            LoginResponseDTO response = new LoginResponseDTO(
+                    token,
+                    "Bearer",
+                    user.getUsername(),
+                    user.getFullName(),
+                    user.getEmail(),
+                    List.of(user.getRoles())
+            );
 
-        // Create new login response DTO for frontend with user information and roles
-        LoginResponseDTO response = new LoginResponseDTO(
-                token,
-                "Bearer",
-                user.getUsername(),
-                user.getFullName(),
-                user.getEmail(),
-                List.of(user.getRoles())
-        );
-
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            // Handle authentication failures (bad password, disabled account, etc.)
+            throw new org.springframework.security.authentication.BadCredentialsException("Invalid email or password");
+        }
     }
 
     @PostMapping("/register")

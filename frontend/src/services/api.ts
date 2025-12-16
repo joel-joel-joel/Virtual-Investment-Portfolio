@@ -3,9 +3,10 @@
  * Provides the foundation for all API service calls
  */
 import * as SecureStore from 'expo-secure-store';
+import { getBackendUrl } from './configService';
 
-// Base URL for the backend API - uses environment variable with fallback
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+// Base URL will be loaded dynamically at runtime
+let cachedBaseUrl: string | null = null;
 
 const TOKEN_KEY = 'user_token';
 
@@ -71,7 +72,11 @@ export const apiFetch = async <T>(
     }
   }
 
-  const url = `${API_BASE_URL}${endpoint}`;
+  // Get backend URL dynamically (supports runtime override)
+  if (!cachedBaseUrl) {
+    cachedBaseUrl = await getBackendUrl();
+  }
+  const url = `${cachedBaseUrl}${endpoint}`;
 
   try {
     const response = await fetch(url, {
@@ -132,4 +137,12 @@ export const buildQueryString = (params: Record<string, any>): string => {
 
   const queryString = searchParams.toString();
   return queryString ? `?${queryString}` : '';
+};
+
+/**
+ * Clear cached base URL to force reload on next request
+ * Call this if backend URL changes at runtime
+ */
+export const clearBaseUrlCache = (): void => {
+  cachedBaseUrl = null;
 };

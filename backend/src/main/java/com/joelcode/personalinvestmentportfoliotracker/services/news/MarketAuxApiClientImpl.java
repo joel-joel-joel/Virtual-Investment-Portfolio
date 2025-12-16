@@ -22,11 +22,9 @@ public class MarketAuxApiClientImpl implements MarketAuxApiClient {
     private String baseUrl;
 
     private final RestTemplate restTemplate;
-    private final IndustryToSectorMapper industryMapper;
 
-    public MarketAuxApiClientImpl(RestTemplate restTemplate, IndustryToSectorMapper industryMapper) {
+    public MarketAuxApiClientImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.industryMapper = industryMapper;
     }
 
     @Override
@@ -64,9 +62,15 @@ public class MarketAuxApiClientImpl implements MarketAuxApiClient {
     @Override
     public List<NewsArticleDTO> getNewsBySector(String sector, int limit) {
         try {
-            // Reverse map sector back to industries for the API call
-            String[] industries = getSectorIndustries(sector);
-            return getNewsByIndustries(industries, limit);
+            // Search for news by raw Finnhub sector/industry name
+            String url = UriComponentsBuilder.fromHttpUrl(baseUrl + "/news/all")
+                    .queryParam("industries", sector)
+                    .queryParam("limit", limit)
+                    .queryParam("api_token", apiKey)
+                    .toUriString();
+
+            MarketAuxNewsResponseDTO response = restTemplate.getForObject(url, MarketAuxNewsResponseDTO.class);
+            return mapArticlesToNewsDTO(response);
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch news by sector: " + sector, e);
         }
@@ -95,23 +99,16 @@ public class MarketAuxApiClientImpl implements MarketAuxApiClient {
         return newsArticles;
     }
 
+    /**
+     * Get primary industry/sector from article
+     * Returns raw Finnhub industry name (not mapped to limited categories)
+     */
     private String getPrimarySectorFromArticle(MarketAuxArticleDTO article) {
         if (article.getIndustries() != null && article.getIndustries().length > 0) {
-            // Map the first industry to sector (primary industry)
-            return industryMapper.mapIndustryToSector(article.getIndustries()[0]);
+            // Return the first industry as-is from Finnhub
+            String industry = article.getIndustries()[0];
+            return (industry != null && !industry.isBlank()) ? industry : "Other";
         }
         return "Other";
-    }
-
-    private String[] getSectorIndustries(String sector) {
-        return switch (sector) {
-            case "Technology" -> new String[]{"technology", "communication services"};
-            case "Semiconductors" -> new String[]{"technology"};
-            case "FinTech" -> new String[]{"financial", "financial services"};
-            case "Consumer/Tech" -> new String[]{"services", "consumer cyclical", "consumer defensive"};
-            case "Healthcare" -> new String[]{"healthcare"};
-            case "Retail" -> new String[]{"consumer goods", "consumer cyclical", "consumer defensive"};
-            default -> new String[]{}; // For "Other", return empty array to get all news
-        };
     }
 }
