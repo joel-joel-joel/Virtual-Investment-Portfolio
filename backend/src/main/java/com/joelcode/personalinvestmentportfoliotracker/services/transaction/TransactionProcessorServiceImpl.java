@@ -12,6 +12,8 @@ import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -19,11 +21,14 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
 @Profile("!test")
 public class TransactionProcessorServiceImpl implements TransactionProcessorService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TransactionProcessorServiceImpl.class);
 
     // Define key fields
     private final TransactionService transactionService;
@@ -64,25 +69,32 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
 
         // --- Capture previous portfolio value ---
         BigDecimal holdingsValueBefore = holdingCalculationService.calculateTotalPortfolioValue(account.getAccountId());
-        BigDecimal previousPortfolioValue = holdingsValueBefore.add(account.getAccountBalance());
+        BigDecimal previousPortfolioValue = holdingsValueBefore.add(account.getCashBalance());
 
         // Handle BUY transactions
         if (request.getTransactionType().name().equalsIgnoreCase("BUY")) {
+            logger.info("💰 Processing BUY transaction - Account: {}, Stock: {}, Shares: {}",
+                    request.getAccountId(), request.getStockId(), request.getShareQuantity());
+
             BigDecimal totalCost = request.getPricePerShare().multiply(request.getShareQuantity());
 
             // Check if account has enough balance
-            if (account.getAccountBalance().compareTo(totalCost) < 0) {
+            if (account.getCashBalance().compareTo(totalCost) < 0) {
                 throw new IllegalArgumentException(
                         "Insufficient account balance. Need: A$" + totalCost.toPlainString() +
-                                ", Have: A$" + account.getAccountBalance().toPlainString()
+                                ", Have: A$" + account.getCashBalance().toPlainString()
                 );
             }
 
             // Deduct from balance
             account.setCashBalance(account.getCashBalance().subtract(totalCost));
+            logger.info("✅ BUY transaction validated - Balance updated: A${}", account.getCashBalance());
         }
         // Handle SELL transactions
         else if (request.getTransactionType().name().equalsIgnoreCase("SELL")) {
+            logger.info("💵 Processing SELL transaction - Account: {}, Stock: {}, Shares: {}",
+                    request.getAccountId(), request.getStockId(), request.getShareQuantity());
+
             Optional<Holding> holdingOpt = holdingRepository.getHoldingByAccount_AccountIdAndStock_StockId(
                     request.getAccountId(),
                     request.getStockId()
@@ -104,6 +116,27 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
             holdingService.updateHoldingAfterSale(holding, request.getShareQuantity(), request.getPricePerShare());
             BigDecimal saleProceeds = request.getPricePerShare().multiply(request.getShareQuantity());
             account.setCashBalance(account.getCashBalance().add(saleProceeds));
+
+            logger.info("✅ SELL transaction validated - Proceeds added: A${}, New balance: A${}",
+                    saleProceeds, account.getCashBalance());
+
+            // ✅ NEW: Check if all shares were sold and delete holding if so
+            BigDecimal remainingQuantity = holding.getQuantity().subtract(request.getShareQuantity());
+            if (remainingQuantity.compareTo(BigDecimal.ZERO) == 0) {
+                logger.info("🗑️ All shares sold - Deleting holding - Holding ID: {}, Stock: {}",
+                        holding.getHoldingId(), holding.getStock().getStockCode());
+
+                try {
+                    holdingRepository.delete(holding);
+                    logger.info("✅ Holding deleted successfully - Holding ID: {}", holding.getHoldingId());
+                } catch (Exception e) {
+                    logger.error("❌ Failed to delete holding - Holding ID: {}, Error: {}",
+                            holding.getHoldingId(), e.getMessage());
+                    throw new RuntimeException("Failed to delete holding after sale", e);
+                }
+            } else {
+                logger.info("✅ Holding updated - Remaining shares: {}", remainingQuantity);
+            }
         }
 
         // 🔑 KEY: Save account with updated balance
@@ -124,6 +157,9 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
                 LocalDateTime.now()
         );
         messagingTemplate.convertAndSend("/topic/portfolio/" + account.getAccountId(), updateMessage);
+
+        logger.info("✅ Transaction completed successfully - Transaction ID: {}, Portfolio change: A${}",
+                dto.getTransactionId(), portfolioChange);
 
         return dto;
     }

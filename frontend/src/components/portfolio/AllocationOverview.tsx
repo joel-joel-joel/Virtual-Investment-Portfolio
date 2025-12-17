@@ -18,6 +18,7 @@ interface AllocationItem {
     stockCode: string;
     percentage: number;
     currentValue: number;
+    shares: number; // ✅ ADD THIS
 }
 
 interface SliceData extends AllocationItem {
@@ -110,19 +111,40 @@ export const AllocationOverview: React.FC<AllocationOverviewProps> = ({ accountI
             return [];
         }
 
-        const allocations = holdings.map(holding => ({
-            stockCode: holding.stockSymbol,
-            currentValue: holding.currentValue,
-            percentage: (holding.currentValue / totalValue) * 100,
-        }));
+        console.log('📊 DEBUG: Calculating allocation from holdings');
+        console.log('Total holdings count:', holdings.length);
+
+        const allocations = holdings.map((holding, index) => {
+            console.log(`📌 Holding ${index + 1}:`);
+            console.log('  Symbol:', holding.stockSymbol);
+            console.log('  Quantity:', holding.quantity);
+            console.log('  Current Value:', holding.currentValue);
+            console.log('  Sector:', holding.sector);
+
+            // ✅ IMPORTANT: Make sure quantity is actually a number
+            const sharesCount = typeof holding.quantity === 'string'
+                ? parseFloat(holding.quantity)
+                : holding.quantity;
+
+            console.log('  Parsed Quantity:', sharesCount);
+            console.log('  Type:', typeof sharesCount);
+
+            return {
+                stockCode: holding.stockSymbol,
+                currentValue: holding.currentValue,
+                shares: sharesCount, // ✅ Make sure this is a number
+                percentage: (holding.currentValue / totalValue) * 100,
+            };
+        });
+
+        console.log('📋 Final allocations:', JSON.stringify(allocations, null, 2));
 
         // Generate colors for each stock based on stock code
-        const colors = getSectorColorPalette(allocations.map(a => a.stockCode));
+        const colors = getSectorColorPalette(holdings.map(holding => holding.sector));
         setChartColors(colors);
 
         return allocations;
     };
-
     // Calculate total value from allocation data
     const totalValue = allocationData.reduce((sum, item) => sum + item.currentValue, 0);
 
@@ -359,7 +381,7 @@ export const AllocationOverview: React.FC<AllocationOverviewProps> = ({ accountI
                                             {item.stockCode}
                                         </Text>
                                         <Text style={[styles.detailSubtext, { color: Colors.text, opacity: 0.6 }]}>
-                                            1 holding
+                                            {item.shares.toFixed(2)} shares {/* ✅ CHANGED FROM "1 holding" */}
                                         </Text>
                                     </View>
                                 </View>

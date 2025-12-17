@@ -246,6 +246,8 @@ export const HoldingsList: React.FC<HoldingsListProps> = ({
     const holdings = providedHoldings || internalHoldings;
 
     // Fetch holdings from backend (only if not provided)
+    // In the HoldingsList component, modify the fetchHoldings function:
+
     const fetchHoldings = useCallback(async () => {
         if (providedHoldings) return;
 
@@ -259,34 +261,36 @@ export const HoldingsList: React.FC<HoldingsListProps> = ({
             setError(null);
             const data = await getAccountHoldings(activeAccount.accountId);
 
-            console.log('📥 Raw API response:', JSON.stringify(data, null, 2));  // ✅ ADD THIS
+            console.log('📥 Raw API response:', JSON.stringify(data, null, 2));
 
             // Transform backend data to component format
-            const transformedData: Holding[] = data.map((item) => {
-                console.log(`🔍 Processing ${item.stockSymbol}:`, {
-                    companyName: item.companyName,
-                    sector: item.sector,
-                });  // ✅ ADD THIS
+            const transformedData: Holding[] = data
+                .filter((item) => item.quantity > 0) // ✅ ADD THIS LINE - Filter out zero shares
+                .map((item) => {
+                    console.log(`🔍 Processing ${item.stockSymbol}:`, {
+                        companyName: item.companyName,
+                        sector: item.sector,
+                    });
 
-                const currentValue = item.currentValue || (item.quantity * item.currentPrice);
-                const amountInvested = item.totalCostBasis;
-                const returnAmount = item.unrealizedGain;
-                const returnPercent = item.unrealizedGainPercent;
+                    const currentValue = item.currentValue || (item.quantity * item.currentPrice);
+                    const amountInvested = item.totalCostBasis;
+                    const returnAmount = item.unrealizedGain;
+                    const returnPercent = item.unrealizedGainPercent;
 
-                return {
-                    id: item.holdingId,
-                    symbol: item.stockSymbol,
-                    company: item.companyName || item.stockSymbol,
-                    shares: item.quantity,
-                    amountInvested,
-                    currentValue,
-                    returnAmount,
-                    returnPercent,
-                    sector: item.sector || 'Unknown',
-                };
-            });
+                    return {
+                        id: item.holdingId,
+                        symbol: item.stockSymbol,
+                        company: item.companyName || item.stockSymbol,
+                        shares: item.quantity,
+                        amountInvested,
+                        currentValue,
+                        returnAmount,
+                        returnPercent,
+                        sector: item.sector || 'Unknown',
+                    };
+                });
 
-            console.log('📋 Final transformed holdings:', transformedData);  // ✅ ADD THIS
+            console.log('📋 Final transformed holdings:', transformedData);
 
             setInternalHoldings(transformedData);
         } catch (error: any) {

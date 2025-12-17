@@ -189,7 +189,7 @@ export interface UpdateHoldingRequest {
 // Transaction Types
 // ============================================================================
 
-export type TransactionType = 'BUY' | 'SELL';
+export type TransactionType = 'BUY' | 'SELL' | 'BUY_LIMIT' | 'SELL_LIMIT';
 
 export interface TransactionDTO {
   transactionId: string;     // UUID
@@ -208,6 +208,37 @@ export interface CreateTransactionRequest {
   shareQuantity: number;
   pricePerShare: number;
   transactionType: TransactionType;
+}
+
+// ============================================================================
+// Order Types (Limit Orders)
+// ============================================================================
+
+export type OrderType = 'BUY_LIMIT' | 'SELL_LIMIT';
+
+export type OrderStatus = 'PENDING' | 'EXECUTED' | 'CANCELLED' | 'FAILED';
+
+export interface OrderDTO {
+  orderId: string;               // UUID
+  stockId: string;               // UUID
+  stockSymbol: string;           // e.g., "AAPL"
+  accountId: string;             // UUID
+  orderType: OrderType;
+  quantity: number;              // BigDecimal
+  limitPrice: number;            // BigDecimal
+  status: OrderStatus;
+  createdAt: string;             // ISO 8601 timestamp
+  executedAt?: string;           // ISO 8601 timestamp (optional)
+  cancelledAt?: string;          // ISO 8601 timestamp (optional)
+  failureReason?: string;        // Optional failure reason
+}
+
+export interface CreateOrderRequest {
+  stockId: string;               // UUID
+  accountId: string;             // UUID
+  quantity: number;
+  limitPrice: number;
+  orderType: OrderType;
 }
 
 // ============================================================================

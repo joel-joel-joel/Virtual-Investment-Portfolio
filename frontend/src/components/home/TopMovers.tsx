@@ -36,9 +36,13 @@ export const TopMovers: React.FC<TopMoversProps> = ({ holdings }) => {
     const topHoldings = useMemo(() => {
         if (!holdings || holdings.length === 0) return [];
 
-        const totalValue = holdings.reduce((sum, h) => sum + h.currentValue, 0);
+        const validHoldings = holdings.filter(
+            h => h && typeof h.currentValue === 'number' && !isNaN(h.currentValue) && h.currentValue >= 0
+        );
 
-        return holdings
+        const totalValue = validHoldings.reduce((sum, h) => sum + h.currentValue, 0);
+
+        return validHoldings
             .map(holding => ({
                 stockCode: holding.stockSymbol,
                 percentage: totalValue > 0 ? (holding.currentValue / totalValue) * 100 : 0,

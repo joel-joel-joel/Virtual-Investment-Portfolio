@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -294,19 +295,17 @@ public class HoldingServiceImpl implements HoldingService {
     // Get holdings for account
     @Override
     public List<HoldingDTO> getHoldingsForAccount(UUID accountId) {
-        // Validate account exists
         Account account = accountValidationService.validateAccountExistsById(accountId);
 
-        // Stream through holdings and map to DTOs with current price
         List<HoldingDTO> holdingDTOs = account.getHoldings().stream()
                 .map(h -> {
-                    // Populate missing industry data from FinnHub if needed
                     if (h.getStock().getIndustry() == null) {
                         stockService.populateMissingIndustryData(h.getStock());
                     }
                     BigDecimal currentPrice = priceHistoryService.getCurrentPrice(h.getStock().getStockId());
                     return HoldingMapper.toDTO(h, currentPrice);
                 })
+                .filter(Objects::nonNull)  // ✅ Filter out null DTOs
                 .collect(Collectors.toList());
 
         return holdingDTOs;

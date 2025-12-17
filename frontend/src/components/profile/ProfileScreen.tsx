@@ -18,6 +18,7 @@ import { getUserDashboard } from '@/src/services/dashboardService';
 import type { DashboardDTO } from '@/src/types/api';
 import { logout as apiLogout } from '@/src/services/authService';
 import WalletModal from '@/src/components/wallet/WalletModal';
+import OrdersSection from '@/src/components/profile/OrdersSection';
 
 
 const ProfileMenuOption = ({
@@ -420,6 +421,15 @@ export default function ProfileScreen() {
                     />
 
                     <ProfileMenuOption
+                        icon="clipboard-list-outline"
+                        label="Limit Orders"
+                        onPress={() => {
+                            Alert.alert('Limit Orders', 'Your active and past limit orders are shown below');
+                        }}
+                        colors={Colors}
+                    />
+
+                    <ProfileMenuOption
                         icon="download"
                         label="Download Statements"
                         onPress={() => Alert.alert('Download Statements', 'Coming soon!')}
@@ -441,6 +451,16 @@ export default function ProfileScreen() {
                         colors={Colors}
                     />
                 </View>
+
+                {/* Limit Orders Section */}
+                {activeAccount && (
+                    <View style={styles.ordersSection}>
+                        <Text style={[styles.sectionTitle, { color: Colors.text }]}>
+                            Limit Orders
+                        </Text>
+                        <OrdersSection />
+                    </View>
+                )}
 
                 {/* Danger Zone */}
                 <View style={styles.menuSection}>
@@ -858,5 +878,9 @@ const styles = StyleSheet.create({
     accountOptionEmail: {
         fontSize: 11,
         fontWeight: '500',
+    },
+    ordersSection: {
+        gap: 12,
+        paddingBottom: 24,
     },
 });

@@ -15,9 +15,10 @@ import { HeaderSection } from '@/src/components/home/HeaderSection';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { createTransaction } from '@/src/services/portfolioService';
+import { createOrder } from '@/src/services/orderService';
 import { getOrCreateStockBySymbol } from '@/src/services/entityService';
 import { useAuth } from '@/src/context/AuthContext';
-import type { FinnhubCompanyProfileDTO, FinnhubQuoteDTO, CreateTransactionRequest, TransactionType } from '@/src/types/api';
+import type { FinnhubCompanyProfileDTO, FinnhubQuoteDTO, CreateTransactionRequest, CreateOrderRequest, TransactionType, OrderType } from '@/src/types/api';
 import { getSectorColor } from '@/src/services/sectorColorService';
 
 
@@ -160,17 +161,33 @@ export default function BuyTransactionPage() {
                         try {
                             const stock = await getOrCreateStockBySymbol(stockData.symbol);
 
-                            const transactionRequest: CreateTransactionRequest = {
-                                stockId: stock.stockId,
-                                accountId: activeAccount.accountId,
-                                shareQuantity: shareCount,
-                                pricePerShare: effectivePrice,
-                                transactionType: 'BUY' as TransactionType,
-                            };
+                            if (priceType === 'limit') {
+                                // Create a limit order
+                                const orderRequest: CreateOrderRequest = {
+                                    stockId: stock.stockId,
+                                    accountId: activeAccount.accountId,
+                                    quantity: shareCount,
+                                    limitPrice: parseFloat(limitPrice),
+                                    orderType: 'BUY_LIMIT' as OrderType,
+                                };
 
-                            await createTransaction(transactionRequest);
-                            Alert.alert('Success', `Successfully purchased ${shareCount} shares of ${stockData.symbol}!`);
-                            router.back();
+                                await createOrder(orderRequest);
+                                Alert.alert('Success', `Limit order placed! Your order will execute when ${stockData.symbol} reaches A$${limitPrice} or below.`);
+                                router.back();
+                            } else {
+                                // Create a market order
+                                const transactionRequest: CreateTransactionRequest = {
+                                    stockId: stock.stockId,
+                                    accountId: activeAccount.accountId,
+                                    shareQuantity: shareCount,
+                                    pricePerShare: effectivePrice,
+                                    transactionType: 'BUY' as TransactionType,
+                                };
+
+                                await createTransaction(transactionRequest);
+                                Alert.alert('Success', `Successfully purchased ${shareCount} shares of ${stockData.symbol}!`);
+                                router.back();
+                            }
                         } catch (error: any) {
                             console.error('Transaction error:', error);
                             Alert.alert('Error', error.message || 'Failed to complete transaction');

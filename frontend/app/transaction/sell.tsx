@@ -14,10 +14,11 @@ import { getThemeColors } from '@/src/constants/colors';
 import { HeaderSection } from '@/src/components/home/HeaderSection';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { createTransaction } from '@/src/services/portfolioService';
+import { createTransaction, getAccountHoldings } from '@/src/services/portfolioService';
+import { createOrder } from '@/src/services/orderService';
 import { getOrCreateStockBySymbol } from '@/src/services/entityService';
 import { useAuth } from '@/src/context/AuthContext';
-import type { FinnhubCompanyProfileDTO, FinnhubQuoteDTO, CreateTransactionRequest, TransactionType } from '@/src/types/api';
+import type { FinnhubCompanyProfileDTO, FinnhubQuoteDTO, CreateTransactionRequest, CreateOrderRequest, TransactionType, OrderType, HoldingDTO } from '@/src/types/api';
 import { getSectorColor } from '@/src/services/sectorColorService';
 
 
@@ -25,7 +26,7 @@ export default function SellTransactionPage() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
     const router = useRouter();
-    const params = useLocalSearchParams<{ stock?: string; owned?: string }>();
+    const params = useLocalSearchParams<{ stock?: string; stockId?: string }>();
     const { activeAccount } = useAuth();
 
     // Parse stock data if provided
@@ -38,9 +39,6 @@ export default function SellTransactionPage() {
         }
     }
 
-    // Mock owned shares (in a real app, this would come from your portfolio state)
-    const ownedShares = params.owned ? parseFloat(params.owned) : 100; // Default to 100 for demo
-
     const [shares, setShares] = useState('');
     const [priceType, setPriceType] = useState<'market' | 'limit'>('market');
     const [limitPrice, setLimitPrice] = useState('');
@@ -48,6 +46,46 @@ export default function SellTransactionPage() {
     const [realtimePrice, setRealtimePrice] = useState<number | null>(null);
     const [loadingPrice, setLoadingPrice] = useState(false);
     const [realtimeStockData, setRealtimeStockData] = useState<any | null>(null);
+
+    // Holding state - fetched from database
+    const [holding, setHolding] = useState<HoldingDTO | null>(null);
+    const [loadingHolding, setLoadingHolding] = useState(false);
+    const [holdingError, setHoldingError] = useState<string | null>(null);
+
+    // Fetch holding from database
+    useEffect(() => {
+        const fetchHolding = async () => {
+            if (!stockData?.symbol || !activeAccount) {
+                return;
+            }
+
+            setLoadingHolding(true);
+            setHoldingError(null);
+            try {
+                const holdings = await getAccountHoldings(activeAccount.accountId);
+
+                // Find holding for this specific stock
+                const stockHolding = holdings.find(
+                    (h) => h.stockSymbol.toUpperCase() === stockData.symbol.toUpperCase()
+                );
+
+                if (stockHolding) {
+                    setHolding(stockHolding);
+                } else {
+                    setHolding(null);
+                    setHoldingError(`You don't own any shares of ${stockData.symbol}`);
+                }
+            } catch (error) {
+                console.error('Error fetching holding:', error);
+                setHoldingError('Failed to load your holdings');
+                setHolding(null);
+            } finally {
+                setLoadingHolding(false);
+            }
+        };
+
+        fetchHolding();
+    }, [stockData?.symbol, activeAccount?.accountId]);
 
     // Fetch real-time price data
     useEffect(() => {
@@ -109,6 +147,7 @@ export default function SellTransactionPage() {
 
     const displayStockData = realtimeStockData || stockData;
     const currentPrice = realtimePrice !== null ? realtimePrice : (stockData?.price || 0);
+    const ownedShares = holding?.quantity || 0;
     const shareCount = parseFloat(shares) || 0;
     const effectivePrice = priceType === 'limit' ? (parseFloat(limitPrice) || currentPrice) : currentPrice;
     const totalProceeds = shareCount * effectivePrice;
@@ -132,6 +171,11 @@ export default function SellTransactionPage() {
             return;
         }
 
+        if (!holding) {
+            Alert.alert('Error', `You don't own any shares of ${stockData.symbol}`);
+            return;
+        }
+
         if (!shares || shareCount <= 0) {
             Alert.alert('Invalid Input', 'Please enter a valid number of shares');
             return;
@@ -151,7 +195,9 @@ export default function SellTransactionPage() {
         console.log('  Account ID:', activeAccount.accountId);
         console.log('  Account Name:', activeAccount.accountName);
         console.log('  Stock:', stockData.symbol);
-        console.log('  Shares:', shareCount);
+        console.log('  Holding ID:', holding.holdingId);
+        console.log('  Shares to Sell:', shareCount);
+        console.log('  Currently Owned:', ownedShares);
         console.log('  Price:', effectivePrice);
         console.log('  Net Proceeds:', netAmount);
         console.log('  Current Account Balance:', activeAccount.cashBalance);
@@ -168,17 +214,33 @@ export default function SellTransactionPage() {
                         try {
                             const stock = await getOrCreateStockBySymbol(stockData.symbol);
 
-                            const transactionRequest: CreateTransactionRequest = {
-                                stockId: stock.stockId,
-                                accountId: activeAccount.accountId,
-                                shareQuantity: shareCount,
-                                pricePerShare: effectivePrice,
-                                transactionType: 'SELL' as TransactionType,
-                            };
+                            if (priceType === 'limit') {
+                                // Create a limit order
+                                const orderRequest: CreateOrderRequest = {
+                                    stockId: stock.stockId,
+                                    accountId: activeAccount.accountId,
+                                    quantity: shareCount,
+                                    limitPrice: parseFloat(limitPrice),
+                                    orderType: 'SELL_LIMIT' as OrderType,
+                                };
 
-                            await createTransaction(transactionRequest);
-                            Alert.alert('Success', `Successfully sold ${shareCount} shares of ${stockData.symbol}!`);
-                            router.back();
+                                await createOrder(orderRequest);
+                                Alert.alert('Success', `Limit order placed! Your order will execute when ${stockData.symbol} reaches A$${limitPrice} or above.`);
+                                router.back();
+                            } else {
+                                // Create a market order
+                                const transactionRequest: CreateTransactionRequest = {
+                                    stockId: stock.stockId,
+                                    accountId: activeAccount.accountId,
+                                    shareQuantity: shareCount,
+                                    pricePerShare: effectivePrice,
+                                    transactionType: 'SELL' as TransactionType,
+                                };
+
+                                await createTransaction(transactionRequest);
+                                Alert.alert('Success', `Successfully sold ${shareCount} shares of ${stockData.symbol}!`);
+                                router.back();
+                            }
                         } catch (error: any) {
                             console.error('Transaction error:', error);
                             Alert.alert('Error', error.message || 'Failed to complete transaction');
@@ -259,233 +321,271 @@ export default function SellTransactionPage() {
                                     )}
                                 </View>
                             </View>
-                            <View style={[styles.ownedRow, { backgroundColor: '#FFF9E6', borderColor: '#FFD700' }]}>
-                                <MaterialCommunityIcons name="wallet-outline" size={16} color="#B8860B" />
-                                <Text style={[styles.ownedText, { color: '#B8860B' }]}>
-                                    You own {ownedShares} shares
-                                </Text>
-                            </View>
-                        </View>
 
-                        {/* Order Type Selector */}
-                        <View style={styles.section}>
-                            <Text style={[styles.sectionTitle, { color: Colors.text }]}>
-                                Order Type
-                            </Text>
-                            <View style={styles.orderTypeContainer}>
-                                <TouchableOpacity
-                                    onPress={() => setPriceType('market')}
-                                    style={[
-                                        styles.orderTypeButton,
-                                        {
-                                            backgroundColor: priceType === 'market' ? '#C62828' : Colors.card,
-                                            borderColor: priceType === 'market' ? '#C62828' : Colors.border,
-                                        },
-                                    ]}
-                                >
-                                    <MaterialCommunityIcons
-                                        name="flash"
-                                        size={18}
-                                        color={priceType === 'market' ? 'white' : Colors.text}
-                                    />
-                                    <Text
-                                        style={[
-                                            styles.orderTypeText,
-                                            { color: priceType === 'market' ? 'white' : Colors.text },
-                                        ]}
-                                    >
-                                        Market Order
-                                    </Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => setPriceType('limit')}
-                                    style={[
-                                        styles.orderTypeButton,
-                                        {
-                                            backgroundColor: priceType === 'limit' ? '#C62828' : Colors.card,
-                                            borderColor: priceType === 'limit' ? '#C62828' : Colors.border,
-                                        },
-                                    ]}
-                                >
-                                    <MaterialCommunityIcons
-                                        name="target"
-                                        size={18}
-                                        color={priceType === 'limit' ? 'white' : Colors.text}
-                                    />
-                                    <Text
-                                        style={[
-                                            styles.orderTypeText,
-                                            { color: priceType === 'limit' ? 'white' : Colors.text },
-                                        ]}
-                                    >
-                                        Limit Order
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                            <Text style={[styles.orderTypeHint, { color: Colors.text, opacity: 0.6 }]}>
-                                {priceType === 'market'
-                                    ? 'Execute immediately at current market price'
-                                    : 'Execute only when price reaches your specified limit'}
-                            </Text>
-                        </View>
-
-                        {/* Shares Input */}
-                        <View style={styles.section}>
-                            <View style={styles.sectionHeader}>
-                                <Text style={[styles.sectionTitle, { color: Colors.text }]}>
-                                    Number of Shares
-                                </Text>
-                                <TouchableOpacity
-                                    onPress={() => setShares(ownedShares.toString())}
-                                    style={styles.maxButton}
-                                >
-                                    <Text style={[styles.maxButtonText, { color: '#C62828' }]}>
-                                        Sell All
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                            <View
-                                style={[
-                                    styles.inputContainer,
-                                    { backgroundColor: Colors.card, borderColor: Colors.border },
-                                ]}
-                            >
-                                <MaterialCommunityIcons
-                                    name="chart-bar"
-                                    size={20}
-                                    color={Colors.text}
-                                    style={{ opacity: 0.6 }}
-                                />
-                                <TextInput
-                                    style={[styles.input, { color: Colors.text }]}
-                                    placeholder="0"
-                                    placeholderTextColor={Colors.text + '99'}
-                                    value={shares}
-                                    onChangeText={setShares}
-                                    keyboardType="numeric"
-                                />
-                                <Text style={[styles.inputUnit, { color: Colors.text, opacity: 0.6 }]}>
-                                    / {ownedShares}
-                                </Text>
-                            </View>
-                            {shareCount > ownedShares && (
-                                <Text style={[styles.errorText, { color: '#C62828' }]}>
-                                    You only own {ownedShares} shares
-                                </Text>
-                            )}
-                        </View>
-
-                        {/* Limit Price Input */}
-                        {priceType === 'limit' && (
-                            <View style={styles.section}>
-                                <Text style={[styles.sectionTitle, { color: Colors.text }]}>
-                                    Limit Price
-                                </Text>
-                                <View
-                                    style={[
-                                        styles.inputContainer,
-                                        { backgroundColor: Colors.card, borderColor: Colors.border },
-                                    ]}
-                                >
-                                    <MaterialCommunityIcons
-                                        name="currency-usd"
-                                        size={20}
-                                        color={Colors.text}
-                                        style={{ opacity: 0.6 }}
-                                    />
-                                    <TextInput
-                                        style={[styles.input, { color: Colors.text }]}
-                                        placeholder={currentPrice.toFixed(2)}
-                                        placeholderTextColor={Colors.text + '99'}
-                                        value={limitPrice}
-                                        onChangeText={setLimitPrice}
-                                        keyboardType="decimal-pad"
-                                    />
-                                    <Text style={[styles.inputUnit, { color: Colors.text, opacity: 0.6 }]}>
-                                        AUD
+                            {/* Owned Shares - Loading State */}
+                            {loadingHolding ? (
+                                <View style={[styles.ownedRow, { backgroundColor: Colors.card, borderColor: Colors.border, justifyContent: 'center' }]}>
+                                    <ActivityIndicator size="small" color={Colors.tint} />
+                                    <Text style={[styles.ownedText, { color: Colors.text, opacity: 0.6, marginLeft: 8 }]}>
+                                        Loading holdings...
                                     </Text>
                                 </View>
-                            </View>
-                        )}
-
-                        {/* Order Summary */}
-                        <View style={[styles.summaryCard, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
-                            <Text style={[styles.summaryTitle, { color: Colors.text }]}>
-                                Sale Summary
-                            </Text>
-
-                            <View style={styles.summaryRow}>
-                                <Text style={[styles.summaryLabel, { color: Colors.text, opacity: 0.7 }]}>
-                                    Shares
-                                </Text>
-                                <Text style={[styles.summaryValue, { color: Colors.text }]}>
-                                    {shareCount || 0}
-                                </Text>
-                            </View>
-
-                            <View style={styles.summaryRow}>
-                                <Text style={[styles.summaryLabel, { color: Colors.text, opacity: 0.7 }]}>
-                                    Price per share
-                                </Text>
-                                <Text style={[styles.summaryValue, { color: Colors.text }]}>
-                                    A${effectivePrice.toFixed(2)}
-                                </Text>
-                            </View>
-
-                            <View style={styles.summaryRow}>
-                                <Text style={[styles.summaryLabel, { color: Colors.text, opacity: 0.7 }]}>
-                                    Gross proceeds
-                                </Text>
-                                <Text style={[styles.summaryValue, { color: Colors.text }]}>
-                                    A${totalProceeds.toFixed(2)}
-                                </Text>
-                            </View>
-
-                            <View style={styles.summaryRow}>
-                                <Text style={[styles.summaryLabel, { color: Colors.text, opacity: 0.7 }]}>
-                                    Est. Fees (0.1%)
-                                </Text>
-                                <Text style={[styles.summaryValue, { color: '#C62828' }]}>
-                                    -A${estimatedFees.toFixed(2)}
-                                </Text>
-                            </View>
-
-                            <View style={[styles.summaryDivider, { backgroundColor: Colors.border }]} />
-
-                            <View style={styles.summaryRow}>
-                                <Text style={[styles.summaryLabelTotal, { color: Colors.text }]}>
-                                    Net Proceeds
-                                </Text>
-                                <Text style={[styles.summaryValueTotal, { color: '#2E7D32' }]}>
-                                    +A${netAmount.toFixed(2)}
-                                </Text>
-                            </View>
+                            ) : holding ? (
+                                <View style={[styles.ownedRow, { backgroundColor: '#FFF9E6', borderColor: '#FFD700' }]}>
+                                    <MaterialCommunityIcons name="wallet-outline" size={16} color="#B8860B" />
+                                    <Text style={[styles.ownedText, { color: '#B8860B' }]}>
+                                        You own {ownedShares} shares
+                                    </Text>
+                                </View>
+                            ) : (
+                                <View style={[styles.ownedRow, { backgroundColor: '#FFEBEE', borderColor: '#C62828' }]}>
+                                    <MaterialCommunityIcons name="alert-circle-outline" size={16} color="#C62828" />
+                                    <Text style={[styles.ownedText, { color: '#C62828' }]}>
+                                        {holdingError || `You don't own any shares`}
+                                    </Text>
+                                </View>
+                            )}
                         </View>
 
-                        {/* Sell Button */}
-                        <TouchableOpacity
-                            onPress={handleSell}
-                            style={[
-                                styles.sellButton,
-                                { backgroundColor: shareCount > 0 && shareCount <= ownedShares ? '#C62828' : Colors.border },
-                            ]}
-                            disabled={shareCount <= 0 || shareCount > ownedShares || loading}
-                        >
-                            {loading ? (
-                                <ActivityIndicator color="white" />
-                            ) : (
-                                <>
-                                    <MaterialCommunityIcons
-                                        name="check-circle"
-                                        size={20}
-                                        color="white"
-                                    />
-                                    <Text style={styles.sellButtonText}>
-                                        Sell {shareCount > 0 ? `${shareCount} Shares` : 'Stock'}
+                        {/* Show form only if user has holdings */}
+                        {holding && ownedShares > 0 ? (
+                            <>
+                                {/* Order Type Selector */}
+                                <View style={styles.section}>
+                                    <Text style={[styles.sectionTitle, { color: Colors.text }]}>
+                                        Order Type
                                     </Text>
-                                </>
-                            )}
-                        </TouchableOpacity>
+                                    <View style={styles.orderTypeContainer}>
+                                        <TouchableOpacity
+                                            onPress={() => setPriceType('market')}
+                                            style={[
+                                                styles.orderTypeButton,
+                                                {
+                                                    backgroundColor: priceType === 'market' ? '#C62828' : Colors.card,
+                                                    borderColor: priceType === 'market' ? '#C62828' : Colors.border,
+                                                },
+                                            ]}
+                                        >
+                                            <MaterialCommunityIcons
+                                                name="flash"
+                                                size={18}
+                                                color={priceType === 'market' ? 'white' : Colors.text}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.orderTypeText,
+                                                    { color: priceType === 'market' ? 'white' : Colors.text },
+                                                ]}
+                                            >
+                                                Market Order
+                                            </Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            onPress={() => setPriceType('limit')}
+                                            style={[
+                                                styles.orderTypeButton,
+                                                {
+                                                    backgroundColor: priceType === 'limit' ? '#C62828' : Colors.card,
+                                                    borderColor: priceType === 'limit' ? '#C62828' : Colors.border,
+                                                },
+                                            ]}
+                                        >
+                                            <MaterialCommunityIcons
+                                                name="target"
+                                                size={18}
+                                                color={priceType === 'limit' ? 'white' : Colors.text}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.orderTypeText,
+                                                    { color: priceType === 'limit' ? 'white' : Colors.text },
+                                                ]}
+                                            >
+                                                Limit Order
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <Text style={[styles.orderTypeHint, { color: Colors.text, opacity: 0.6 }]}>
+                                        {priceType === 'market'
+                                            ? 'Execute immediately at current market price'
+                                            : 'Execute only when price reaches your specified limit'}
+                                    </Text>
+                                </View>
+
+                                {/* Shares Input */}
+                                <View style={styles.section}>
+                                    <View style={styles.sectionHeader}>
+                                        <Text style={[styles.sectionTitle, { color: Colors.text }]}>
+                                            Number of Shares
+                                        </Text>
+                                        <TouchableOpacity
+                                            onPress={() => setShares(ownedShares.toString())}
+                                            style={styles.maxButton}
+                                        >
+                                            <Text style={[styles.maxButtonText, { color: '#C62828' }]}>
+                                                Sell All
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View
+                                        style={[
+                                            styles.inputContainer,
+                                            { backgroundColor: Colors.card, borderColor: Colors.border },
+                                        ]}
+                                    >
+                                        <MaterialCommunityIcons
+                                            name="chart-bar"
+                                            size={20}
+                                            color={Colors.text}
+                                            style={{ opacity: 0.6 }}
+                                        />
+                                        <TextInput
+                                            style={[styles.input, { color: Colors.text }]}
+                                            placeholder="0"
+                                            placeholderTextColor={Colors.text + '99'}
+                                            value={shares}
+                                            onChangeText={setShares}
+                                            keyboardType="numeric"
+                                        />
+                                        <Text style={[styles.inputUnit, { color: Colors.text, opacity: 0.6 }]}>
+                                            / {ownedShares}
+                                        </Text>
+                                    </View>
+                                    {shareCount > ownedShares && (
+                                        <Text style={[styles.errorText, { color: '#C62828' }]}>
+                                            You only own {ownedShares} shares
+                                        </Text>
+                                    )}
+                                </View>
+
+                                {/* Limit Price Input */}
+                                {priceType === 'limit' && (
+                                    <View style={styles.section}>
+                                        <Text style={[styles.sectionTitle, { color: Colors.text }]}>
+                                            Limit Price
+                                        </Text>
+                                        <View
+                                            style={[
+                                                styles.inputContainer,
+                                                { backgroundColor: Colors.card, borderColor: Colors.border },
+                                            ]}
+                                        >
+                                            <MaterialCommunityIcons
+                                                name="currency-usd"
+                                                size={20}
+                                                color={Colors.text}
+                                                style={{ opacity: 0.6 }}
+                                            />
+                                            <TextInput
+                                                style={[styles.input, { color: Colors.text }]}
+                                                placeholder={currentPrice.toFixed(2)}
+                                                placeholderTextColor={Colors.text + '99'}
+                                                value={limitPrice}
+                                                onChangeText={setLimitPrice}
+                                                keyboardType="decimal-pad"
+                                            />
+                                            <Text style={[styles.inputUnit, { color: Colors.text, opacity: 0.6 }]}>
+                                                AUD
+                                            </Text>
+                                        </View>
+                                    </View>
+                                )}
+
+                                {/* Order Summary */}
+                                <View style={[styles.summaryCard, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
+                                    <Text style={[styles.summaryTitle, { color: Colors.text }]}>
+                                        Sale Summary
+                                    </Text>
+
+                                    <View style={styles.summaryRow}>
+                                        <Text style={[styles.summaryLabel, { color: Colors.text, opacity: 0.7 }]}>
+                                            Shares
+                                        </Text>
+                                        <Text style={[styles.summaryValue, { color: Colors.text }]}>
+                                            {shareCount || 0}
+                                        </Text>
+                                    </View>
+
+                                    <View style={styles.summaryRow}>
+                                        <Text style={[styles.summaryLabel, { color: Colors.text, opacity: 0.7 }]}>
+                                            Price per share
+                                        </Text>
+                                        <Text style={[styles.summaryValue, { color: Colors.text }]}>
+                                            A${effectivePrice.toFixed(2)}
+                                        </Text>
+                                    </View>
+
+                                    <View style={styles.summaryRow}>
+                                        <Text style={[styles.summaryLabel, { color: Colors.text, opacity: 0.7 }]}>
+                                            Gross proceeds
+                                        </Text>
+                                        <Text style={[styles.summaryValue, { color: Colors.text }]}>
+                                            A${totalProceeds.toFixed(2)}
+                                        </Text>
+                                    </View>
+
+                                    <View style={styles.summaryRow}>
+                                        <Text style={[styles.summaryLabel, { color: Colors.text, opacity: 0.7 }]}>
+                                            Est. Fees (0.1%)
+                                        </Text>
+                                        <Text style={[styles.summaryValue, { color: '#C62828' }]}>
+                                            -A${estimatedFees.toFixed(2)}
+                                        </Text>
+                                    </View>
+
+                                    <View style={[styles.summaryDivider, { backgroundColor: Colors.border }]} />
+
+                                    <View style={styles.summaryRow}>
+                                        <Text style={[styles.summaryLabelTotal, { color: Colors.text }]}>
+                                            Net Proceeds
+                                        </Text>
+                                        <Text style={[styles.summaryValueTotal, { color: '#2E7D32' }]}>
+                                            +A${netAmount.toFixed(2)}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                {/* Sell Button */}
+                                <TouchableOpacity
+                                    onPress={handleSell}
+                                    style={[
+                                        styles.sellButton,
+                                        { backgroundColor: shareCount > 0 && shareCount <= ownedShares ? '#C62828' : Colors.border },
+                                    ]}
+                                    disabled={shareCount <= 0 || shareCount > ownedShares || loading}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator color="white" />
+                                    ) : (
+                                        <>
+                                            <MaterialCommunityIcons
+                                                name="check-circle"
+                                                size={20}
+                                                color="white"
+                                            />
+                                            <Text style={styles.sellButtonText}>
+                                                Sell {shareCount > 0 ? `${shareCount} Shares` : 'Stock'}
+                                            </Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                            </>
+                        ) : !loadingHolding ? (
+                            <View style={[styles.emptyState, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
+                                <MaterialCommunityIcons
+                                    name="alert-circle-outline"
+                                    size={48}
+                                    color="#C62828"
+                                    style={{ opacity: 0.6 }}
+                                />
+                                <Text style={[styles.emptyText, { color: Colors.text }]}>
+                                    No holdings found
+                                </Text>
+                                <Text style={[styles.emptySubtext, { color: Colors.text, opacity: 0.6 }]}>
+                                    You do not own any shares of {stockData.symbol}
+                                </Text>
+                            </View>
+                        ) : null}
                     </>
                 ) : (
                     <View style={[styles.emptyState, { backgroundColor: Colors.card, borderColor: Colors.border }]}>

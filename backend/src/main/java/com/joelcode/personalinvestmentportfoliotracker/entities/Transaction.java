@@ -49,7 +49,9 @@ public class Transaction {
 
     public enum TransactionType {
         BUY,
-        SELL
+        SELL,
+        BUY_LIMIT,
+        SELL_LIMIT
     }
 
 
