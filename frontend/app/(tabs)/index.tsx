@@ -99,13 +99,12 @@ export default function HomeScreen() {
         fetchNews();
     }, []);
 
-    const watchlistStocks = [
-        { id: 1, symbol: "AAPL", price: "A$150.25", change: "+2.5%", sector: "Technology" },
-        { id: 2, symbol: "MSFT", price: "A$380.50", change: "+1.8%", sector: "Technology" },
-        { id: 3, symbol: "GOOGL", price: "A$140.75", change: "+3.2%", sector: "Technology" },
-        { id: 4, symbol: "TSLA", price: "A$245.30", change: "-1.5%", sector: "Consumer/Tech" },
-        { id: 5, symbol: "AMZN", price: "A$170.90", change: "+2.1%", sector: "Consumer/Tech" },
-    ];
+    const [refreshTicker, setRefreshTicker] = useState(0);
+
+    const handleRefreshTicker = () => {
+        setRefreshTicker(prev => prev + 1); // This will reload new randomized stocks
+    };
+
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.background, padding: 24 }}>
@@ -113,10 +112,10 @@ export default function HomeScreen() {
                 <HeaderSection />
                 <Dashboard />
                 <QuickActionsRow />
-                <StockTicker stocks={watchlistStocks} />
+                <StockTicker refreshTrigger={refreshTicker} />
                 <WatchlistHighlights />
                 <TopMovers holdings={holdings} />
-                <EarningsCalendar />
+                <EarningsCalendar holdings={holdings} />
                 <ExpandableNewsCard news={newsItems} />
                 <SuggestedForYou />
             </ScrollView>

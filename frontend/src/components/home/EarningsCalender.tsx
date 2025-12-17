@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -7,35 +7,30 @@ import {
     TouchableOpacity,
     useColorScheme,
     Image,
+    ActivityIndicator,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '../../constants/colors';
 import { useRouter } from 'expo-router';
+import { getSectorColor } from '@/src/services/sectorColorService';
+import { getUpcomingEarnings } from '@/src/services/earningService';
+import type { HoldingDTO } from '@/src/types/api';
 
 interface EarningsItem {
-    id: number;
-    symbol: string;
-    company: string;
-    date: string;
-    time: string;
-    eps?: string;
-    expectedEps?: string;
+    earningsId: string;
+    stockId: string;
+    stockSymbol: string;
+    companyName: string;
+    earningsDate: string;
+    estimatedEps?: string;
+    actualEps?: string;
+    reportTime?: string;
     sector: string;
-    image?: any;
 }
 
 interface EarningsCalendarProps {
-    earnings?: EarningsItem[];
+    holdings: HoldingDTO[];
 }
-
-const sectorColors = {
-    'Technology': { color: '#0369A1', bgLight: '#EFF6FF' },
-    'Semiconductors': { color: '#B45309', bgLight: '#FEF3C7' },
-    'FinTech': { color: '#15803D', bgLight: '#F0FDF4' },
-    'Consumer/Tech': { color: '#6D28D9', bgLight: '#F5F3FF' },
-    'Healthcare': { color: '#BE123C', bgLight: '#FFE4E6' },
-    'Retail': { color: '#EA580C', bgLight: '#FEF3C7' },
-};
 
 const getDayOfWeek = (dateString: string) => {
     const date = new Date(dateString);
@@ -47,17 +42,31 @@ const getFormattedDate = (dateString: string) => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-const EarningsCard = ({ item, colors, sectorColor }: { item: EarningsItem; colors: any; sectorColor: any }) => {
+const formatTime = (timeStr?: string) => {
+    if (!timeStr) return 'Time TBA';
+    // Assumes format like "16:00" or "Before Market" / "After Market"
+    return timeStr;
+};
+
+const EarningsCard = ({
+                          item,
+                          colors,
+                          sectorColor
+                      }: {
+    item: EarningsItem;
+    colors: any;
+    sectorColor: any;
+}) => {
     const router = useRouter();
     const [expanded, setExpanded] = useState(false);
 
     const handleViewDetails = () => {
         const stockData = {
-            symbol: item.symbol,
-            name: item.company,
-            price: 150, // Mock price - would come from API in real app
-            change: 2.5,
-            changePercent: 1.7,
+            symbol: item.stockSymbol,
+            name: item.companyName,
+            price: 0, // Will be fetched from holdings or API
+            change: 0,
+            changePercent: 0,
             sector: item.sector,
             marketCap: '0',
             peRatio: '0',
@@ -70,15 +79,15 @@ const EarningsCard = ({ item, colors, sectorColor }: { item: EarningsItem; color
             employees: '',
             founded: '',
             website: '',
-            nextEarningsDate: item.date,
+            nextEarningsDate: item.earningsDate,
             nextDividendDate: '',
-            earningsPerShare: item.eps || item.expectedEps || '0',
+            earningsPerShare: item.actualEps || item.estimatedEps || '0',
         };
 
         router.push({
             pathname: '/stock/[ticker]',
             params: {
-                ticker: item.symbol,
+                ticker: item.stockSymbol,
                 stock: JSON.stringify(stockData),
             },
         });
@@ -92,6 +101,7 @@ const EarningsCard = ({ item, colors, sectorColor }: { item: EarningsItem; color
                 {
                     backgroundColor: colors.card,
                     borderColor: colors.border,
+                    borderWidth: 1,
                     maxHeight: expanded ? 280 : 100,
                 }
             ]}
@@ -102,28 +112,21 @@ const EarningsCard = ({ item, colors, sectorColor }: { item: EarningsItem; color
                 <View style={styles.dateSection}>
                     <View style={[styles.dateBadge, { backgroundColor: sectorColor.bgLight }]}>
                         <Text style={[styles.dateDay, { color: sectorColor.color }]}>
-                            {getDayOfWeek(item.date)}
+                            {getDayOfWeek(item.earningsDate)}
                         </Text>
                         <Text style={[styles.dateNum, { color: sectorColor.color }]}>
-                            {getFormattedDate(item.date)}
+                            {getFormattedDate(item.earningsDate)}
                         </Text>
                     </View>
                 </View>
 
                 <View style={styles.companySection}>
-                    {item.image && (
-                        <Image
-                            source={item.image}
-                            style={styles.companyImage}
-                            resizeMode="contain"
-                        />
-                    )}
                     <View style={{ flex: 1 }}>
                         <Text style={[styles.symbol, { color: sectorColor.color }]}>
-                            {item.symbol}
+                            {item.stockSymbol}
                         </Text>
                         <Text style={[styles.company, { color: colors.text, opacity: 0.7 }]} numberOfLines={1}>
-                            {item.company}
+                            {item.companyName}
                         </Text>
                     </View>
                 </View>
@@ -136,7 +139,7 @@ const EarningsCard = ({ item, colors, sectorColor }: { item: EarningsItem; color
                         style={{ marginRight: 4 }}
                     />
                     <Text style={[styles.time, { color: colors.text }]}>
-                        {item.time}
+                        {formatTime(item.reportTime)}
                     </Text>
                 </View>
             </View>
@@ -157,25 +160,27 @@ const EarningsCard = ({ item, colors, sectorColor }: { item: EarningsItem; color
                         </View>
                     </View>
 
-                    {item.expectedEps && (
+                    {(item.estimatedEps || item.actualEps) && (
                         <View style={styles.epsRow}>
-                            <View style={styles.epsItem}>
-                                <Text style={[styles.epsLabel, { color: colors.text, opacity: 0.6 }]}>
-                                    Expected EPS
-                                </Text>
-                                <Text style={[styles.epsValue, { color: colors.tint }]}>
-                                    {item.expectedEps}
-                                </Text>
-                            </View>
-                            {item.eps && (
+                            {item.estimatedEps && (
+                                <View style={styles.epsItem}>
+                                    <Text style={[styles.epsLabel, { color: colors.text, opacity: 0.6 }]}>
+                                        Expected EPS
+                                    </Text>
+                                    <Text style={[styles.epsValue, { color: colors.tint }]}>
+                                        {item.estimatedEps}
+                                    </Text>
+                                </View>
+                            )}
+                            {item.actualEps && (
                                 <>
-                                    <View style={[styles.separator, { backgroundColor: colors.border }]} />
+                                    {item.estimatedEps && <View style={[styles.separator, { backgroundColor: colors.border }]} />}
                                     <View style={styles.epsItem}>
                                         <Text style={[styles.epsLabel, { color: colors.text, opacity: 0.6 }]}>
                                             Previous EPS
                                         </Text>
                                         <Text style={[styles.epsValue, { color: colors.text }]}>
-                                            {item.eps}
+                                            {item.actualEps}
                                         </Text>
                                     </View>
                                 </>
@@ -196,25 +201,149 @@ const EarningsCard = ({ item, colors, sectorColor }: { item: EarningsItem; color
 };
 
 export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
-                                                                      earnings = defaultEarnings
+                                                                      holdings,
                                                                   }) => {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
+    const [earnings, setEarnings] = useState<EarningsItem[]>([]);
+    const [loading, setLoading] = useState(true);
     const [selectedSector, setSelectedSector] = useState<string | null>(null);
+
+    // Fetch upcoming earnings for holdings
+    useEffect(() => {
+        const fetchEarningsData = async () => {
+            console.log('📅 [EarningsCalendar] useEffect triggered');
+            console.log('📊 [EarningsCalendar] Holdings count:', holdings?.length || 0);
+
+            if (!holdings || holdings.length === 0) {
+                console.warn('⚠️ [EarningsCalendar] No holdings provided, skipping fetch');
+                console.log('📊 [EarningsCalendar] Holdings value:', holdings);
+                setLoading(false);
+                return;
+            }
+
+            console.log('📊 [EarningsCalendar] Holdings symbols:', holdings.map(h => h.stockSymbol).join(', '));
+
+            try {
+                setLoading(true);
+
+                // Fetch upcoming earnings
+                console.log('🔄 [EarningsCalendar] Calling getUpcomingEarnings...');
+                const upcomingEarnings = await getUpcomingEarnings();
+                console.log('✅ [EarningsCalendar] getUpcomingEarnings returned:', upcomingEarnings?.length || 0, 'items');
+
+                if (!upcomingEarnings || upcomingEarnings.length === 0) {
+                    console.warn('⚠️ [EarningsCalendar] No upcoming earnings data received');
+                    setEarnings([]);
+                    return;
+                }
+
+                // Filter earnings for holdings only and enrich with sector data
+                const holdingSymbols = new Set(holdings.map(h => h.stockSymbol));
+                console.log('🔍 [EarningsCalendar] Holding symbols set:', Array.from(holdingSymbols).join(', '));
+
+                const enrichedEarnings = upcomingEarnings
+                    .filter(e => {
+                        const matches = holdingSymbols.has(e.stockCode);
+                        if (!matches) {
+                            console.log(`   - Filtered out ${e.stockCode} (not in holdings)`);
+                        }
+                        return matches;
+                    })
+                    .map(e => {
+                        // Find holding to get sector
+                        const holding = holdings.find(h => h.stockSymbol === e.stockCode);
+                        console.log(`   - Enriching ${e.stockCode}: sector=${holding?.sector || 'Unknown'}`);
+                        return {
+                            earningsId: e.earningsId,
+                            stockId: e.stockId,
+                            stockSymbol: e.stockCode,
+                            companyName: e.companyName,
+                            earningsDate: e.earningsDate,
+                            estimatedEps: e.estimatedEPS ? `$${parseFloat(String(e.estimatedEPS)).toFixed(2)}` : undefined,
+                            actualEps: e.actualEPS ? `$${parseFloat(String(e.actualEPS)).toFixed(2)}` : undefined,
+                            reportTime: e.reportTime || 'Time TBA',
+                            sector: holding?.sector || 'Unknown',
+                        };
+                    })
+                    .sort((a, b) => new Date(a.earningsDate).getTime() - new Date(b.earningsDate).getTime());
+
+                console.log('✅ [EarningsCalendar] Enriched earnings count:', enrichedEarnings.length);
+                if (enrichedEarnings.length > 0) {
+                    console.log('📋 [EarningsCalendar] First enriched earning:', enrichedEarnings[0]);
+                    console.log('📋 [EarningsCalendar] Last enriched earning:', enrichedEarnings[enrichedEarnings.length - 1]);
+                }
+
+                setEarnings(enrichedEarnings);
+            } catch (error) {
+                console.error('❌ [EarningsCalendar] Failed to fetch earnings:', error);
+                console.error('   Error details:', error);
+                setEarnings([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEarningsData();
+    }, [holdings]);
 
     // Filter earnings by sector if selected
     const filteredEarnings = selectedSector
         ? earnings.filter(e => e.sector === selectedSector)
         : earnings;
+    console.log('🔽 [EarningsCalendar] Filtered earnings count:', filteredEarnings.length, 'selectedSector:', selectedSector);
 
     // Group earnings by date
     const earningsByDate = filteredEarnings.reduce((acc, item) => {
-        if (!acc[item.date]) acc[item.date] = [];
-        acc[item.date].push(item);
+        if (!acc[item.earningsDate]) acc[item.earningsDate] = [];
+        acc[item.earningsDate].push(item);
         return acc;
     }, {} as Record<string, EarningsItem[]>);
 
-    const uniqueSectors = Array.from(new Set(earnings.map(e => e.sector)));
+    const dateGroupCount = Object.keys(earningsByDate).length;
+    console.log('📅 [EarningsCalendar] Date groups:', dateGroupCount);
+    if (dateGroupCount > 0) {
+        console.log('   Date groups:', Object.keys(earningsByDate).join(', '));
+    }
+
+    const uniqueSectors = Array.from(new Set(earnings.map(e => e.sector))).sort();
+    console.log('🏷️ [EarningsCalendar] Unique sectors:', uniqueSectors.join(', '));
+
+    // Loading state
+    if (loading) {
+        console.log('⏳ [EarningsCalendar] Rendering LOADING state');
+        return (
+            <View style={styles.wrapper}>
+                <View style={[styles.header, { borderBottomColor: Colors.border }]}>
+                    <View>
+                        <Text style={[styles.title, { color: Colors.text }]}>
+                            Earnings Calendar
+                        </Text>
+                        <Text style={[styles.subtitle, { color: Colors.text, opacity: 0.6 }]}>
+                            Next 90 days
+                        </Text>
+                    </View>
+                    <MaterialCommunityIcons
+                        name="calendar-range"
+                        size={28}
+                        color={Colors.tint}
+                        style={{ opacity: 0.7 }}
+                    />
+                </View>
+                <View style={{ padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={Colors.tint} />
+                    <Text style={[styles.loadingText, { color: Colors.text, marginTop: 12 }]}>
+                        Loading earnings data...
+                    </Text>
+                </View>
+            </View>
+        );
+    }
+
+    // Main render
+    console.log('🎨 [EarningsCalendar] Rendering main view with earnings');
+    console.log('   Total earnings:', earnings.length);
+    console.log('   Earnings to display:', filteredEarnings.length);
 
     return (
         <View style={styles.wrapper}>
@@ -225,187 +354,122 @@ export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
                         Earnings Calendar
                     </Text>
                     <Text style={[styles.subtitle, { color: Colors.text, opacity: 0.6 }]}>
-                        Next 7 days
+                        Next 90 days
                     </Text>
                 </View>
                 <MaterialCommunityIcons
                     name="calendar-range"
                     size={28}
                     color={Colors.tint}
-                    style={{ opacity: 0.7}}
+                    style={{ opacity: 0.7 }}
                 />
             </View>
 
             {/* Sector Filter */}
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.sectorFilter}
-                contentContainerStyle={styles.sectorFilterContent}
-            >
-                <TouchableOpacity
-                    onPress={() => setSelectedSector(null)}
-                    style={[
-                        styles.filterButton,
-                        selectedSector === null && [
-                            styles.filterButtonActive,
-                            { backgroundColor: Colors.tint }
-                        ],
-                        selectedSector === null && { backgroundColor: Colors.tint },
-                    ]}
+            {earnings.length > 0 && (
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.sectorFilter}
+                    contentContainerStyle={styles.sectorFilterContent}
                 >
-                    <Text
+                    <TouchableOpacity
+                        onPress={() => setSelectedSector(null)}
                         style={[
-                            styles.filterButtonText,
-                            selectedSector === null && { color: 'white', fontWeight: '700' }
+                            styles.filterButton,
+                            selectedSector === null && [
+                                styles.filterButtonActive,
+                                { backgroundColor: Colors.tint }
+                            ],
                         ]}
                     >
-                        All
-                    </Text>
-                </TouchableOpacity>
-
-                {uniqueSectors.map((sector) => {
-                    const sectorColor = sectorColors[sector as keyof typeof sectorColors] || sectorColors['Technology'];
-                    const isSelected = selectedSector === sector;
-
-                    return (
-                        <TouchableOpacity
-                            key={sector}
-                            onPress={() => setSelectedSector(sector)}
+                        <Text
                             style={[
-                                styles.filterButton,
-                                isSelected && [
-                                    styles.filterButtonActive,
-                                    { backgroundColor: sectorColor.bgLight }
-                                ],
-                                !isSelected && { backgroundColor: Colors.card }
+                                styles.filterButtonText,
+                                selectedSector === null && { color: 'white', fontWeight: '700' }
                             ]}
                         >
-                            <Text
+                            All
+                        </Text>
+                    </TouchableOpacity>
+
+                    {uniqueSectors.map((sector) => {
+                        const sectorColor = getSectorColor(sector);
+                        const isSelected = selectedSector === sector;
+
+                        return (
+                            <TouchableOpacity
+                                key={sector}
+                                onPress={() => setSelectedSector(sector)}
                                 style={[
-                                    styles.filterButtonText,
-                                    isSelected && { color: sectorColor.color, fontWeight: '700' }
+                                    styles.filterButton,
+                                    isSelected && [
+                                        styles.filterButtonActive,
+                                        { backgroundColor: sectorColor.bgLight }
+                                    ],
+                                    !isSelected && { backgroundColor: Colors.card }
                                 ]}
                             >
-                                {sector}
-                            </Text>
-                        </TouchableOpacity>
-                    );
-                })}
-            </ScrollView>
+                                <Text
+                                    style={[
+                                        styles.filterButtonText,
+                                        isSelected && { color: sectorColor.color, fontWeight: '700' }
+                                    ]}
+                                >
+                                    {sector}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </ScrollView>
+            )}
 
             {/* Earnings List */}
             <ScrollView style={styles.earningsContainer} showsVerticalScrollIndicator={false}>
-                {Object.entries(earningsByDate).map(([date, items]) => {
-                    const sectorColor = sectorColors[items[0].sector as keyof typeof sectorColors] || sectorColors['Technology'];
+                {Object.entries(earningsByDate).length > 0 ? (
+                    <>
+                        {console.log('🎯 [EarningsCalendar] Rendering', Object.entries(earningsByDate).length, 'date groups')}
+                        {Object.entries(earningsByDate).map(([date, items]) => {
+                            console.log(`   - Rendering date group: ${date} with ${items.length} items`);
+                            const sectorColor = getSectorColor(items[0].sector);
 
-                    return (
-                        <View key={date} style={styles.dateGroup}>
-                            <Text style={[styles.dateGroupHeader, { color: sectorColor.color }]}>
-                                {getDayOfWeek(date).toUpperCase()} • {getFormattedDate(date)}
+                            return (
+                                <View key={date} style={styles.dateGroup}>
+                                    <Text style={[styles.dateGroupHeader, { color: sectorColor.color }]}>
+                                        {getDayOfWeek(date).toUpperCase()} • {getFormattedDate(date)}
+                                    </Text>
+                                    {items.map((item) => (
+                                        <EarningsCard
+                                            key={item.earningsId}
+                                            item={item}
+                                            colors={Colors}
+                                            sectorColor={getSectorColor(item.sector)}
+                                        />
+                                    ))}
+                                </View>
+                            );
+                        })}
+                    </>
+                ) : (
+                    <>
+                        {console.log('📭 [EarningsCalendar] Rendering EMPTY STATE - no earnings to display')}
+                        <View style={styles.emptyState}>
+                            <MaterialCommunityIcons
+                                name="calendar-blank"
+                                size={48}
+                                color={Colors.text}
+                                style={{ opacity: 0.3, marginBottom: 12 }}
+                            />
+                            <Text style={[styles.emptyStateText, { color: Colors.text, opacity: 0.6 }]}>
+                                No upcoming earnings
                             </Text>
-                            {items.map((item) => (
-                                <EarningsCard
-                                    key={item.id}
-                                    item={item}
-                                    colors={Colors}
-                                    sectorColor={sectorColors[item.sector as keyof typeof sectorColors] || sectorColors['Technology']}
-                                />
-                            ))}
                         </View>
-                    );
-                })}
-
-                {filteredEarnings.length === 0 && (
-                    <View style={styles.emptyState}>
-                        <MaterialCommunityIcons
-                            name="calendar-blank"
-                            size={48}
-                            color={Colors.text}
-                            style={{ opacity: 0.3, marginBottom: 12 }}
-                        />
-                        <Text style={[styles.emptyStateText, { color: Colors.text, opacity: 0.6 }]}>
-                            No earnings this period
-                        </Text>
-                    </View>
+                    </>
                 )}
             </ScrollView>
         </View>
     );
 };
-
-const defaultEarnings: EarningsItem[] = [
-    {
-        id: 1,
-        symbol: 'NVDA',
-        company: 'NVIDIA Corporation',
-        date: '2024-12-03',
-        time: 'After Market',
-        expectedEps: '$0.68',
-        eps: '$0.62',
-        sector: 'Semiconductors',
-    },
-    {
-        id: 2,
-        symbol: 'MSFT',
-        company: 'Microsoft Corporation',
-        date: '2024-12-03',
-        time: '4:00 PM',
-        expectedEps: '$3.15',
-        eps: '$3.08',
-        sector: 'Technology',
-    },
-    {
-        id: 3,
-        symbol: 'UBER',
-        company: 'Uber Technologies',
-        date: '2024-12-04',
-        time: 'After Market',
-        expectedEps: '$1.12',
-        eps: '$0.98',
-        sector: 'Consumer/Tech',
-    },
-    {
-        id: 4,
-        symbol: 'AMD',
-        company: 'Advanced Micro Devices',
-        date: '2024-12-04',
-        time: '5:00 PM',
-        expectedEps: '$0.92',
-        eps: '$0.85',
-        sector: 'Semiconductors',
-    },
-    {
-        id: 5,
-        symbol: 'COIN',
-        company: 'Coinbase Global',
-        date: '2024-12-05',
-        time: 'After Market',
-        expectedEps: '$1.45',
-        eps: '$1.28',
-        sector: 'FinTech',
-    },
-    {
-        id: 6,
-        symbol: 'META',
-        company: 'Meta Platforms',
-        date: '2024-12-06',
-        time: '4:30 PM',
-        expectedEps: '$4.32',
-        eps: '$4.10',
-        sector: 'Technology',
-    },
-    {
-        id: 7,
-        symbol: 'TSLA',
-        company: 'Tesla Inc.',
-        date: '2024-12-07',
-        time: 'Before Market',
-        expectedEps: '$0.75',
-        eps: '$0.68',
-        sector: 'Consumer/Tech',
-    },
-];
 
 const styles = StyleSheet.create({
     wrapper: {
@@ -501,11 +565,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 8,
     },
-    companyImage: {
-        width: 32,
-        height: 32,
-        borderRadius: 8,
-    },
     symbol: {
         fontSize: 13,
         fontWeight: '700',
@@ -585,5 +644,9 @@ const styles = StyleSheet.create({
     emptyStateText: {
         fontSize: 14,
         fontWeight: '500',
+    },
+    loadingText: {
+        fontSize: 14,
+        fontWeight: '600',
     },
 });

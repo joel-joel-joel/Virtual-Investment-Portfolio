@@ -1,43 +1,106 @@
-import React from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions, useColorScheme } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Animated, Dimensions, useColorScheme, ActivityIndicator } from 'react-native';
 import { getThemeColors } from '../../constants/colors';
+import { getSectorColor } from '@/src/services/sectorColorService';
+import { getStockQuote } from '@/src/services/entityService';
+import { getCompanyProfile } from '@/src/services/entityService';
 
 interface TickerStock {
     symbol: string;
     price: string;
     change: string;
-    sector: string; // make sure sector is included
+    sector: string;
 }
 
 interface StockTickerProps {
-    stocks: TickerStock[];
+    refreshTrigger?: number;
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const sectorColors: { [key: string]: string } = {
-    Technology: "#0369A1",
-    Semiconductors: "#EF6C00",
-    FinTech: "#15803D",
-    "Consumer/Tech": "#6D28D9",
-    Healthcare: "#BE123C",
-    Markets: "#7C3AED",
-};
+// Popular stocks across different sectors for randomization
+const POPULAR_STOCKS = [
+    'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA',
+    'META', 'NFLX', 'GOOG', 'INTC', 'AMD', 'AVGO',
+    'JPM', 'GS', 'BAC', 'WFC', 'C', 'BLK',
+    'JNJ', 'PFE', 'ABBV', 'UNH', 'MRK', 'LLY',
+    'XOM', 'COP', 'CVX', 'MPC', 'PSX', 'OXY',
+    'DIS', 'CMCSA', 'PARA', 'NWSA', 'FOX', 'WBD',
+];
 
-export const StockTicker: React.FC<StockTickerProps> = ({ stocks }) => {
+export const StockTicker: React.FC<StockTickerProps> = ({ refreshTrigger }) => {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
-
-    // Duplicate stocks for infinite loop
-    const duplicatedStocks = [...stocks, ...stocks, ...stocks];
+    const [tickerStocks, setTickerStocks] = useState<TickerStock[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const scrollX = React.useRef(new Animated.Value(0)).current;
 
-    React.useEffect(() => {
+    // Fetch real-time data from Finnhub for randomized stocks
+    useEffect(() => {
+        const fetchTickerData = async () => {
+            try {
+                setLoading(true);
+
+                // Randomly select 8-12 stocks from popular list
+                const shuffled = [...POPULAR_STOCKS].sort(() => 0.5 - Math.random());
+                const selectedStocks = shuffled.slice(0, Math.floor(Math.random() * 5) + 8);
+
+                const tickerData = await Promise.all(selectedStocks.map(async (symbol) => {
+                        try {
+                            // Fetch real-time quote
+                            const quote = await getStockQuote(symbol);
+
+                            // Fetch company profile to get sector
+                            let sector = 'Unknown';
+                            try {
+                                const profile = await getCompanyProfile(symbol);
+                                sector = profile.finnhubIndustry || 'Unknown';
+                            } catch (error) {
+                                console.warn(`Failed to fetch profile for ${symbol}:`, error);
+                            }
+
+                            // Calculate price change
+                            const change = quote.c - quote.pc; // current - previous close
+                            const changePercent = ((change / quote.pc) * 100).toFixed(2);
+                            const changeStr = `${parseFloat(changePercent) >= 0 ? '+' : ''}${changePercent}%`;
+
+                            return {
+                                symbol,
+                                price: `A$${quote.c.toFixed(2)}`,
+                                change: changeStr,
+                                sector,
+                            };
+                        } catch (error) {
+                            console.error(`Failed to fetch data for ${symbol}:`, error);
+                            // Return null on error, we'll filter these out
+                            return null;
+                        }
+                    })
+                );
+
+                // Filter out failed requests
+                const validData = tickerData.filter((stock): stock is TickerStock => stock !== null);
+
+                setTickerStocks(validData);
+            } catch (error) {
+                console.error('Failed to fetch ticker data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTickerData();
+    }, [refreshTrigger]);
+
+    // Start scroll animation once data is loaded
+    useEffect(() => {
+        if (tickerStocks.length === 0 || loading) return;
+
         const scrollAnimation = Animated.loop(
             Animated.timing(scrollX, {
                 toValue: -SCREEN_WIDTH * 3,
-                duration: 20000, // 20 seconds for a full scroll
+                duration: 25000, // 25 seconds for smoother scrolling with more stocks
                 useNativeDriver: true,
             })
         );
@@ -45,10 +108,36 @@ export const StockTicker: React.FC<StockTickerProps> = ({ stocks }) => {
         scrollAnimation.start();
 
         return () => scrollAnimation.stop();
-    }, []);
+    }, [tickerStocks, loading, scrollX]);
+
+    // Show loading state
+    if (loading) {
+        return (
+            <View style={[styles.tickerWrapper, { backgroundColor: 'white', borderColor: Colors.border, justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="small" color={Colors.tint} />
+                <Text style={[styles.loadingText, { color: Colors.text, marginLeft: 8 }]}>
+                    Loading market data...
+                </Text>
+            </View>
+        );
+    }
+
+    // Show error state if no stocks loaded
+    if (tickerStocks.length === 0) {
+        return (
+            <View style={[styles.tickerWrapper, { backgroundColor: 'white', borderColor: Colors.border, justifyContent: 'center' }]}>
+                <Text style={[styles.emptyText, { color: Colors.text }]}>
+                    Unable to load market data
+                </Text>
+            </View>
+        );
+    }
+
+    // Duplicate stocks for infinite loop
+    const duplicatedStocks = [...tickerStocks, ...tickerStocks, ...tickerStocks];
 
     return (
-        <View style={[styles.tickerWrapper, { backgroundColor: "white", borderColor: Colors.border }]}>
+        <View style={[styles.tickerWrapper, { backgroundColor: 'white', borderColor: Colors.border }]}>
             <View style={styles.tickerContainer}>
                 <Animated.View
                     style={[
@@ -59,11 +148,13 @@ export const StockTicker: React.FC<StockTickerProps> = ({ stocks }) => {
                     ]}
                 >
                     {duplicatedStocks.map((stock, index) => {
-                        const symbolColor = sectorColors[stock.sector] || Colors.tint;
+                        // Use sector-based coloring
+                        const sectorColor = getSectorColor(stock.sector);
+                        const isPositive = !stock.change.startsWith('-');
 
                         return (
                             <View key={index} style={styles.tickerItem}>
-                                <Text style={[styles.tickerSymbol, { color: symbolColor }]}>
+                                <Text style={[styles.tickerSymbol, { color: sectorColor.color }]}>
                                     {stock.symbol}
                                 </Text>
                                 <Text style={[styles.tickerPrice, { color: Colors.text }]}>
@@ -73,7 +164,7 @@ export const StockTicker: React.FC<StockTickerProps> = ({ stocks }) => {
                                     style={[
                                         styles.tickerChange,
                                         {
-                                            color: stock.change.startsWith('+') ? '#2E7D32' : '#C62828',
+                                            color: isPositive ? '#2E7D32' : '#C62828',
                                         },
                                     ]}
                                 >
@@ -92,10 +183,10 @@ export const StockTicker: React.FC<StockTickerProps> = ({ stocks }) => {
 const styles = StyleSheet.create({
     tickerWrapper: {
         width: '100%',
-        height: 30,
+        height: 50,
         borderRadius: 12,
         borderWidth: 1,
-        marginTop: 20,
+        marginTop: 5,
         overflow: 'hidden',
     },
     tickerContainer: {
@@ -130,7 +221,16 @@ const styles = StyleSheet.create({
     },
     separator: {
         width: 1,
-        height: 30,
+        height: 50,
         marginLeft: 16,
+    },
+    emptyText: {
+        fontSize: 12,
+        fontWeight: '500',
+        opacity: 0.6,
+    },
+    loadingText: {
+        fontSize: 12,
+        fontWeight: '500',
     },
 });
