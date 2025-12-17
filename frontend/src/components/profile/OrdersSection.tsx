@@ -283,16 +283,15 @@ const styles = StyleSheet.create({
   filterContainer: {
     flexDirection: 'row',
     gap: 8,
-    paddingHorizontal: 12,
     marginBottom: 8,
   },
   filterTab: {
     flex: 1,
     paddingVertical: 8,
-    paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
+      justifyContent: 'center',
   },
   filterTabActive: {
     borderWidth: 0,

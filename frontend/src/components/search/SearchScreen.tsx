@@ -14,9 +14,9 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
 import { useRouter } from 'expo-router';
-import { addToWatchlist, removeFromWatchlist, getWatchlist } from '@/src/services/portfolioService';
+import { addToWatchlist, removeFromWatchlist, getWatchlist, searchCompaniesByName } from '@/src/services/portfolioService';
 import { getOrCreateStockBySymbol } from '@/src/services/entityService';
-import { FinnhubCompanyProfileDTO, FinnhubQuoteDTO } from '@/src/types/api';
+import { FinnhubCompanyProfileDTO, FinnhubQuoteDTO, FinnhubSearchResponseDTO } from '@/src/types/api';
 import { useFocusEffect } from '@react-navigation/native';
 
 // Popular stocks to display on initial load
@@ -40,9 +40,68 @@ interface SearchFilters {
     marketCap: string | null;
 }
 
-
-const recentSearches = ['AAPL', 'NVDA', 'MSFT', 'TSLA'];
 const sectors = ['Technology', 'Semiconductors', 'FinTech', 'Consumer/Tech', 'Healthcare', 'Retail'];
+
+// ✅ NEW: Enhanced multi-field fuzzy search
+const fuzzySearch = (query: string, symbol: string, companyName: string): boolean => {
+    const normalizedQuery = query.toLowerCase().trim();
+    const normalizedSymbol = symbol.toLowerCase();
+    const normalizedCompanyName = companyName.toLowerCase();
+
+    // ===== TICKER SYMBOL MATCHING =====
+    // Exact match or starts with (for ticker codes like AAPL or AAP)
+    if (normalizedSymbol.startsWith(normalizedQuery)) {
+        return true;
+    }
+
+    // ===== COMPANY NAME MATCHING =====
+    // Exact word match (e.g., "Bank of America" contains "Bank")
+    if (normalizedCompanyName.includes(normalizedQuery)) {
+        return true;
+    }
+
+    // Multi-word matching (e.g., "bank of america" matches "Bank of America Corp")
+    const queryWords = normalizedQuery.split(/\s+/).filter(w => w.length > 0);
+    const companyWords = normalizedCompanyName.split(/\s+/).filter(w => w.length > 0);
+
+    // Check how many query words match company words (partial or full word match)
+    const matchedWords = queryWords.filter(qWord =>
+        companyWords.some(cWord =>
+            cWord.includes(qWord) || qWord.includes(cWord)
+        )
+    );
+
+    // If at least 50% of query words match, it's a hit
+    if (matchedWords.length >= Math.ceil(queryWords.length / 2)) {
+        return true;
+    }
+
+    // ===== FUZZY CHARACTER MATCHING =====
+    // Character-by-character fuzzy match for both fields
+    const performFuzzyMatch = (text: string): boolean => {
+        let queryIndex = 0;
+        for (let i = 0; i < text.length; i++) {
+            if (text[i] === normalizedQuery[queryIndex]) {
+                queryIndex++;
+                if (queryIndex === normalizedQuery.length) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    // Try fuzzy match on company name first (more important), then symbol
+    if (performFuzzyMatch(normalizedCompanyName)) {
+        return true;
+    }
+
+    if (performFuzzyMatch(normalizedSymbol)) {
+        return true;
+    }
+
+    return false;
+};
 
 const SearchResultCard = ({
                               stock,
@@ -226,13 +285,49 @@ export default function SearchScreen() {
         marketCap: null,
     });
     const [showFilters, setShowFilters] = useState(false);
-    const [recentSearchesList, setRecentSearchesList] = useState(recentSearches);
+    const [recentSearchesList, setRecentSearchesList] = useState<string[]>([]);
     const [watchlistedStocks, setWatchlistedStocks] = useState<Set<string>>(new Set());
     const [allStocks, setAllStocks] = useState<Stock[]>([]);
     const [loadingStocks, setLoadingStocks] = useState(true);
     const [searchResults, setSearchResults] = useState<Stock[]>([]);
     const [loadingSearch, setLoadingSearch] = useState(false);
     const [togglingWatchlistSymbol, setTogglingWatchlistSymbol] = useState<string | null>(null);
+
+    // ✅ NEW: Load recent searches from storage on mount
+    useEffect(() => {
+        loadRecentSearches();
+    }, []);
+
+    const loadRecentSearches = async () => {
+        try {
+            const result = await window.storage?.get('recent_searches');
+            if (result?.value) {
+                const searches = JSON.parse(result.value);
+                setRecentSearchesList(searches);
+            }
+        } catch (error) {
+            console.error('Failed to load recent searches:', error);
+        }
+    };
+
+    // ✅ NEW: Save recent searches to storage
+    const saveRecentSearches = async (searches: string[]) => {
+        try {
+            await window.storage?.set('recent_searches', JSON.stringify(searches));
+        } catch (error) {
+            console.error('Failed to save recent searches:', error);
+        }
+    };
+
+    // ✅ NEW: Add search to recent searches
+    const addToRecentSearches = async (query: string) => {
+        const trimmedQuery = query.toUpperCase().trim();
+        if (!trimmedQuery) return;
+
+        let updated = [trimmedQuery, ...recentSearchesList.filter(s => s !== trimmedQuery)].slice(0, 10);
+        setRecentSearchesList(updated);
+        await saveRecentSearches(updated);
+    };
 
     // Load watchlist status
     const loadWatchlistStatus = useCallback(async () => {
@@ -338,6 +433,34 @@ export default function SearchScreen() {
         return `${marketCap.toFixed(0)}M`;
     };
 
+    // ✅ NEW: Search Finnhub for company by name
+    const searchFinnhubByCompanyName = async (companyName: string): Promise<Stock | null> => {
+        try {
+            // Call backend endpoint to search Finnhub by company name
+            const searchResponse: FinnhubSearchResponseDTO = await searchCompaniesByName(companyName);
+
+            // Check if we have results
+            if (!searchResponse || !searchResponse.result || searchResponse.result.length === 0) {
+                console.warn(`No search results found for company: ${companyName}`);
+                return null;
+            }
+
+            // Take the first result (best match)
+            const bestMatch = searchResponse.result[0];
+
+            // Fetch full stock data for this ticker
+            if (bestMatch.symbol) {
+                return await fetchStockData(bestMatch.symbol);
+            }
+
+            return null;
+        } catch (error) {
+            console.error('Finnhub company search failed:', error);
+            return null;
+        }
+    };
+
+    // ✅ NEW: Fuzzy search implementation with Finnhub API fallback
     const handleSearch = async (query: string) => {
         setSearchQuery(query);
 
@@ -348,12 +471,59 @@ export default function SearchScreen() {
 
         setLoadingSearch(true);
         try {
+            // Try fetching the query as a stock ticker
             const stock = await fetchStockData(query.toUpperCase());
+
             if (stock) {
                 setSearchResults([stock]);
-            } else {
-                setSearchResults([]);
+                await addToRecentSearches(query);
+                setLoadingSearch(false);
+                return;
             }
+
+            // If not a valid ticker, do fuzzy search on popular stocks
+            const fuzzyResults = allStocks.filter(s =>
+                fuzzySearch(query, s.symbol, s.name)
+            );
+
+            if (fuzzyResults.length > 0) {
+                setSearchResults(fuzzyResults);
+                await addToRecentSearches(query);
+                setLoadingSearch(false);
+                return;
+            }
+
+            // ✅ NEW: Try searching Finnhub by company name directly
+            const finnhubResult = await searchFinnhubByCompanyName(query);
+            if (finnhubResult) {
+                setSearchResults([finnhubResult]);
+                await addToRecentSearches(query);
+                setLoadingSearch(false);
+                return;
+            }
+
+            // Try ticker pattern extraction as fallback
+            const companyPattern = query.toUpperCase().trim();
+            const tickerPatterns = [
+                companyPattern.replace(/\s+/g, ''),
+                Array.from(companyPattern).filter(c => c !== ' ').join(''),
+                companyPattern.split(/\s+/).map(w => w[0]).join(''),
+            ];
+
+            for (const pattern of tickerPatterns) {
+                if (pattern.length > 0 && pattern.length <= 4) {
+                    const result = await fetchStockData(pattern);
+                    if (result) {
+                        setSearchResults([result]);
+                        await addToRecentSearches(query);
+                        setLoadingSearch(false);
+                        return;
+                    }
+                }
+            }
+
+            // No results found
+            setSearchResults([]);
         } catch (error) {
             console.error('Search failed:', error);
             setSearchResults([]);
@@ -380,26 +550,40 @@ export default function SearchScreen() {
         setFilters({ sector: null, marketCap: null });
     };
 
-    const handleClearRecentSearches = () => {
-        setRecentSearchesList([]);
+    // ✅ NEW: Clear recent searches
+    const handleClearRecentSearches = async () => {
+        Alert.alert(
+            'Clear Recent Searches',
+            'Are you sure you want to clear all recent searches?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Clear',
+                    onPress: async () => {
+                        setRecentSearchesList([]);
+                        await saveRecentSearches([]);
+                    },
+                    style: 'destructive',
+                },
+            ]
+        );
     };
 
+    // ✅ NEW: Handle recent search tap
     const handleRecentSearch = async (query: string) => {
         await handleSearch(query);
     };
 
     const toggleWatchlist = async (symbol: string) => {
-        if (togglingWatchlistSymbol) return; // Prevent multiple simultaneous requests
+        if (togglingWatchlistSymbol) return;
 
         try {
             setTogglingWatchlistSymbol(symbol);
 
-            // Get or create the stock in the database
             const dbStock = await getOrCreateStockBySymbol(symbol);
             const isCurrentlyWatchlisted = watchlistedStocks.has(symbol);
 
             if (isCurrentlyWatchlisted) {
-                // Remove from watchlist
                 await removeFromWatchlist(dbStock.stockId);
                 setWatchlistedStocks(prev => {
                     const newSet = new Set(prev);
@@ -407,7 +591,6 @@ export default function SearchScreen() {
                     return newSet;
                 });
             } else {
-                // Add to watchlist
                 await addToWatchlist(dbStock.stockId);
                 setWatchlistedStocks(prev => {
                     const newSet = new Set(prev);
@@ -422,13 +605,12 @@ export default function SearchScreen() {
 
             if (error?.message) {
                 if (error.message.includes('already in watchlist')) {
-                    // Stock is already in watchlist, update UI to reflect this
                     setWatchlistedStocks(prev => {
                         const newSet = new Set(prev);
                         newSet.add(symbol);
                         return newSet;
                     });
-                    return; // Don't show error
+                    return;
                 } else if (error.message.includes('Unauthorized')) {
                     errorMessage = 'Your session has expired. Please log in again.';
                 } else {
@@ -473,7 +655,7 @@ export default function SearchScreen() {
                     />
                     <TextInput
                         style={[styles.searchInput, { color: Colors.text }]}
-                        placeholder="Search by symbol (e.g. AAPL)..."
+                        placeholder="Search by symbol or name (e.g. AAPL or Apple)..."
                         placeholderTextColor={Colors.text + '99'}
                         value={searchQuery}
                         onChangeText={handleSearch}
@@ -575,41 +757,42 @@ export default function SearchScreen() {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.contentContainer}
                 >
-                    <View style={styles.section}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={[styles.sectionTitle, { color: Colors.text }]}>
-                                Recent Searches
-                            </Text>
-                            {recentSearchesList.length > 0 && (
+                    {/* Recent Searches Section */}
+                    {recentSearchesList.length > 0 && (
+                        <View style={styles.section}>
+                            <View style={styles.sectionHeader}>
+                                <Text style={[styles.sectionTitle, { color: Colors.text }]}>
+                                    Recent Searches
+                                </Text>
                                 <TouchableOpacity onPress={handleClearRecentSearches}>
                                     <Text style={[styles.clearButton, { color: Colors.tint }]}>
                                         Clear
                                     </Text>
                                 </TouchableOpacity>
-                            )}
+                            </View>
+                            <View style={styles.recentSearches}>
+                                {recentSearchesList.map(query => (
+                                    <TouchableOpacity
+                                        key={query}
+                                        onPress={() => handleRecentSearch(query)}
+                                        style={[
+                                            styles.recentSearchTag,
+                                            { backgroundColor: Colors.card, borderColor: Colors.border }
+                                        ]}
+                                    >
+                                        <MaterialCommunityIcons
+                                            name="clock-outline"
+                                            size={14}
+                                            color={Colors.tint}
+                                        />
+                                        <Text style={[styles.recentSearchText, { color: Colors.text }]}>
+                                            {query}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
                         </View>
-                        <View style={styles.recentSearches}>
-                            {recentSearchesList.map(query => (
-                                <TouchableOpacity
-                                    key={query}
-                                    onPress={() => handleRecentSearch(query)}
-                                    style={[
-                                        styles.recentSearchTag,
-                                        { backgroundColor: Colors.card, borderColor: Colors.border }
-                                    ]}
-                                >
-                                    <MaterialCommunityIcons
-                                        name="clock-outline"
-                                        size={14}
-                                        color={Colors.tint}
-                                    />
-                                    <Text style={[styles.recentSearchText, { color: Colors.text }]}>
-                                        {query}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    </View>
+                    )}
 
                     {/* Popular Stocks */}
                     <View style={styles.section}>
@@ -676,7 +859,7 @@ export default function SearchScreen() {
                         No stocks found
                     </Text>
                     <Text style={[styles.emptyStateSubtitle, { color: Colors.text, opacity: 0.6 }]}>
-                        Try searching with a different ticker symbol
+                        Try searching with a different ticker symbol or company name
                     </Text>
                     <TouchableOpacity
                         onPress={handleClearSearch}
@@ -909,4 +1092,4 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
     },
-});
+})

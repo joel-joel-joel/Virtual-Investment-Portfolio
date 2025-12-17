@@ -4,8 +4,10 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCandle
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCompanyProfileDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubMetricsDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubQuoteDTO;
+import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubSearchResponseDTO;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface FinnhubApiClient {
 
@@ -18,4 +20,6 @@ public interface FinnhubApiClient {
     FinnhubCandleDTO getCandles(String symbol, String resolution, long from, long to);
 
     BigDecimal getCurrentPrice(String symbol);
+
+    FinnhubSearchResponseDTO searchCompanies(String query);
 }

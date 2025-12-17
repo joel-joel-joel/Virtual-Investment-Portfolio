@@ -108,6 +108,18 @@ export interface FinnhubCandleDTO {
   s: string;    // status ("ok" or "no_data")
 }
 
+export interface FinnhubSearchResultDTO {
+  description: string;   // Company name (e.g., "Apple Inc")
+  displaySymbol: string; // Display ticker symbol (e.g., "AAPL")
+  symbol: string;        // Stock symbol (e.g., "AAPL")
+  type: string;          // Security type (e.g., "Common Stock")
+}
+
+export interface FinnhubSearchResponseDTO {
+  result: FinnhubSearchResultDTO[];  // Array of search results
+  count: number;                     // Number of results returned
+}
+
 // ============================================================================
 // News Types
 // ============================================================================

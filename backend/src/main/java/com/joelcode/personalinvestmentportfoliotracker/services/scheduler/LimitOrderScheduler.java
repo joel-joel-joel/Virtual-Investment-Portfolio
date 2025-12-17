@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.messaging.SessionMessagingTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.math.BigDecimal;
@@ -103,7 +102,7 @@ public class LimitOrderScheduler {
      * Execute a limit order by creating a transaction
      */
     private void executeLimitOrder(Order order, BigDecimal executionPrice) {
-        System.out.println("  Processing order: " + order.getStockId() + " - " + order.getOrderType() + " " + order.getQuantity() + " @ " + executionPrice);
+        System.out.println("  Processing order: " + order.getStock().getStockId() + " - " + order.getOrderType() + " " + order.getQuantity() + " @ " + executionPrice);
 
         // Create transaction request
         TransactionCreateRequest request = new TransactionCreateRequest();

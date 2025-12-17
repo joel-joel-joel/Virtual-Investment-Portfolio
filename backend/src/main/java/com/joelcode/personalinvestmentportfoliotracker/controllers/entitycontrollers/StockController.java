@@ -4,6 +4,7 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCandle
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCompanyProfileDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubMetricsDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubQuoteDTO;
+import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubSearchResponseDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.stock.StockCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.stock.StockDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.stock.StockUpdateRequest;
@@ -152,6 +153,20 @@ public class StockController {
             return ResponseEntity.ok(candles);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching candles for symbol: " + symbol);
+        }
+    }
+
+    // Search for companies by name from FinnHub
+    @GetMapping("/finnhub/search")
+    public ResponseEntity<?> searchCompanies(@RequestParam String query) {
+        try {
+            if (query == null || query.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Search query cannot be empty");
+            }
+            FinnhubSearchResponseDTO results = finnhubApiClient.searchCompanies(query);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error searching companies for query: " + query);
         }
     }
 }

@@ -19,6 +19,7 @@ import type {
     PortfolioOverviewDTO,
     PortfolioSnapshotDTO,
     CreatePortfolioSnapshotRequest, WatchlistCheckResponse,
+    FinnhubSearchResponseDTO,
 } from '../types/api';
 
 // ============================================================================
@@ -590,4 +591,25 @@ export const sortHoldingsByGainPercent = (
   return [...holdings].sort(
     (a, b) => b.unrealizedGainPercent - a.unrealizedGainPercent
   );
+};
+
+// ============================================================================
+// Finnhub Search (Company Search by Name)
+// ============================================================================
+
+/**
+ * Search for companies by name using Finnhub API
+ * @param query - Company name or partial name to search for
+ * @returns Search response with matching companies
+ */
+export const searchCompaniesByName = async (
+  query: string
+): Promise<FinnhubSearchResponseDTO> => {
+  return apiFetch<FinnhubSearchResponseDTO>('/api/stocks/finnhub/search', {
+    method: 'GET',
+    requireAuth: false,
+    queryParams: {
+      query: query,
+    },
+  });
 };

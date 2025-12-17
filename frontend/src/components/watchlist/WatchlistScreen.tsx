@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { getWatchlist, removeFromWatchlist } from '@/src/services/portfolioService';
 import { useFocusEffect } from '@react-navigation/native';
 import { getSectorColor } from '@/src/services/sectorColorService';
+import {StockDTO} from "@/src/types/api";
 
 interface WatchlistStock {
     watchlistId: string;

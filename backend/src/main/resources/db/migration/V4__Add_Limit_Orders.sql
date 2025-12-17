@@ -1,4 +1,4 @@
--- V2__Add_Limit_Orders.sql
+-- V4__Add_Limit_Orders.sql
 -- Add limit order support to Personal Investment Portfolio Tracker
 -- Creates orders table and indexes for pending order queries
 

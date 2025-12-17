@@ -140,6 +140,11 @@ export default function BuyTransactionPage() {
             return;
         }
 
+        if (priceType === 'limit' && parseFloat(limitPrice) > currentPrice) {
+            Alert.alert('Invalid Limit Price', `BUY limit price must be ≤ current price of A${currentPrice.toFixed(2)}`);
+            return;
+        }
+
         console.log('🛒 Buy Transaction Initiation');
         console.log('  Account ID:', activeAccount.accountId);
         console.log('  Account Name:', activeAccount.accountName);
@@ -159,9 +164,18 @@ export default function BuyTransactionPage() {
                     onPress: async () => {
                         setLoading(true);
                         try {
+                            console.log('🛍️ BUY: Starting order placement...');
+                            console.log('  Stock Symbol:', stockData.symbol);
+                            console.log('  Order Type:', priceType);
+                            console.log('  Shares:', shareCount);
+                            console.log('  Limit Price (if limit):', limitPrice);
+                            console.log('  Effective Price:', effectivePrice);
+
                             const stock = await getOrCreateStockBySymbol(stockData.symbol);
+                            console.log('✅ BUY: Stock retrieved/created:', stock.stockId, stock.stockCode);
 
                             if (priceType === 'limit') {
+                                console.log('🎯 BUY: Creating LIMIT order...');
                                 // Create a limit order
                                 const orderRequest: CreateOrderRequest = {
                                     stockId: stock.stockId,
@@ -171,10 +185,25 @@ export default function BuyTransactionPage() {
                                     orderType: 'BUY_LIMIT' as OrderType,
                                 };
 
-                                await createOrder(orderRequest);
+                                console.log('📤 BUY: Sending limit order request:', {
+                                  stockId: orderRequest.stockId,
+                                  accountId: orderRequest.accountId,
+                                  quantity: orderRequest.quantity,
+                                  limitPrice: orderRequest.limitPrice,
+                                  orderType: orderRequest.orderType,
+                                });
+
+                                const response = await createOrder(orderRequest);
+                                console.log('✅ BUY: Limit order created successfully!', {
+                                  orderId: response.orderId,
+                                  status: response.status,
+                                  createdAt: response.createdAt,
+                                });
+
                                 Alert.alert('Success', `Limit order placed! Your order will execute when ${stockData.symbol} reaches A$${limitPrice} or below.`);
                                 router.back();
                             } else {
+                                console.log('📊 BUY: Creating MARKET order...');
                                 // Create a market order
                                 const transactionRequest: CreateTransactionRequest = {
                                     stockId: stock.stockId,
@@ -184,12 +213,31 @@ export default function BuyTransactionPage() {
                                     transactionType: 'BUY' as TransactionType,
                                 };
 
-                                await createTransaction(transactionRequest);
+                                console.log('📤 BUY: Sending market transaction request:', {
+                                  stockId: transactionRequest.stockId,
+                                  accountId: transactionRequest.accountId,
+                                  shareQuantity: transactionRequest.shareQuantity,
+                                  pricePerShare: transactionRequest.pricePerShare,
+                                  transactionType: transactionRequest.transactionType,
+                                });
+
+                                const response = await createTransaction(transactionRequest);
+                                console.log('✅ BUY: Market transaction completed!', {
+                                  transactionId: response.transactionId,
+                                  transactionType: response.transactionType,
+                                  createdAt: response.createdAt,
+                                });
+
                                 Alert.alert('Success', `Successfully purchased ${shareCount} shares of ${stockData.symbol}!`);
                                 router.back();
                             }
                         } catch (error: any) {
-                            console.error('Transaction error:', error);
+                            console.error('❌ BUY: Error occurred:', {
+                              message: error.message,
+                              code: error.code,
+                              status: error.status,
+                              fullError: error,
+                            });
                             Alert.alert('Error', error.message || 'Failed to complete transaction');
                         } finally {
                             setLoading(false);

@@ -191,6 +191,11 @@ export default function SellTransactionPage() {
             return;
         }
 
+        if (priceType === 'limit' && parseFloat(limitPrice) < currentPrice) {
+            Alert.alert('Invalid Limit Price', `SELL limit price must be ≥ current price of A${currentPrice.toFixed(2)}`);
+            return;
+        }
+
         console.log('💰 Sell Transaction Initiation');
         console.log('  Account ID:', activeAccount.accountId);
         console.log('  Account Name:', activeAccount.accountName);
@@ -212,9 +217,19 @@ export default function SellTransactionPage() {
                     onPress: async () => {
                         setLoading(true);
                         try {
+                            console.log('💰 SELL: Starting order placement...');
+                            console.log('  Stock Symbol:', stockData.symbol);
+                            console.log('  Order Type:', priceType);
+                            console.log('  Shares to Sell:', shareCount);
+                            console.log('  Currently Owned:', ownedShares);
+                            console.log('  Limit Price (if limit):', limitPrice);
+                            console.log('  Effective Price:', effectivePrice);
+
                             const stock = await getOrCreateStockBySymbol(stockData.symbol);
+                            console.log('✅ SELL: Stock retrieved/created:', stock.stockId, stock.stockCode);
 
                             if (priceType === 'limit') {
+                                console.log('🎯 SELL: Creating LIMIT order...');
                                 // Create a limit order
                                 const orderRequest: CreateOrderRequest = {
                                     stockId: stock.stockId,
@@ -224,10 +239,25 @@ export default function SellTransactionPage() {
                                     orderType: 'SELL_LIMIT' as OrderType,
                                 };
 
-                                await createOrder(orderRequest);
+                                console.log('📤 SELL: Sending limit order request:', {
+                                  stockId: orderRequest.stockId,
+                                  accountId: orderRequest.accountId,
+                                  quantity: orderRequest.quantity,
+                                  limitPrice: orderRequest.limitPrice,
+                                  orderType: orderRequest.orderType,
+                                });
+
+                                const response = await createOrder(orderRequest);
+                                console.log('✅ SELL: Limit order created successfully!', {
+                                  orderId: response.orderId,
+                                  status: response.status,
+                                  createdAt: response.createdAt,
+                                });
+
                                 Alert.alert('Success', `Limit order placed! Your order will execute when ${stockData.symbol} reaches A$${limitPrice} or above.`);
                                 router.back();
                             } else {
+                                console.log('📊 SELL: Creating MARKET order...');
                                 // Create a market order
                                 const transactionRequest: CreateTransactionRequest = {
                                     stockId: stock.stockId,
@@ -237,12 +267,31 @@ export default function SellTransactionPage() {
                                     transactionType: 'SELL' as TransactionType,
                                 };
 
-                                await createTransaction(transactionRequest);
+                                console.log('📤 SELL: Sending market transaction request:', {
+                                  stockId: transactionRequest.stockId,
+                                  accountId: transactionRequest.accountId,
+                                  shareQuantity: transactionRequest.shareQuantity,
+                                  pricePerShare: transactionRequest.pricePerShare,
+                                  transactionType: transactionRequest.transactionType,
+                                });
+
+                                const response = await createTransaction(transactionRequest);
+                                console.log('✅ SELL: Market transaction completed!', {
+                                  transactionId: response.transactionId,
+                                  transactionType: response.transactionType,
+                                  createdAt: response.createdAt,
+                                });
+
                                 Alert.alert('Success', `Successfully sold ${shareCount} shares of ${stockData.symbol}!`);
                                 router.back();
                             }
                         } catch (error: any) {
-                            console.error('Transaction error:', error);
+                            console.error('❌ SELL: Error occurred:', {
+                              message: error.message,
+                              code: error.code,
+                              status: error.status,
+                              fullError: error,
+                            });
                             Alert.alert('Error', error.message || 'Failed to complete transaction');
                         } finally {
                             setLoading(false);
