@@ -50,13 +50,15 @@ export const removeAuthToken = async (): Promise<void> => {
  */
 interface FetchOptions extends RequestInit {
   requireAuth?: boolean;
+  queryParams?: Record<string, any>;
+  signal?: AbortSignal;
 }
 
 export const apiFetch = async <T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<T> => {
-  const { requireAuth = false, headers = {}, ...restOptions } = options;
+  const { requireAuth = false, headers = {}, queryParams = {}, signal, ...restOptions } = options;
 
   const defaultHeaders: HeadersInit = {
     'Content-Type': 'application/json',
@@ -76,20 +78,40 @@ export const apiFetch = async <T>(
   if (!cachedBaseUrl) {
     cachedBaseUrl = await getBackendUrl();
   }
-  const url = `${cachedBaseUrl}${endpoint}`;
+
+  // Build URL with query parameters if provided
+  let url = `${cachedBaseUrl}${endpoint}`;
+  if (Object.keys(queryParams).length > 0) {
+    const queryString = buildQueryString(queryParams);
+    url += queryString;
+    console.log('📍 apiFetch: Query parameters added');
+    console.log('  Final URL:', url);
+  }
+
+  console.log('📍 apiFetch request:');
+  console.log('  Endpoint:', endpoint);
+  console.log('  Full URL:', url);
+  console.log('  Method:', restOptions.method || 'GET');
 
   try {
     const response = await fetch(url, {
       ...restOptions,
+      signal,
       headers: {
         ...defaultHeaders,
         ...headers,
       },
     });
 
+    console.log('  Response status:', response.status);
+    console.log('  Response ok:', response.ok);
+
     // Handle different response statuses
     if (!response.ok) {
       const errorData = await response.text();
+      console.error('  ❌ Response error:');
+      console.error('    Status:', response.status);
+      console.error('    Error body:', errorData);
 
       switch (response.status) {
         case 400:
@@ -99,7 +121,7 @@ export const apiFetch = async <T>(
         case 404:
           throw new Error('Resource not found');
         case 500:
-          throw new Error('Server error: Please try again later');
+          throw new Error(`Server error: ${errorData}`);
         case 503:
           throw new Error('Service unavailable: External API temporarily unavailable');
         default:
@@ -109,13 +131,16 @@ export const apiFetch = async <T>(
 
     // Handle 204 No Content
     if (response.status === 204) {
+      console.log('  ✅ 204 No Content response');
       return undefined as T;
     }
 
     // Parse JSON response
     const data = await response.json();
+    console.log('  ✅ Response parsed successfully');
     return data as T;
   } catch (error) {
+    console.error('  ❌ apiFetch catch block error:', error);
     if (error instanceof Error) {
       throw error;
     }

@@ -19,7 +19,7 @@ import type {
     PortfolioOverviewDTO,
     PortfolioSnapshotDTO,
     CreatePortfolioSnapshotRequest, WatchlistCheckResponse,
-    FinnhubSearchResponseDTO,
+    FinnhubSearchResponseDTO, FinnhubSearchResultDTO,
 } from '../types/api';
 
 // ============================================================================
@@ -600,16 +600,27 @@ export const sortHoldingsByGainPercent = (
 /**
  * Search for companies by name using Finnhub API
  * @param query - Company name or partial name to search for
- * @returns Search response with matching companies
+ * @returns Array of matching companies
  */
 export const searchCompaniesByName = async (
-  query: string
-): Promise<FinnhubSearchResponseDTO> => {
-  return apiFetch<FinnhubSearchResponseDTO>('/api/stocks/finnhub/search', {
-    method: 'GET',
-    requireAuth: false,
-    queryParams: {
-      query: query,
-    },
-  });
+    query: string
+): Promise<FinnhubSearchResultDTO[]> => {
+    console.log('📡 portfolioService.searchCompaniesByName()');
+    console.log('  Query:', query);
+    try {
+        console.log('  🚀 Calling apiFetch with GET /api/stocks/finnhub/search...');
+        const result = await apiFetch<FinnhubSearchResultDTO[]>('/api/stocks/finnhub/search', {
+            method: 'GET',
+            requireAuth: false,
+            queryParams: {
+                query: query,
+            },
+        });
+        console.log('  ✅ Response received:', result);
+        return result;
+    } catch (error: any) {
+        console.error('  ❌ apiFetch error:', error);
+        console.error('    Error message:', error?.message);
+        throw error;
+    }
 };

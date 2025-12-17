@@ -873,7 +873,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                         style={[styles.actionButton, { backgroundColor: Colors.tint }]}
                     >
                         <MaterialCommunityIcons name="plus" size={18} color="white" />
-                        <Text style={styles.actionButtonText}>Buy</Text>
+                        <Text style={styles.actionButtonText}>Invest</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => {

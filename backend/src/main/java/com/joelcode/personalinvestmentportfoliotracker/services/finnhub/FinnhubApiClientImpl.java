@@ -79,14 +79,34 @@ public class FinnhubApiClientImpl implements FinnhubApiClient {
     @Override
     public FinnhubSearchResponseDTO searchCompanies(String query) {
         try {
+            System.out.println("  📡 FinnhubApiClientImpl.searchCompanies()");
+            System.out.println("    Query: " + query);
+            System.out.println("    Base URL: " + baseUrl);
+
             // Use UriComponentsBuilder to properly encode the query parameter
             URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl + "/search")
                     .queryParam("q", query)
                     .queryParam("token", apiKey)
                     .build()
                     .toUri();
-            return restTemplate.getForObject(uri, FinnhubSearchResponseDTO.class);
-        } catch (RestClientException e) {
+
+            System.out.println("    🔗 Built URI: " + uri.toString());
+            System.out.println("    🚀 Calling Finnhub API...");
+
+            FinnhubSearchResponseDTO response = restTemplate.getForObject(uri, FinnhubSearchResponseDTO.class);
+
+            System.out.println("    ✅ Response received from Finnhub");
+            System.out.println("    📊 Response object: " + (response != null ? "Not null" : "NULL"));
+            if (response != null) {
+                System.out.println("    📊 Result count: " + (response.getResult() != null ? response.getResult().size() : "null"));
+                System.out.println("    📊 Count field: " + response.getCount());
+            }
+
+            return response;
+        } catch (Exception e) {
+            System.out.println("    ❌ Finnhub API Error: " + e.getClass().getSimpleName());
+            System.out.println("    📝 Message: " + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("Failed to search companies for query: " + query, e);
         }
     }

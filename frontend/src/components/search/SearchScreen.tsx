@@ -1,5 +1,5 @@
 import { getSectorColor } from '@/src/services/sectorColorService';
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
     View,
     Text,
@@ -14,10 +14,16 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
 import { useRouter } from 'expo-router';
-import { addToWatchlist, removeFromWatchlist, getWatchlist, searchCompaniesByName } from '@/src/services/portfolioService';
+import {
+    addToWatchlist,
+    removeFromWatchlist,
+    getWatchlist,
+    searchCompaniesByName
+} from '@/src/services/portfolioService';
 import { getOrCreateStockBySymbol } from '@/src/services/entityService';
-import { FinnhubCompanyProfileDTO, FinnhubQuoteDTO, FinnhubSearchResponseDTO } from '@/src/types/api';
+import { FinnhubCompanyProfileDTO, FinnhubQuoteDTO, FinnhubSearchResultDTO } from '@/src/types/api';
 import { useFocusEffect } from '@react-navigation/native';
+import { useDebounce } from '@/src/hooks/useDebounce';
 
 // Popular stocks to display on initial load
 const POPULAR_STOCK_SYMBOLS = ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'TSLA', 'AMZN', 'AMD', 'META'];
@@ -280,6 +286,10 @@ export default function SearchScreen() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearchQuery = useDebounce(searchQuery, 300);
+    const searchIdRef = useRef(0);
+    const abortControllerRef = useRef<AbortController | null>(null);
+
     const [filters, setFilters] = useState<SearchFilters>({
         sector: null,
         marketCap: null,
@@ -352,6 +362,44 @@ export default function SearchScreen() {
             loadWatchlistStatus();
         }, [loadWatchlistStatus])
     );
+
+    // Effect to trigger search when debounced query changes
+    useEffect(() => {
+        console.log(`🔄 Debounced query changed: "${debouncedSearchQuery}"`);
+
+        // Cancel any in-flight search
+        if (abortControllerRef.current) {
+            console.log('  ❌ Aborting previous search');
+            abortControllerRef.current.abort();
+        }
+
+        // Clear results if query is empty
+        if (!debouncedSearchQuery.trim()) {
+            console.log('  ✅ Empty query, clearing results');
+            setSearchResults([]);
+            setLoadingSearch(false);
+            return;
+        }
+
+        // Increment search ID to track this search
+        searchIdRef.current += 1;
+        const currentSearchId = searchIdRef.current;
+
+        // Create new AbortController for this search
+        const abortController = new AbortController();
+        abortControllerRef.current = abortController;
+
+        console.log(`  🚀 Starting search ${currentSearchId} for "${debouncedSearchQuery}"`);
+
+        // Execute the search
+        handleSearch(debouncedSearchQuery, currentSearchId, abortController.signal);
+
+        // Cleanup: abort on unmount or when dependency changes
+        return () => {
+            console.log(`  🧹 Cleanup for search ${currentSearchId}`);
+            abortController.abort();
+        };
+    }, [debouncedSearchQuery, allStocks]); // Re-run when debounced query or stock list changes
 
     const loadPopularStocks = async () => {
         setLoadingStocks(true);
@@ -433,23 +481,139 @@ export default function SearchScreen() {
         return `${marketCap.toFixed(0)}M`;
     };
 
-    // ✅ NEW: Search Finnhub for company by name
-    const searchFinnhubByCompanyName = async (companyName: string): Promise<Stock | null> => {
+    /**
+     * Fetch stock data with AbortSignal support for cancellation
+     */
+    const fetchStockDataWithCancellation = async (
+        symbol: string,
+        signal: AbortSignal
+    ): Promise<Stock | null> => {
         try {
-            // Call backend endpoint to search Finnhub by company name
-            const searchResponse: FinnhubSearchResponseDTO = await searchCompaniesByName(companyName);
+            const apiUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
-            // Check if we have results
-            if (!searchResponse || !searchResponse.result || searchResponse.result.length === 0) {
-                console.warn(`No search results found for company: ${companyName}`);
+            // Pass signal to fetch for cancellation support
+            const [profileResponse, quoteResponse] = await Promise.all([
+                fetch(`${apiUrl}/api/stocks/finnhub/profile/${symbol}`, { signal }),
+                fetch(`${apiUrl}/api/stocks/finnhub/quote/${symbol}`, { signal })
+            ]);
+
+            if (!profileResponse.ok || !quoteResponse.ok) {
+                console.warn(`Failed to fetch data for ${symbol}`);
+                return null;
+            }
+
+            const profile: FinnhubCompanyProfileDTO = await profileResponse.json();
+            const quote: FinnhubQuoteDTO = await quoteResponse.json();
+
+            if (!quote || !quote.c || !quote.pc) {
+                console.warn(`Invalid quote data for ${symbol}`);
+                return null;
+            }
+
+            const currentPrice = quote.c || 0;
+            const previousClose = quote.pc || currentPrice;
+            const change = currentPrice - previousClose;
+            const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0;
+
+            return {
+                id: symbol,
+                symbol: symbol,
+                name: profile?.name || profile?.companyName || symbol,
+                price: currentPrice,
+                change: change,
+                changePercent: changePercent,
+                sector: profile?.finnhubIndustry || profile?.industry || 'Other',
+                marketCap: formatMarketCap(profile?.marketCapitalization || 0),
+                profile: profile,
+                quote: quote,
+            };
+        } catch (error: any) {
+            // Re-throw AbortError so caller can handle it
+            if (error.name === 'AbortError') {
+                throw error;
+            }
+            console.error(`Error fetching stock data for ${symbol}:`, error);
+            return null;
+        }
+    };
+
+    /**
+     * Search Finnhub by company name with AbortSignal support
+     */
+    const searchFinnhubByCompanyNameWithCancellation = async (
+        companyName: string,
+        signal: AbortSignal
+    ): Promise<Stock | null> => {
+        try {
+            console.log('🔍 searchFinnhubByCompanyNameWithCancellation called');
+            console.log('  Company name:', companyName);
+
+            const apiUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+            const url = `${apiUrl}/api/stocks/finnhub/search?query=${encodeURIComponent(companyName)}`;
+
+            const response = await fetch(url, { signal });
+
+            if (!response.ok) {
+                console.log('  ❌ Finnhub search failed');
+                return null;
+            }
+
+            const results: FinnhubSearchResultDTO[] = await response.json();
+            console.log('  📊 Results received:', results?.length || 0);
+
+            if (!Array.isArray(results) || results.length === 0) {
+                console.log('  ❌ No results or not an array');
                 return null;
             }
 
             // Take the first result (best match)
-            const bestMatch = searchResponse.result[0];
+            const bestMatch = results[0];
+            console.log('  🎯 Best match:', bestMatch);
 
             // Fetch full stock data for this ticker
             if (bestMatch.symbol) {
+                console.log('  🚀 Fetching full stock data for symbol:', bestMatch.symbol);
+                return await fetchStockDataWithCancellation(bestMatch.symbol, signal);
+            }
+
+            return null;
+        } catch (error: any) {
+            // Re-throw AbortError
+            if (error.name === 'AbortError') {
+                throw error;
+            }
+            console.error('Finnhub company search failed:', error);
+            return null;
+        }
+    };
+
+    // ✅ NEW: Search Finnhub for company by name (using portfolioService)
+    const searchFinnhubByCompanyName = async (companyName: string): Promise<Stock | null> => {
+        try {
+            console.log('🔍 searchFinnhubByCompanyName called');
+            console.log('  Company name:', companyName);
+
+            // Use portfolioService instead of direct fetch
+            const results = await searchCompaniesByName(companyName);
+
+            console.log('  📊 Results received:', results);
+            console.log('  📊 Is array?', Array.isArray(results));
+            console.log('  📊 Results length:', results?.length);
+
+            // Results should now be an array directly
+            if (!Array.isArray(results) || results.length === 0) {
+                console.log('  ❌ No results or not an array');
+                return null;
+            }
+
+            // Take the first result (best match)
+            const bestMatch = results[0];
+
+            console.log('  🎯 Best match:', bestMatch);
+
+            // Fetch full stock data for this ticker
+            if (bestMatch.symbol) {
+                console.log('  🚀 Fetching full stock data for symbol:', bestMatch.symbol);
                 return await fetchStockData(bestMatch.symbol);
             }
 
@@ -460,49 +624,85 @@ export default function SearchScreen() {
         }
     };
 
-    // ✅ NEW: Fuzzy search implementation with Finnhub API fallback
-    const handleSearch = async (query: string) => {
-        setSearchQuery(query);
+    // ✅ NEW: Fuzzy search implementation with Finnhub API fallback and cancellation support
+    const handleSearch = async (query: string, searchId: number, signal: AbortSignal) => {
+        console.log(`🔍 handleSearch called (searchId: ${searchId}, query: "${query}")`);
 
         if (!query.trim()) {
+            console.log(`  ❌ Empty query, clearing results`);
             setSearchResults([]);
+            setLoadingSearch(false);
             return;
         }
 
         setLoadingSearch(true);
-        try {
-            // Try fetching the query as a stock ticker
-            const stock = await fetchStockData(query.toUpperCase());
 
-            if (stock) {
-                setSearchResults([stock]);
-                await addToRecentSearches(query);
-                setLoadingSearch(false);
+        try {
+            // Strategy 1: Try fetching as ticker symbol
+            console.log(`  [${searchId}] Strategy 1: Trying as ticker symbol "${query.toUpperCase()}"`);
+            const stock = await fetchStockDataWithCancellation(query.toUpperCase(), signal);
+
+            if (signal.aborted) {
+                console.log(`  [${searchId}] ❌ Aborted during ticker fetch`);
                 return;
             }
 
-            // If not a valid ticker, do fuzzy search on popular stocks
+            if (stock) {
+                // Check if this is still the latest search
+                if (searchIdRef.current === searchId) {
+                    console.log(`  [${searchId}] ✅ Found as ticker, updating results`);
+                    setSearchResults([stock]);
+                    await addToRecentSearches(query);
+                } else {
+                    console.log(`  [${searchId}] ⚠️ Outdated search (current: ${searchIdRef.current}), ignoring`);
+                }
+                return;
+            }
+
+            // Strategy 2: Fuzzy search on popular stocks
+            console.log(`  [${searchId}] Strategy 2: Fuzzy search on popular stocks`);
             const fuzzyResults = allStocks.filter(s =>
                 fuzzySearch(query, s.symbol, s.name)
             );
 
+            if (signal.aborted) {
+                console.log(`  [${searchId}] ❌ Aborted during fuzzy search`);
+                return;
+            }
+
             if (fuzzyResults.length > 0) {
-                setSearchResults(fuzzyResults);
-                await addToRecentSearches(query);
-                setLoadingSearch(false);
+                if (searchIdRef.current === searchId) {
+                    console.log(`  [${searchId}] ✅ Found ${fuzzyResults.length} fuzzy matches, updating results`);
+                    setSearchResults(fuzzyResults);
+                    await addToRecentSearches(query);
+                } else {
+                    console.log(`  [${searchId}] ⚠️ Outdated search (current: ${searchIdRef.current}), ignoring`);
+                }
                 return;
             }
 
-            // ✅ NEW: Try searching Finnhub by company name directly
-            const finnhubResult = await searchFinnhubByCompanyName(query);
+            // Strategy 3: Search Finnhub by company name
+            console.log(`  [${searchId}] Strategy 3: Searching Finnhub by company name`);
+            const finnhubResult = await searchFinnhubByCompanyNameWithCancellation(query, signal);
+
+            if (signal.aborted) {
+                console.log(`  [${searchId}] ❌ Aborted during Finnhub search`);
+                return;
+            }
+
             if (finnhubResult) {
-                setSearchResults([finnhubResult]);
-                await addToRecentSearches(query);
-                setLoadingSearch(false);
+                if (searchIdRef.current === searchId) {
+                    console.log(`  [${searchId}] ✅ Found via Finnhub, updating results`);
+                    setSearchResults([finnhubResult]);
+                    await addToRecentSearches(query);
+                } else {
+                    console.log(`  [${searchId}] ⚠️ Outdated search (current: ${searchIdRef.current}), ignoring`);
+                }
                 return;
             }
 
-            // Try ticker pattern extraction as fallback
+            // Strategy 4: Ticker pattern extraction
+            console.log(`  [${searchId}] Strategy 4: Ticker pattern extraction`);
             const companyPattern = query.toUpperCase().trim();
             const tickerPatterns = [
                 companyPattern.replace(/\s+/g, ''),
@@ -511,24 +711,48 @@ export default function SearchScreen() {
             ];
 
             for (const pattern of tickerPatterns) {
+                if (signal.aborted) {
+                    console.log(`  [${searchId}] ❌ Aborted during pattern extraction`);
+                    return;
+                }
+
                 if (pattern.length > 0 && pattern.length <= 4) {
-                    const result = await fetchStockData(pattern);
+                    const result = await fetchStockDataWithCancellation(pattern, signal);
                     if (result) {
-                        setSearchResults([result]);
-                        await addToRecentSearches(query);
-                        setLoadingSearch(false);
+                        if (searchIdRef.current === searchId) {
+                            console.log(`  [${searchId}] ✅ Found via pattern "${pattern}", updating results`);
+                            setSearchResults([result]);
+                            await addToRecentSearches(query);
+                        } else {
+                            console.log(`  [${searchId}] ⚠️ Outdated search (current: ${searchIdRef.current}), ignoring`);
+                        }
                         return;
                     }
                 }
             }
 
             // No results found
-            setSearchResults([]);
-        } catch (error) {
-            console.error('Search failed:', error);
-            setSearchResults([]);
+            if (searchIdRef.current === searchId) {
+                console.log(`  [${searchId}] ❌ No results found`);
+                setSearchResults([]);
+            } else {
+                console.log(`  [${searchId}] ⚠️ Outdated search (current: ${searchIdRef.current}), ignoring no results`);
+            }
+        } catch (error: any) {
+            // Ignore abort errors - they're expected
+            if (error.name === 'AbortError') {
+                console.log(`  [${searchId}] ❌ Search aborted`);
+                return;
+            }
+
+            console.error(`  [${searchId}] ❌ Search failed:`, error);
+            if (searchIdRef.current === searchId) {
+                setSearchResults([]);
+            }
         } finally {
-            setLoadingSearch(false);
+            if (searchIdRef.current === searchId) {
+                setLoadingSearch(false);
+            }
         }
     };
 
@@ -570,8 +794,9 @@ export default function SearchScreen() {
     };
 
     // ✅ NEW: Handle recent search tap
-    const handleRecentSearch = async (query: string) => {
-        await handleSearch(query);
+    const handleRecentSearch = (query: string) => {
+        // Just set the query - useEffect will handle the search
+        setSearchQuery(query);
     };
 
     const toggleWatchlist = async (symbol: string) => {
@@ -658,10 +883,14 @@ export default function SearchScreen() {
                         placeholder="Search by symbol or name (e.g. AAPL or Apple)..."
                         placeholderTextColor={Colors.text + '99'}
                         value={searchQuery}
-                        onChangeText={handleSearch}
+                        onChangeText={setSearchQuery}
                     />
                     {searchQuery ? (
-                        <TouchableOpacity onPress={() => handleSearch('')}>
+                        <TouchableOpacity onPress={() => {
+                            setSearchQuery('');
+                            setSearchResults([]);
+                            setLoadingSearch(false);
+                        }}>
                             <MaterialCommunityIcons
                                 name="close-circle"
                                 size={20}

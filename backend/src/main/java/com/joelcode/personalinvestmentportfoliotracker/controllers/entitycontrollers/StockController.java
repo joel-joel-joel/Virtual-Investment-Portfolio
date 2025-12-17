@@ -156,17 +156,48 @@ public class StockController {
         }
     }
 
-    // Search for companies by name from FinnHub
+    // ✅ FIXED: Search for companies by name from FinnHub
     @GetMapping("/finnhub/search")
     public ResponseEntity<?> searchCompanies(@RequestParam String query) {
+        System.out.println("\n🔍 FINNHUB SEARCH: Incoming request");
+        System.out.println("  Query: " + query);
+
         try {
             if (query == null || query.trim().isEmpty()) {
+                System.out.println("  ❌ Query is empty or null");
                 return ResponseEntity.badRequest().body("Search query cannot be empty");
             }
+
+            System.out.println("  ✅ Query validated: " + query.trim());
+            System.out.println("  🚀 Calling finnhubApiClient.searchCompanies()...");
+
             FinnhubSearchResponseDTO results = finnhubApiClient.searchCompanies(query);
-            return ResponseEntity.ok(results);
+
+            System.out.println("  ✅ Search successful!");
+
+            if (results == null || results.getResult() == null) {
+                System.out.println("  ⚠️ Results object or result list is null");
+                return ResponseEntity.ok(new java.util.ArrayList<>());
+            }
+
+            System.out.println("  📊 Results count: " + results.getResult().size());
+
+            for (int i = 0; i < results.getResult().size(); i++) {
+                var item = results.getResult().get(i);
+                System.out.println("    [" + i + "] " + item.getSymbol() + " - " + item.getDescription());
+            }
+
+            // ✅ Return just the result array
+            return ResponseEntity.ok(results.getResult());
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error searching companies for query: " + query);
+            System.out.println("  ❌ Error occurred: " + e.getClass().getSimpleName());
+            System.out.println("  📝 Error message: " + e.getMessage());
+            e.printStackTrace();
+
+            return ResponseEntity.status(500).body(
+                    String.format("Error searching companies for query: %s - %s", query, e.getMessage())
+            );
         }
     }
 }
