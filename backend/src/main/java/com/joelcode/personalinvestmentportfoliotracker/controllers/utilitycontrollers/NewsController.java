@@ -1,7 +1,7 @@
 package com.joelcode.personalinvestmentportfoliotracker.controllers.utilitycontrollers;
 
 import com.joelcode.personalinvestmentportfoliotracker.dto.news.NewsArticleDTO;
-import com.joelcode.personalinvestmentportfoliotracker.services.news.MarketAuxApiClient;
+import com.joelcode.personalinvestmentportfoliotracker.services.news.NewsApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +16,9 @@ import java.util.List;
 @Profile("!test")
 public class NewsController {
 
+
     @Autowired
-    private MarketAuxApiClient marketAuxApiClient;
+    private NewsApiClient newsApiClient;
 
     /**
      * Get all news with optional limit
@@ -29,7 +30,7 @@ public class NewsController {
             @RequestParam(value = "limit", defaultValue = "50") int limit
     ) {
         try {
-            List<NewsArticleDTO> news = marketAuxApiClient.getAllNews(limit);
+            List<NewsArticleDTO> news = newsApiClient.getAllNews(limit);
             return ResponseEntity.ok(news);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -49,7 +50,7 @@ public class NewsController {
             @RequestParam(value = "limit", defaultValue = "50") int limit
     ) {
         try {
-            List<NewsArticleDTO> news = marketAuxApiClient.getNewsBySector(sector, limit);
+            List<NewsArticleDTO> news = newsApiClient.getNewsBySector(sector, limit);
             return ResponseEntity.ok(news);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(List.of());
@@ -70,10 +71,29 @@ public class NewsController {
     ) {
         try {
             // Pass raw sectors directly to API (no mapping needed anymore)
-            List<NewsArticleDTO> news = marketAuxApiClient.getNewsByIndustries(
+            List<NewsArticleDTO> news = newsApiClient.getNewsByIndustries(
                     sectors,
                     limit
             );
+            return ResponseEntity.ok(news);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(List.of());
+        }
+    }
+
+    /**
+     * Get news by stock symbol
+     * @param symbol Stock symbol (e.g., "AAPL")
+     * @param limit Maximum number of articles to return
+     * @return List of news articles for the specified symbol
+     */
+    @GetMapping("/symbol/{symbol}")
+    public ResponseEntity<List<NewsArticleDTO>> getNewsBySymbol(
+            @PathVariable String symbol,
+            @RequestParam(value = "limit", defaultValue = "50") int limit
+    ) {
+        try {
+            List<NewsArticleDTO> news = newsApiClient.getNewsBySymbol(symbol, limit);
             return ResponseEntity.ok(news);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(List.of());
@@ -92,7 +112,7 @@ public class NewsController {
             @RequestParam(value = "limit", defaultValue = "500") int limit
     ) {
         try {
-            List<NewsArticleDTO> allNews = marketAuxApiClient.getAllNews(limit);
+            List<NewsArticleDTO> allNews = newsApiClient.getAllNews(limit);
 
             // Extract unique sectors
             List<String> uniqueSectors = new ArrayList<>();

@@ -176,7 +176,7 @@ export const calculateVolatility = async (
 
 /**
  * Get news volume for a stock in the past 7 days
- * Queries MarketAux API for sector news, filters by symbol
+ * Queries Yahoo Finance-backed news API for sector news, filters by symbol
  */
 export const getNewsVolume = async (
     symbol: string,

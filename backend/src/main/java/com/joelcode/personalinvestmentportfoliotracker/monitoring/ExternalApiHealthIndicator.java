@@ -1,13 +1,13 @@
 package com.joelcode.personalinvestmentportfoliotracker.monitoring;
 
 import com.joelcode.personalinvestmentportfoliotracker.services.finnhub.FinnhubApiClient;
-import com.joelcode.personalinvestmentportfoliotracker.services.news.MarketAuxApiClient;
+import com.joelcode.personalinvestmentportfoliotracker.services.yahoofinance.YahooFinanceApiClient;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 /**
- * Custom Health Indicator for External APIs (FinnHub and MarketAux)
+ * Custom Health Indicator for External APIs (FinnHub and Yahoo Finance)
  *
  * This component checks the health of external API dependencies and reports
  * their status through Spring Boot Actuator's health endpoint.
@@ -18,12 +18,12 @@ import org.springframework.stereotype.Component;
 public class ExternalApiHealthIndicator implements HealthIndicator {
 
     private final FinnhubApiClient finnhubApiClient;
-    private final MarketAuxApiClient marketAuxApiClient;
+    private final YahooFinanceApiClient yahooFinanceApiClient;
 
     public ExternalApiHealthIndicator(FinnhubApiClient finnhubApiClient,
-                                     MarketAuxApiClient marketAuxApiClient) {
+                                     YahooFinanceApiClient yahooFinanceApiClient) {
         this.finnhubApiClient = finnhubApiClient;
-        this.marketAuxApiClient = marketAuxApiClient;
+        this.yahooFinanceApiClient = yahooFinanceApiClient;
     }
 
     @Override
@@ -31,11 +31,11 @@ public class ExternalApiHealthIndicator implements HealthIndicator {
         Health.Builder healthBuilder = new Health.Builder();
 
         boolean finnhubHealthy = checkFinnhubHealth();
-        boolean marketAuxHealthy = checkMarketAuxHealth();
+        boolean yahooHealthy = checkYahooFinanceHealth();
 
-        if (finnhubHealthy && marketAuxHealthy) {
+        if (finnhubHealthy && yahooHealthy) {
             healthBuilder.up();
-        } else if (!finnhubHealthy && !marketAuxHealthy) {
+        } else if (!finnhubHealthy && !yahooHealthy) {
             healthBuilder.down();
         } else {
             healthBuilder.status("DEGRADED");
@@ -43,8 +43,8 @@ public class ExternalApiHealthIndicator implements HealthIndicator {
 
         healthBuilder
             .withDetail("finnhub", finnhubHealthy ? "UP" : "DOWN")
-            .withDetail("marketaux", marketAuxHealthy ? "UP" : "DOWN")
-            .withDetail("message", getStatusMessage(finnhubHealthy, marketAuxHealthy));
+            .withDetail("yahooFinance", yahooHealthy ? "UP" : "DOWN")
+            .withDetail("message", getStatusMessage(finnhubHealthy, yahooHealthy));
 
         return healthBuilder.build();
     }
@@ -59,27 +59,29 @@ public class ExternalApiHealthIndicator implements HealthIndicator {
         }
     }
 
-    private boolean checkMarketAuxHealth() {
+    private boolean checkYahooFinanceHealth() {
         try {
-            // Try to fetch news with minimal limit
-            marketAuxApiClient.getAllNews(1);
+            // Test both candles and search/news endpoints
+            yahooFinanceApiClient.getCandles("AAPL", "1d",
+                    System.currentTimeMillis() / 1000 - 86400,
+                    System.currentTimeMillis() / 1000);
+            yahooFinanceApiClient.search("AAPL");
             return true;
         } catch (Exception e) {
-            // Log the error for debugging but don't fail the health check completely
-            System.err.println("MarketAux API health check failed: " + e.getMessage());
+            System.err.println("Yahoo Finance API health check failed: " + e.getMessage());
             return false;
         }
     }
 
-    private String getStatusMessage(boolean finnhubHealthy, boolean marketAuxHealthy) {
-        if (finnhubHealthy && marketAuxHealthy) {
+    private String getStatusMessage(boolean finnhubHealthy, boolean yahooHealthy) {
+        if (finnhubHealthy && yahooHealthy) {
             return "All external APIs are operational";
-        } else if (!finnhubHealthy && !marketAuxHealthy) {
+        } else if (!finnhubHealthy && !yahooHealthy) {
             return "All external APIs are down";
         } else if (!finnhubHealthy) {
             return "FinnHub API is down";
         } else {
-            return "MarketAux API is down";
+            return "Yahoo Finance API is down";
         }
     }
 }

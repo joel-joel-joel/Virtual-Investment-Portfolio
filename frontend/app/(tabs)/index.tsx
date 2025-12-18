@@ -56,9 +56,9 @@ export default function HomeScreen() {
                 const formattedNews = newsData.map((article: NewsArticleDTO, index: number) => ({
                     id: index + 1,
                     title: article.title,
-                    description: article.summary,
+                    description: article.summary || '',
                     image: article.imageUrl || require('../../assets/images/apple.png'),
-                    content: article.summary,
+                    content: article.summary || `Read more at: ${article.url}`,
                     sector: article.sector
                 }));
                 setNewsItems(formattedNews);

@@ -131,7 +131,7 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
                                     style={[styles.newsDescription, { color: Colors.text, opacity: 0.7 }]}
                                     numberOfLines={1}
                                 >
-                                    {item.description}
+                                    {item.description || 'Click to read full article...'}
                                 </Text>
                             </View>
                             <MaterialCommunityIcons
@@ -195,7 +195,7 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
                                     <View style={styles.contentDivider} />
 
                                     <Text style={[styles.expandedContentText, { color: Colors.text }]}>
-                                        {activeNews.content}
+                                        {activeNews.content || activeNews.description || 'Click the link below to read the full article.'}
                                     </Text>
                                 </>
                             )}

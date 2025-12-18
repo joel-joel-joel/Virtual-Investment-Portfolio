@@ -3,7 +3,9 @@ package com.joelcode.personalinvestmentportfoliotracker.services.yahoofinance;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCandleDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.yahoofinance.YahooChartResponse;
 import com.joelcode.personalinvestmentportfoliotracker.dto.yahoofinance.YahooChartResult;
+import com.joelcode.personalinvestmentportfoliotracker.dto.yahoofinance.YahooNewsItem;
 import com.joelcode.personalinvestmentportfoliotracker.dto.yahoofinance.YahooQuote;
+import com.joelcode.personalinvestmentportfoliotracker.dto.yahoofinance.YahooSearchResponse;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -11,16 +13,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class YahooFinanceApiClientImpl implements YahooFinanceApiClient {
 
     private final RestTemplate restTemplate;
     private static final String YAHOO_FINANCE_API = "https://query2.finance.yahoo.com/v8/finance/chart";
+    private static final String YAHOO_SEARCH_API = "https://query2.finance.yahoo.com/v1/finance/search";
 
     public YahooFinanceApiClientImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -149,5 +154,63 @@ public class YahooFinanceApiClientImpl implements YahooFinanceApiClient {
         candles.setVolumes(new ArrayList<>());
         candles.setStatus("no_data");
         return candles;
+    }
+
+    @Override
+    public YahooSearchResponse search(String query) {
+        try {
+            String url = UriComponentsBuilder.fromHttpUrl(YAHOO_SEARCH_API)
+                    .queryParam("q", query)
+                    .queryParam("quotesCount", 10)
+                    .queryParam("newsCount", 25)
+                    .toUriString();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+            headers.set("Accept", "application/json");
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<YahooSearchResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    YahooSearchResponse.class
+            );
+
+            return response.getBody();
+        } catch (RestClientException e) {
+            throw new RuntimeException("Failed to search Yahoo Finance", e);
+        }
+    }
+
+    @Override
+    public List<YahooNewsItem> getNewsForSymbol(String symbol, int limit) {
+        try {
+            YahooSearchResponse searchResponse = search(symbol);
+            if (searchResponse == null || searchResponse.getNews() == null) {
+                return new ArrayList<>();
+            }
+            return searchResponse.getNews().stream()
+                    .limit(limit)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch news for symbol: " + symbol, e);
+        }
+    }
+
+    @Override
+    public List<YahooNewsItem> getGeneralNews(int limit) {
+        try {
+            YahooSearchResponse searchResponse = search("stock market");
+            if (searchResponse == null || searchResponse.getNews() == null) {
+                return new ArrayList<>();
+            }
+            return searchResponse.getNews().stream()
+                    .limit(limit)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch general market news", e);
+        }
     }
 }

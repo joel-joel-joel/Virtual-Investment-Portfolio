@@ -69,6 +69,27 @@ export const getNewsByMultipleSectors = async (
   });
 };
 
+/**
+ * Get news articles for a specific stock symbol
+ * @param symbol - Stock symbol (e.g., "AAPL")
+ * @param limit - Maximum number of articles to return (default: 50)
+ * @returns Array of news articles for the specified symbol
+ */
+export const getNewsBySymbol = async (
+  symbol: string,
+  limit: number = 50
+): Promise<NewsArticleDTO[]> => {
+  const queryString = buildQueryString({ limit });
+
+  return apiFetch<NewsArticleDTO[]>(
+    `/api/news/symbol/${symbol}${queryString}`,
+    {
+      method: 'GET',
+      requireAuth: false,
+    }
+  );
+};
+
 // ============================================================================
 // Error Handling Wrappers
 // ============================================================================
@@ -105,6 +126,25 @@ export const getAllNewsSafe = async (
     return await getAllNews(limit);
   } catch (error) {
     console.error('Failed to fetch all news:', error);
+    return [];
+  }
+};
+
+/**
+ * Get news by symbol with fallback handling
+ * Returns empty array if the symbol is invalid or API fails
+ * @param symbol - Stock symbol (e.g., "AAPL")
+ * @param limit - Maximum number of articles
+ * @returns News articles or empty array on error
+ */
+export const getNewsBySymbolSafe = async (
+  symbol: string,
+  limit: number = 50
+): Promise<NewsArticleDTO[]> => {
+  try {
+    return await getNewsBySymbol(symbol, limit);
+  } catch (error) {
+    console.error(`Failed to fetch news for symbol ${symbol}:`, error);
     return [];
   }
 };

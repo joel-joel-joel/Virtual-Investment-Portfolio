@@ -15,7 +15,8 @@ import { getThemeColors } from '@/src/constants/colors';
 import TransactionHistory from '@/src/components/transaction/TransactionHistory';
 import { getStockQuote, getCompanyProfile } from '@/src/services/entityService';
 import { searchCompaniesByName } from '@/src/services/portfolioService';
-import type { FinnhubQuoteDTO, FinnhubMetricsDTO } from '@/src/types/api';
+import { getNewsBySymbolSafe } from '@/src/services/newsService';
+import type { FinnhubQuoteDTO, FinnhubMetricsDTO, NewsArticleDTO } from '@/src/types/api';
 import { getSectorColor } from '@/src/services/sectorColorService';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { StockHeaderChart } from './StockHeaderChart';
@@ -132,6 +133,8 @@ export default function StockTickerScreen({ route }: { route?: any }) {
     const [loadingMetrics, setLoadingMetrics] = useState(false);
     const [compareAllStocks, setCompareAllStocks] = useState<CompareStockData[]>([]);
     const [loadingCompareAllStocks, setLoadingCompareAllStocks] = useState(false);
+    const [symbolNews, setSymbolNews] = useState<NewsArticleDTO[]>([]);
+    const [loadingSymbolNews, setLoadingSymbolNews] = useState(false);
 
     // Search management refs
     const compareSearchIdRef = useRef(0);
@@ -173,6 +176,26 @@ export default function StockTickerScreen({ route }: { route?: any }) {
 
         fetchMetrics();
     }, [stock?.symbol]);
+
+    // Fetch symbol-specific news when News tab is active
+    useEffect(() => {
+        const fetchSymbolNews = async () => {
+            if (!stock?.symbol || activeTab !== 'news') return;
+
+            setLoadingSymbolNews(true);
+            try {
+                const news = await getNewsBySymbolSafe(stock.symbol, 20);
+                setSymbolNews(news);
+            } catch (error) {
+                console.error(`Failed to fetch news for symbol ${stock.symbol}:`, error);
+                setSymbolNews([]);
+            } finally {
+                setLoadingSymbolNews(false);
+            }
+        };
+
+        fetchSymbolNews();
+    }, [activeTab, stock?.symbol]);
 
     /**
      * Fetch real-time data for comparison stock from Finnhub
@@ -569,11 +592,39 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                     {activeTab === 'news' && (
                         <View style={styles.statsSection}>
                             <Text style={[styles.sectionTitle, { color: Colors.text }]}>
-                                Latest News
+                                Latest News for {stock.symbol}
                             </Text>
-                            <Text style={[styles.placeholderText, { color: Colors.text, opacity: 0.6 }]}>
-                                News content will appear here
-                            </Text>
+                            {loadingSymbolNews ? (
+                                <ActivityIndicator size="large" color={Colors.tint} style={{ marginVertical: 20 }} />
+                            ) : symbolNews.length > 0 ? (
+                                <View style={{ gap: 12 }}>
+                                    {symbolNews.map((article, index) => (
+                                        <View
+                                            key={index}
+                                            style={[
+                                                styles.newsItemContainer,
+                                                { backgroundColor: Colors.card, borderLeftColor: getSectorColor(article.sector).color }
+                                            ]}
+                                        >
+                                            <Text style={[styles.newsItemTitle, { color: Colors.text }]} numberOfLines={2}>
+                                                {article.title}
+                                            </Text>
+                                            <Text style={[styles.newsItemMeta, { color: Colors.text, opacity: 0.6 }]}>
+                                                {article.sector} • {new Date(article.publishedAt).toLocaleDateString()}
+                                            </Text>
+                                            {article.summary && (
+                                                <Text style={[styles.newsItemSummary, { color: Colors.text, opacity: 0.7 }]} numberOfLines={2}>
+                                                    {article.summary}
+                                                </Text>
+                                            )}
+                                        </View>
+                                    ))}
+                                </View>
+                            ) : (
+                                <Text style={[styles.placeholderText, { color: Colors.text, opacity: 0.6 }]}>
+                                    No news articles found for {stock.symbol}
+                                </Text>
+                            )}
                         </View>
                     )}
 
@@ -1025,5 +1076,25 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: '800',
         color: 'white',
+    },
+    newsItemContainer: {
+        borderLeftWidth: 4,
+        paddingLeft: 12,
+        paddingVertical: 12,
+        paddingRight: 12,
+        borderRadius: 8,
+    },
+    newsItemTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        marginBottom: 6,
+    },
+    newsItemMeta: {
+        fontSize: 11,
+        marginBottom: 6,
+    },
+    newsItemSummary: {
+        fontSize: 12,
+        lineHeight: 16,
     },
 });
