@@ -9,6 +9,7 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.stock.StockCreateRequ
 import com.joelcode.personalinvestmentportfoliotracker.dto.stock.StockDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.stock.StockUpdateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.services.finnhub.FinnhubApiClient;
+import com.joelcode.personalinvestmentportfoliotracker.services.yahoofinance.YahooFinanceApiClient;
 import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class StockController {
 
     @Autowired
     public FinnhubApiClient finnhubApiClient;
+
+    @Autowired
+    public YahooFinanceApiClient yahooFinanceApiClient;
 
     // Get all stocks
     @GetMapping
@@ -141,7 +145,7 @@ public class StockController {
         }
     }
 
-    // Get historical candle data from FinnHub
+    // Get historical candle data from Yahoo Finance
     @GetMapping("/finnhub/candles/{symbol}")
     public ResponseEntity<?> getFinnhubCandles(
             @PathVariable String symbol,
@@ -149,7 +153,7 @@ public class StockController {
             @RequestParam long from,
             @RequestParam long to) {
         try {
-            FinnhubCandleDTO candles = finnhubApiClient.getCandles(symbol, resolution, from, to);
+            FinnhubCandleDTO candles = yahooFinanceApiClient.getCandles(symbol, resolution, from, to);
             return ResponseEntity.ok(candles);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching candles for symbol: " + symbol);

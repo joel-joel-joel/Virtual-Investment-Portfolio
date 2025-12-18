@@ -32,7 +32,9 @@ interface StockData {
  *
  * This is the entry point for viewing individual stock details.
  * It receives the stock data from route params and passes it
- * to the StockTickerScreen component.
+ * to the StockTickerScreen component which now includes:
+ * - StockHeaderChart (header, price, chart, tabs)
+ * - Tab content (overview, news, transactions, compare)
  *
  * File location: app/stock/[ticker].tsx
  */

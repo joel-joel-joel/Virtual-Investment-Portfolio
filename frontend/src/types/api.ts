@@ -496,3 +496,58 @@ export interface ResetPasswordRequest {
   token: string;
   newPassword: string;
 }
+
+// ============================================================================
+// Stock Suggestion Types
+// ============================================================================
+
+export interface VolatilityData {
+    symbol: string;
+    volatilityPercent: number;
+    volatilityLevel: 'Low' | 'Medium' | 'High' | 'Extreme';
+    weekHigh52: number;
+    weekLow52: number;
+    currentPrice: number;
+}
+
+export interface NewsVolumeData {
+    symbol: string;
+    sector: string;
+    articleCount: number;
+    volumeLevel: 'Low' | 'Moderate' | 'High' | 'Very High' | 'Extreme';
+    timeRange: string;
+}
+
+export interface StockAnalysisData {
+    symbol: string;
+    companyName: string;
+    sector: string;
+    currentPrice: number;
+    changePercent: number;
+    volatility: VolatilityData;
+    newsVolume: NewsVolumeData;
+}
+
+export interface ScoredStock extends StockAnalysisData {
+    score: number;
+    reason: SuggestionReason;
+    insight: string;
+}
+
+export type SuggestionReason =
+    | 'High Volatility'
+    | 'Trending News'
+    | 'Sector Diversification'
+    | 'Correlated Holdings';
+
+export interface SuggestionStock {
+    symbol: string;
+    price: string;          // Formatted with currency (e.g., "$195.50")
+    change: string;         // e.g., "+8.5%"
+    reason: SuggestionReason;
+    icon: string;           // Material Community Icon name
+    volatility: string;     // e.g., "High (28%)"
+    newsVolume: string;     // e.g., "Very High"
+    sector: string;
+    insight: string;        // Generated explanation
+}

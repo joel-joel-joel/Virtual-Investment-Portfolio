@@ -421,15 +421,6 @@ export default function ProfileScreen() {
                     />
 
                     <ProfileMenuOption
-                        icon="clipboard-list-outline"
-                        label="Limit Orders"
-                        onPress={() => {
-                            Alert.alert('Limit Orders', 'Your active and past limit orders are shown below');
-                        }}
-                        colors={Colors}
-                    />
-
-                    <ProfileMenuOption
                         icon="download"
                         label="Download Statements"
                         onPress={() => Alert.alert('Download Statements', 'Coming soon!')}

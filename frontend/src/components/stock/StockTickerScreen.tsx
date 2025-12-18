@@ -6,47 +6,19 @@ import {
     ScrollView,
     TouchableOpacity,
     useColorScheme,
-    Dimensions,
-    Animated,
     TextInput,
     ActivityIndicator,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { getThemeColors } from '@/src/constants/colors';
-import { HeaderSection } from "@/src/components/home/HeaderSection";
 import TransactionHistory from '@/src/components/transaction/TransactionHistory';
-import { Svg, Polyline, Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
-import { getPriceHistoryForStock, filterPriceHistoryByTimeRange, type PriceHistoryDTO, addToWatchlist, removeFromWatchlist, isInWatchlist } from '@/src/services';
-import { getOrCreateStockBySymbol } from '@/src/services/entityService';
-import type { FinnhubCompanyProfileDTO, FinnhubQuoteDTO, FinnhubMetricsDTO, FinnhubCandleDTO } from '@/src/types/api';
+import { getStockQuote, getCompanyProfile } from '@/src/services/entityService';
+import { searchCompaniesByName } from '@/src/services/portfolioService';
+import type { FinnhubQuoteDTO, FinnhubMetricsDTO } from '@/src/types/api';
 import { getSectorColor } from '@/src/services/sectorColorService';
-
-const screenWidth = Dimensions.get('window').width - 48;
-
-const chartHeight = 200;
-const chartPadding = 20;
-
-// Mock price data for different timeframes (fallback)
-const chartDataSets: Record<string, number[]> = {
-    '1D': [145, 147, 146, 148, 150, 149, 151, 150, 152, 151, 150],
-    '1W': [140, 142, 145, 143, 147, 149, 150],
-    '1M': [130, 135, 138, 142, 145, 148, 150],
-    '3M': [120, 125, 130, 135, 140, 145, 150],
-    '1Y': [100, 110, 115, 120, 130, 140, 150],
-};
-
-
-// Popular stocks for comparison
-const availableStocks = [
-    { symbol: 'AAPL', name: 'Apple Inc.', sector: 'Technology' },
-    { symbol: 'MSFT', name: 'Microsoft Corporation', sector: 'Technology' },
-    { symbol: 'NVDA', name: 'NVIDIA Corporation', sector: 'Semiconductors' },
-    { symbol: 'GOOGL', name: 'Alphabet Inc.', sector: 'Technology' },
-    { symbol: 'TSLA', name: 'Tesla Inc.', sector: 'Consumer/Tech' },
-    { symbol: 'AMD', name: 'Advanced Micro Devices', sector: 'Semiconductors' },
-    { symbol: 'META', name: 'Meta Platforms', sector: 'Technology' },
-];
+import { useDebounce } from '@/src/hooks/useDebounce';
+import { StockHeaderChart } from './StockHeaderChart';
 
 interface CompareStockData {
     symbol: string;
@@ -59,94 +31,124 @@ interface CompareStockData {
     eps?: string;
     dividend?: string;
     quote?: FinnhubQuoteDTO;
-    profile?: FinnhubCompanyProfileDTO;
+    profile?: any;
 }
+
+interface Stock {
+    symbol: string;
+    name: string;
+    price: number;
+    change: number;
+    changePercent: number;
+    sector: string;
+    marketCap: string;
+    peRatio: string;
+    dividend: string;
+    dayHigh: number;
+    dayLow: number;
+    yearHigh: number;
+    yearLow: number;
+    description: string;
+    employees: string;
+    founded: string;
+    website: string;
+    nextEarningsDate: string;
+    nextDividendDate: string;
+    earningsPerShare: string;
+}
+
+/**
+ * Enhanced fuzzy search for company names and symbols
+ */
+const fuzzySearchCompare = (query: string, symbol: string, companyName: string): boolean => {
+    const normalizedQuery = query.toLowerCase().trim();
+    const normalizedSymbol = symbol.toLowerCase();
+    const normalizedCompanyName = companyName.toLowerCase();
+
+    // Exact match or starts with (for ticker codes like AAPL or AAP)
+    if (normalizedSymbol.startsWith(normalizedQuery)) {
+        return true;
+    }
+
+    // Exact word match (e.g., "Bank of America" contains "Bank")
+    if (normalizedCompanyName.includes(normalizedQuery)) {
+        return true;
+    }
+
+    // Multi-word matching (e.g., "bank of america" matches "Bank of America Corp")
+    const queryWords = normalizedQuery.split(/\s+/).filter(w => w.length > 0);
+    const companyWords = normalizedCompanyName.split(/\s+/).filter(w => w.length > 0);
+
+    const matchedWords = queryWords.filter(qWord =>
+        companyWords.some(cWord =>
+            cWord.includes(qWord) || qWord.includes(cWord)
+        )
+    );
+
+    if (matchedWords.length >= Math.ceil(queryWords.length / 2)) {
+        return true;
+    }
+
+    // Character-by-character fuzzy match
+    const performFuzzyMatch = (text: string): boolean => {
+        let queryIndex = 0;
+        for (let i = 0; i < text.length; i++) {
+            if (text[i] === normalizedQuery[queryIndex]) {
+                queryIndex++;
+                if (queryIndex === normalizedQuery.length) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    if (performFuzzyMatch(normalizedCompanyName)) {
+        return true;
+    }
+
+    if (performFuzzyMatch(normalizedSymbol)) {
+        return true;
+    }
+
+    return false;
+};
 
 export default function StockTickerScreen({ route }: { route?: any }) {
     const router = useRouter();
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
 
-    // All hooks must be called before any early returns
+    // State management
     const [selectedTimeframe, setSelectedTimeframe] = useState<'1D' | '1W' | '1M' | '3M' | '1Y'>('1M');
-    const [isWatchlisted, setIsWatchlisted] = useState(false);
     const [activeTab, setActiveTab] = useState<'overview' | 'news' | 'transactions' | 'compare'>('overview');
     const [compareStock, setCompareStock] = useState<CompareStockData | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [showSearchResults, setShowSearchResults] = useState(false);
-    const [priceData, setPriceData] = useState(chartDataSets['1M']);
-    const [priceHistory, setPriceHistory] = useState<PriceHistoryDTO[]>([]);
-    const [loadingPriceHistory, setLoadingPriceHistory] = useState(false);
-    const [useMockData, setUseMockData] = useState(true);
+    const [compareSearchQuery, setCompareSearchQuery] = useState('');
+    const debouncedCompareQuery = useDebounce(compareSearchQuery, 300);
     const [searchResults, setSearchResults] = useState<CompareStockData[]>([]);
     const [loadingCompareData, setLoadingCompareData] = useState(false);
-    const [realtimeQuote, setRealtimeQuote] = useState<FinnhubQuoteDTO | null>(null);
-    const [loadingRealtimeData, setLoadingRealtimeData] = useState(false);
+    const [showSearchResults, setShowSearchResults] = useState(false);
     const [stockMetrics, setStockMetrics] = useState<FinnhubMetricsDTO | null>(null);
     const [loadingMetrics, setLoadingMetrics] = useState(false);
-    const animation = useRef(new Animated.Value(0)).current;
+    const [compareAllStocks, setCompareAllStocks] = useState<CompareStockData[]>([]);
+    const [loadingCompareAllStocks, setLoadingCompareAllStocks] = useState(false);
+
+    // Search management refs
+    const compareSearchIdRef = useRef(0);
+    const compareAbortControllerRef = useRef<AbortController | null>(null);
 
     // Get stock data from route params
-    const stock = route?.params?.stock;
+    const stock = route?.params?.stock as Stock;
 
-    // Calculate real-time price data
-    const currentPrice = realtimeQuote?.c || stock?.price || 0;
-    const previousClose = realtimeQuote?.pc || currentPrice;
-    const priceChange = realtimeQuote ? (currentPrice - previousClose) : (stock?.change || 0);
-    const priceChangePercent = realtimeQuote && previousClose !== 0 ? (priceChange / previousClose) * 100 : (stock?.changePercent || 0);
-    const dayHigh = realtimeQuote?.h || stock?.dayHigh || 0;
-    const dayLow = realtimeQuote?.l || stock?.dayLow || 0;
+    if (!stock) {
+        return (
+            <View style={[styles.container, { backgroundColor: Colors.background }]}>
+                <Text style={{ color: Colors.text }}>Stock data not found</Text>
+            </View>
+        );
+    }
 
-    // Check if stock is in watchlist on component mount
-    useEffect(() => {
-        const checkWatchlistStatus = async () => {
-            if (stock?.symbol) {
-                try {
-                    const dbStock = await getOrCreateStockBySymbol(stock.symbol);
-                    const inWatchlist = await isInWatchlist(dbStock.stockId);
-                    setIsWatchlisted(inWatchlist);
-                } catch (error) {
-                    console.error('Failed to check watchlist status:', error);
-                }
-            }
-        };
-        checkWatchlistStatus();
-    }, [stock?.symbol]);
-
-    // Fetch real-time quote data
-    useEffect(() => {
-        const fetchRealtimeQuote = async () => {
-            if (!stock?.symbol) return;
-
-            setLoadingRealtimeData(true);
-            try {
-                const apiUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-                const quoteResponse = await fetch(`${apiUrl}/api/stocks/finnhub/quote/${stock.symbol}`);
-
-                if (!quoteResponse.ok) {
-                    console.warn(`Failed to fetch real-time quote for ${stock.symbol}`);
-                    return;
-                }
-
-                const quote: FinnhubQuoteDTO = await quoteResponse.json();
-                if (quote && quote.c && quote.pc) {
-                    setRealtimeQuote(quote);
-                }
-            } catch (error) {
-                console.error(`Error fetching real-time quote for ${stock.symbol}:`, error);
-            } finally {
-                setLoadingRealtimeData(false);
-            }
-        };
-
-        fetchRealtimeQuote();
-
-        // Refresh every 30 seconds
-        const interval = setInterval(fetchRealtimeQuote, 30000);
-        return () => clearInterval(interval);
-    }, [stock?.symbol]);
-
-    // Fetch stock metrics (P/E, EPS, Dividend, 52W High/Low, etc.)
+    // Fetch stock metrics
     useEffect(() => {
         const fetchMetrics = async () => {
             if (!stock?.symbol) return;
@@ -172,88 +174,13 @@ export default function StockTickerScreen({ route }: { route?: any }) {
         fetchMetrics();
     }, [stock?.symbol]);
 
-    // Fetch candle data for chart based on timeframe
-    useEffect(() => {
-        const fetchCandleData = async () => {
-            if (!stock?.symbol) return;
-
-            setLoadingPriceHistory(true);
-            try {
-                const apiUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-
-                // Map timeframe to resolution and date range
-                const resolutionMap: Record<string, { resolution: string; days: number }> = {
-                    '1D': { resolution: '5', days: 1 },
-                    '1W': { resolution: 'D', days: 7 },
-                    '1M': { resolution: 'D', days: 30 },
-                    '3M': { resolution: 'D', days: 90 },
-                    '1Y': { resolution: 'W', days: 365 },
-                };
-
-                const config = resolutionMap[selectedTimeframe];
-                const to = Math.floor(Date.now() / 1000);
-                const from = to - (config.days * 24 * 60 * 60);
-
-                const url = `${apiUrl}/api/stocks/finnhub/candles/${stock.symbol}?resolution=${config.resolution}&from=${from}&to=${to}`;
-                const response = await fetch(url);
-
-                if (response.ok) {
-                    const data: FinnhubCandleDTO = await response.json();
-                    if (data.s === 'ok' && data.c && data.c.length > 0) {
-                        setPriceData(data.c.map(price => Number(price)));
-                        setUseMockData(false);
-                    } else {
-                        console.warn(`No candle data available for ${stock.symbol}`);
-                        setPriceData(chartDataSets[selectedTimeframe]);
-                        setUseMockData(true);
-                    }
-                } else {
-                    console.warn(`Failed to fetch candle data for ${stock.symbol}`);
-                    setPriceData(chartDataSets[selectedTimeframe]);
-                    setUseMockData(true);
-                }
-            } catch (error) {
-                console.error('Error fetching candle data:', error);
-                setPriceData(chartDataSets[selectedTimeframe]);
-                setUseMockData(true);
-            } finally {
-                setLoadingPriceHistory(false);
-            }
-        };
-
-        fetchCandleData();
-    }, [selectedTimeframe, stock?.symbol]);
-
-
-    // Animation effect
-    useEffect(() => {
-        Animated.timing(animation, {
-            toValue: 1,
-            duration: 750,
-            useNativeDriver: false,
-        }).start();
-
-        return () => animation.removeAllListeners();
-    }, [priceData, animation]);
-
-    // Fetch real-time data for comparison stock
+    /**
+     * Fetch real-time data for comparison stock from Finnhub
+     */
     const fetchCompareStockData = async (symbol: string): Promise<CompareStockData | null> => {
         try {
-            const apiUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-
-            const profileResponse = await fetch(
-                `${apiUrl}/api/stocks/finnhub/profile/${symbol}`
-            );
-            const quoteResponse = await fetch(
-                `${apiUrl}/api/stocks/finnhub/quote/${symbol}`
-            );
-
-            if (!profileResponse.ok || !quoteResponse.ok) {
-                return null;
-            }
-
-            const profile: FinnhubCompanyProfileDTO = await profileResponse.json();
-            const quote: FinnhubQuoteDTO = await quoteResponse.json();
+            const profile = await getCompanyProfile(symbol);
+            const quote = await getStockQuote(symbol);
 
             if (!quote || !quote.c || !quote.pc) {
                 return null;
@@ -266,10 +193,10 @@ export default function StockTickerScreen({ route }: { route?: any }) {
 
             const marketCap = profile?.marketCapitalization || 0;
             const marketCapFormatted = marketCap >= 1000000
-                ? `${(marketCap / 1000000).toFixed(1)}T`
+                ? `$${(marketCap / 1000000).toFixed(1)}T`
                 : marketCap >= 1000
-                    ? `${(marketCap / 1000).toFixed(1)}B`
-                    : `${marketCap.toFixed(0)}M`;
+                    ? `$${(marketCap / 1000).toFixed(1)}B`
+                    : `$${marketCap.toFixed(0)}M`;
 
             return {
                 symbol: symbol,
@@ -277,7 +204,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                 sector: profile?.finnhubIndustry || profile?.industry || 'Other',
                 price: currentPrice,
                 changePercent: changePercent,
-                peRatio: 'N/A', // Finnhub doesn't provide P/E, would need different API
+                peRatio: 'N/A',
                 marketCap: marketCapFormatted,
                 eps: 'N/A',
                 dividend: '0',
@@ -290,294 +217,259 @@ export default function StockTickerScreen({ route }: { route?: any }) {
         }
     };
 
-    // Handle search for comparison stocks
-    const handleSearchStocks = async (query: string) => {
-        setSearchQuery(query);
+    /**
+     * Load popular stocks for comparison on mount
+     */
+    const loadComparePopularStocks = async () => {
+        setLoadingCompareAllStocks(true);
+        try {
+            const POPULAR_SYMBOLS = ['MSFT', 'NVDA', 'GOOGL', 'AMZN', 'AMD', 'META'];
+            const stocks: CompareStockData[] = [];
+
+            for (const symbol of POPULAR_SYMBOLS) {
+                // Skip if it's the current stock
+                if (symbol === stock?.symbol) continue;
+
+                try {
+                    const data = await fetchCompareStockData(symbol);
+                    if (data) {
+                        stocks.push(data);
+                    }
+                } catch (error) {
+                    console.warn(`Failed to fetch ${symbol}:`, error);
+                }
+            }
+
+            setCompareAllStocks(stocks);
+        } catch (error) {
+            console.error('Failed to load popular stocks:', error);
+        } finally {
+            setLoadingCompareAllStocks(false);
+        }
+    };
+
+    /**
+     * Perform the actual search with all strategies
+     */
+    const performCompareSearch = async (
+        query: string,
+        searchId: number,
+        signal: AbortSignal
+    ) => {
+        console.log(`🔍 performCompareSearch called (searchId: ${searchId}, query: "${query}")`);
 
         if (!query.trim()) {
+            console.log(`  ❌ Empty query, clearing results`);
             setSearchResults([]);
+            setLoadingCompareData(false);
             return;
         }
 
         setLoadingCompareData(true);
+
         try {
-            const filtered = availableStocks.filter(s =>
-                (s.symbol.toLowerCase().includes(query.toLowerCase()) ||
-                    s.name.toLowerCase().includes(query.toLowerCase())) &&
-                s.symbol !== stock?.symbol
+            // Strategy 1: Try fetching as ticker symbol
+            console.log(`  [${searchId}] Strategy 1: Trying as ticker symbol "${query.toUpperCase()}"`);
+            try {
+                const stockData = await fetchCompareStockData(query.toUpperCase());
+
+                if (signal.aborted) {
+                    console.log(`  [${searchId}] ❌ Aborted during ticker fetch`);
+                    return;
+                }
+
+                if (stockData && stockData.symbol !== stock?.symbol) {
+                    if (compareSearchIdRef.current === searchId) {
+                        console.log(`  [${searchId}] ✅ Found as ticker, updating results`);
+                        setSearchResults([stockData]);
+                    }
+                    return;
+                }
+            } catch (error) {
+                console.warn(`  [${searchId}] Failed to fetch as ticker:`, error);
+            }
+
+            // Strategy 2: Fuzzy search on popular stocks
+            console.log(`  [${searchId}] Strategy 2: Fuzzy search on popular stocks`);
+            const fuzzyResults = compareAllStocks.filter(s =>
+                fuzzySearchCompare(query, s.symbol, s.name) && s.symbol !== stock?.symbol
             );
 
-            // Fetch real-time data for filtered stocks
-            const results: CompareStockData[] = [];
-            for (const stockOption of filtered) {
-                try {
-                    const data = await fetchCompareStockData(stockOption.symbol);
-                    if (data) {
-                        results.push(data);
+            if (signal.aborted) {
+                console.log(`  [${searchId}] ❌ Aborted during fuzzy search`);
+                return;
+            }
+
+            if (fuzzyResults.length > 0) {
+                if (compareSearchIdRef.current === searchId) {
+                    console.log(`  [${searchId}] ✅ Found ${fuzzyResults.length} fuzzy matches`);
+                    setSearchResults(fuzzyResults.slice(0, 5));
+                }
+                return;
+            }
+
+            // Strategy 3: Search Finnhub by company name
+            console.log(`  [${searchId}] Strategy 3: Searching Finnhub by company name`);
+            try {
+                const finnhubResults = await searchCompaniesByName(query);
+
+                if (signal.aborted) {
+                    console.log(`  [${searchId}] ❌ Aborted during Finnhub search`);
+                    return;
+                }
+
+                if (!Array.isArray(finnhubResults) || finnhubResults.length === 0) {
+                    console.log(`  [${searchId}] ❌ No Finnhub results`);
+                    if (compareSearchIdRef.current === searchId) {
+                        setSearchResults([]);
                     }
-                } catch (error) {
-                    // Fall back to basic data
-                    results.push({
-                        symbol: stockOption.symbol,
-                        name: stockOption.name,
-                        sector: stockOption.sector,
-                    });
+                    return;
+                }
+
+                // Filter valid symbols and fetch data
+                const validSymbols = finnhubResults
+                    .map(r => r.symbol)
+                    .filter(symbol => {
+                        const isValid = /^[A-Z]{1,5}$/.test(symbol) && symbol !== stock?.symbol;
+                        return isValid;
+                    })
+                    .slice(0, 5);
+
+                console.log(`  [${searchId}] Found ${validSymbols.length} valid symbols`);
+
+                if (validSymbols.length === 0) {
+                    if (compareSearchIdRef.current === searchId) {
+                        setSearchResults([]);
+                    }
+                    return;
+                }
+
+                // Fetch data for valid symbols
+                const results: CompareStockData[] = [];
+
+                for (const symbol of validSymbols) {
+                    if (signal.aborted) {
+                        console.log(`  [${searchId}] ❌ Aborted during data fetch`);
+                        return;
+                    }
+
+                    try {
+                        const data = await fetchCompareStockData(symbol);
+                        if (data) {
+                            results.push(data);
+                        }
+                    } catch (error) {
+                        console.warn(`  [${searchId}] Failed to fetch ${symbol}:`, error);
+                    }
+                }
+
+                if (compareSearchIdRef.current === searchId) {
+                    console.log(`  [${searchId}] ✅ Found ${results.length} results from Finnhub`);
+                    setSearchResults(results);
+                }
+            } catch (error) {
+                console.error(`  [${searchId}] Finnhub search failed:`, error);
+                if (compareSearchIdRef.current === searchId) {
+                    setSearchResults([]);
                 }
             }
-
-            setSearchResults(results);
         } catch (error) {
-            console.error('Search error:', error);
-            setSearchResults([]);
-        } finally {
-            setLoadingCompareData(false);
-        }
-    };
-
-    // Handle watchlist toggle
-    const handleWatchlistToggle = async () => {
-        try {
-            const dbStock = await getOrCreateStockBySymbol(stock.symbol);
-
-            if (isWatchlisted) {
-                await removeFromWatchlist(dbStock.stockId);
-                setIsWatchlisted(false);
-            } else {
-                await addToWatchlist(dbStock.stockId);
-                setIsWatchlisted(true);
+            if (signal.aborted) {
+                console.log(`  [${searchId}] ❌ Search aborted`);
+                return;
             }
-        } catch (error) {
-            console.error('Failed to toggle watchlist:', error);
+            console.error(`  [${searchId}] Search error:`, error);
+            if (compareSearchIdRef.current === searchId) {
+                setSearchResults([]);
+            }
+        } finally {
+            if (compareSearchIdRef.current === searchId) {
+                setLoadingCompareData(false);
+            }
         }
     };
 
-    if (!stock) {
-        return (
-            <View style={[styles.container, { backgroundColor: Colors.background }]}>
-                <Text style={{ color: Colors.text }}>Stock data not found</Text>
-            </View>
-        );
-    }
+    // Load popular stocks when tab changes to compare
+    useEffect(() => {
+        if (activeTab === 'compare' && compareAllStocks.length === 0) {
+            loadComparePopularStocks();
+        }
+    }, [activeTab]);
 
-    const sectorColor = getSectorColor(stock.sector);
-    const timeframes = ['1D', '1W', '1M', '3M', '1Y'] as const;
-    const isPositive = priceChangePercent >= 0;
+    // Handle debounced search query changes
+    useEffect(() => {
+        console.log(`🔄 Debounced compare query changed: "${debouncedCompareQuery}"`);
 
-    const chartWidth = screenWidth - chartPadding * 2;
-    const usableHeight = chartHeight - chartPadding * 2;
-    const minPrice = Math.min(...priceData);
-    const maxPrice = Math.max(...priceData);
-    const priceRange = maxPrice - minPrice || 1;
+        // Cancel any in-flight search
+        if (compareAbortControllerRef.current) {
+            console.log('  ❌ Aborting previous search');
+            compareAbortControllerRef.current.abort();
+        }
 
-    const fullPoints = priceData.map((price, index) => {
-        const x = chartPadding + (index / (priceData.length - 1)) * chartWidth;
-        const y = chartHeight - chartPadding - ((price - minPrice) / priceRange) * usableHeight;
-        return { x, y };
-    });
+        // Clear results if query is empty
+        if (!debouncedCompareQuery.trim()) {
+            console.log('  ✅ Empty query, clearing results');
+            setSearchResults([]);
+            setLoadingCompareData(false);
+            return;
+        }
 
-    const updateTimeframe = (timeframe: '1D' | '1W' | '1M' | '3M' | '1Y') => {
-        setSelectedTimeframe(timeframe);
-        animation.setValue(0);
-    };
+        // Increment search ID to track this search
+        compareSearchIdRef.current += 1;
+        const currentSearchId = compareSearchIdRef.current;
 
-    const handleGoBack = () => {
-        router.back();
-    };
+        // Create new AbortController for this search
+        const abortController = new AbortController();
+        compareAbortControllerRef.current = abortController;
 
-    const handleSelectCompareStock = async (stock: CompareStockData) => {
-        // Fetch latest data if not already available
-        if (!stock.quote) {
+        console.log(`  🚀 Starting search ${currentSearchId}`);
+
+        // Execute the search
+        performCompareSearch(debouncedCompareQuery, currentSearchId, abortController.signal);
+
+        // Cleanup
+        return () => {
+            console.log(`  🧹 Cleanup for search ${currentSearchId}`);
+            abortController.abort();
+        };
+    }, [debouncedCompareQuery, compareAllStocks, stock?.symbol]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (compareAbortControllerRef.current) {
+                compareAbortControllerRef.current.abort();
+            }
+        };
+    }, []);
+
+    const handleSelectCompareStock = async (selectedStock: CompareStockData) => {
+        if (!selectedStock.quote) {
             setLoadingCompareData(true);
-            const updatedData = await fetchCompareStockData(stock.symbol);
+            const updatedData = await fetchCompareStockData(selectedStock.symbol);
             setLoadingCompareData(false);
             if (updatedData) {
                 setCompareStock(updatedData);
             }
         } else {
-            setCompareStock(stock);
+            setCompareStock(selectedStock);
         }
         setShowSearchResults(false);
-        setSearchQuery('');
+        setCompareSearchQuery('');
     };
+
+    const sectorColor = getSectorColor(stock.sector);
 
     return (
         <View style={[styles.container, { backgroundColor: Colors.background }]}>
             <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Header with Back Button */}
-                <View style={[styles.topBar, { backgroundColor: Colors.background }]}>
-                    <TouchableOpacity
-                        onPress={handleGoBack}
-                        style={[styles.backButton, { backgroundColor: Colors.card }]}
-                    >
-                        <MaterialCommunityIcons
-                            name="chevron-left"
-                            size={28}
-                            color={Colors.text}
-                        />
-                    </TouchableOpacity>
-                    <View style={styles.headerSpacer}>
-                        <HeaderSection />
-                    </View>
-                </View>
-
-                {/* Stock Header */}
-                <View style={[styles.header, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
-                    <View style={styles.headerTop}>
-                        <View>
-                            <Text style={[styles.stockName, { color: Colors.text }]}>
-                                {stock.name}
-                            </Text>
-                            <Text style={[styles.stockSymbol, { color: sectorColor.color }]}>
-                                {stock.symbol}
-                            </Text>
-                        </View>
-                        <TouchableOpacity
-                            onPress={handleWatchlistToggle}
-                            style={[styles.favoriteButton, { backgroundColor: isWatchlisted ? Colors.tint : Colors.tint + '15' }]}
-                        >
-                            <MaterialCommunityIcons
-                                name={isWatchlisted ? 'heart' : 'heart-outline'}
-                                size={20}
-                                color={isWatchlisted ? 'white' : Colors.tint}
-                            />
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.priceSection}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                            <Text style={[styles.price, { color: Colors.text }]}>
-                                A${currentPrice.toFixed(2)}
-                            </Text>
-                            {loadingRealtimeData && (
-                                <ActivityIndicator size="small" color={Colors.tint} />
-                            )}
-                        </View>
-                        <View style={[styles.changeBadge, { backgroundColor: isPositive ? '#E7F5E7' : '#FCE4E4' }]}>
-                            <MaterialCommunityIcons
-                                name={isPositive ? 'trending-up' : 'trending-down'}
-                                size={16}
-                                color={isPositive ? '#2E7D32' : '#C62828'}
-                            />
-                            <Text style={[styles.changeText, { color: isPositive ? '#2E7D32' : '#C62828' }]}>
-                                {isPositive ? '+' : ''}{priceChange.toFixed(2)} ({isPositive ? '+' : ''}{priceChangePercent.toFixed(2)}%)
-                            </Text>
-                        </View>
-                    </View>
-
-                    <View style={[styles.sectorBadge, { backgroundColor: sectorColor.bgLight }]}>
-                        <Text style={[styles.sectorText, { color: sectorColor.color }]}>
-                            {stock.sector}
-                        </Text>
-                    </View>
-                </View>
-
-                {/* Timeframe Selector */}
-                <View style={styles.timeframeContainer}>
-                    {timeframes.map(tf => (
-                        <TouchableOpacity
-                            key={tf}
-                            onPress={() => updateTimeframe(tf)}
-                            style={[
-                                styles.timeframeButton,
-                                selectedTimeframe === tf && { backgroundColor: Colors.tint }
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    styles.timeframeText,
-                                    selectedTimeframe === tf && { color: 'white', fontWeight: '700' }
-                                ]}
-                            >
-                                {tf}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                {/* Animated Chart */}
-                <View style={[styles.chartContainer, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
-                    {loadingPriceHistory && (
-                        <View style={styles.loadingOverlay}>
-                            <ActivityIndicator size="large" color={Colors.tint} />
-                            <Text style={[styles.loadingText, { color: Colors.text }]}>Loading price history...</Text>
-                        </View>
-                    )}
-                    {!loadingPriceHistory && (
-                        <View style={styles.dataSourceBadge}>
-                            <MaterialCommunityIcons
-                                name={useMockData ? "alert-circle-outline" : "check-circle-outline"}
-                                size={14}
-                                color={useMockData ? "#F59E0B" : "#10B981"}
-                            />
-                            <Text style={[styles.dataSourceText, { color: useMockData ? "#F59E0B" : "#10B981" }]}>
-                                {useMockData ? "Mock Data" : "Live Data"}
-                            </Text>
-                        </View>
-                    )}
-                    <Svg width={screenWidth} height={chartHeight}>
-                        <Defs>
-                            <LinearGradient id="stockGradient" x1="0" y1="0" x2="0" y2="1">
-                                <Stop offset="0" stopColor={sectorColor.color} stopOpacity="0.3" />
-                                <Stop offset="1" stopColor={sectorColor.color} stopOpacity="0" />
-                            </LinearGradient>
-                        </Defs>
-
-                        {/* Gradient area under the line */}
-                        <Polyline
-                            points={
-                                fullPoints.map(p => `${p.x},${p.y}`).join(' ') +
-                                ` ${chartWidth + chartPadding},${chartHeight - chartPadding} ${chartPadding},${chartHeight - chartPadding}`
-                            }
-                            fill="url(#stockGradient)"
-                            stroke="none"
-                        />
-
-                        {/* Line on top */}
-                        <Polyline
-                            points={fullPoints.map(p => `${p.x},${p.y}`).join(' ')}
-                            fill="none"
-                            stroke={sectorColor.color}
-                            strokeWidth={3}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-
-                        {/* Data points */}
-                        {fullPoints.map((p, index) => (
-                            <Circle
-                                key={index}
-                                cx={p.x}
-                                cy={p.y}
-                                r={4}
-                                fill={sectorColor.color}
-                                opacity={0.6}
-                            />
-                        ))}
-                    </Svg>
-                </View>
-
-                {/* Tabs */}
-                <View style={[styles.tabContainer, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
-                    {(['overview', 'news', 'transactions', 'compare'] as const).map(tab => (
-                        <TouchableOpacity
-                            key={tab}
-                            onPress={() => setActiveTab(tab)}
-                            style={[
-                                styles.tab,
-                                activeTab === tab && { borderBottomColor: Colors.tint, borderBottomWidth: 3 }
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    styles.tabText,
-                                    { color: activeTab === tab ? Colors.tint : Colors.text, opacity: activeTab === tab ? 1 : 0.6 }
-                                ]}
-                            >
-                                {tab === 'transactions' ? 'History' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+                {/* Header and Chart Component */}
+                <StockHeaderChart
+                    stock={stock}
+                    selectedTimeframe={selectedTimeframe}
+                    onTimeframeChange={setSelectedTimeframe}
+                    onTabChange={setActiveTab}
+                />
 
                 {/* Tab Content */}
                 <View style={styles.tabContent}>
@@ -621,12 +513,12 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                                     />
                                     <StatItem
                                         label="Day High"
-                                        value={`A$${dayHigh.toFixed(2)}`}
+                                        value={`A$${(stock.dayHigh || 0).toFixed(2)}`}
                                         colors={Colors}
                                     />
                                     <StatItem
                                         label="Day Low"
-                                        value={`A$${dayLow.toFixed(2)}`}
+                                        value={`A$${(stock.dayLow || 0).toFixed(2)}`}
                                         colors={Colors}
                                     />
                                     <StatItem
@@ -705,14 +597,19 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                                 <MaterialCommunityIcons name="magnify" size={20} color={Colors.text} style={{ opacity: 0.6 }} />
                                 <TextInput
                                     style={[styles.searchInput, { color: Colors.text }]}
-                                    placeholder="Search stocks to compare..."
+                                    placeholder="Search by symbol or company name (e.g. MSFT or Microsoft)..."
                                     placeholderTextColor={Colors.text + '99'}
-                                    value={searchQuery}
-                                    onChangeText={handleSearchStocks}
+                                    value={compareSearchQuery}
+                                    onChangeText={setCompareSearchQuery}
                                     onFocus={() => setShowSearchResults(true)}
                                 />
-                                {searchQuery ? (
-                                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                                {compareSearchQuery ? (
+                                    <TouchableOpacity onPress={() => {
+                                        setCompareSearchQuery('');
+                                        setSearchResults([]);
+                                        setShowSearchResults(false);
+                                        setLoadingCompareData(false);
+                                    }}>
                                         <MaterialCommunityIcons name="close-circle" size={20} color={Colors.text} style={{ opacity: 0.6 }} />
                                     </TouchableOpacity>
                                 ) : null}
@@ -721,7 +618,12 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                             {/* Loading Indicator */}
                             {loadingCompareData && (
                                 <View style={[styles.searchResults, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
-                                    <ActivityIndicator size="large" color={Colors.tint} />
+                                    <View style={{ padding: 20, alignItems: 'center' }}>
+                                        <ActivityIndicator size="large" color={Colors.tint} />
+                                        <Text style={[styles.placeholderText, { color: Colors.text, marginTop: 12 }]}>
+                                            Searching stocks...
+                                        </Text>
+                                    </View>
                                 </View>
                             )}
 
@@ -729,7 +631,47 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                             {showSearchResults && searchResults.length > 0 && !loadingCompareData && (
                                 <View style={[styles.searchResults, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
                                     <ScrollView style={styles.searchResultsList} nestedScrollEnabled>
-                                        {searchResults.slice(0, 5).map((result) => {
+                                        {searchResults.map((result) => {
+                                            const resultSectorColor = getSectorColor(result.sector);
+                                            return (
+                                                <TouchableOpacity
+                                                    key={result.symbol}
+                                                    onPress={() => handleSelectCompareStock(result)}
+                                                    style={[styles.searchResultItem, { borderBottomColor: Colors.border }]}
+                                                >
+                                                    <View style={styles.searchResultLeft}>
+                                                        <Text style={[styles.searchResultSymbol, { color: resultSectorColor.color }]}>
+                                                            {result.symbol}
+                                                        </Text>
+                                                        <Text style={[styles.searchResultName, { color: Colors.text, opacity: 0.7 }]}>
+                                                            {result.name}
+                                                        </Text>
+                                                    </View>
+                                                    <View style={styles.searchResultRight}>
+                                                        <Text style={[styles.searchResultPrice, { color: Colors.text }]}>
+                                                            A${(result.price || 0).toFixed(2)}
+                                                        </Text>
+                                                        {result.changePercent !== undefined && (
+                                                            <Text style={[styles.searchResultChange, { color: (result.changePercent || 0) >= 0 ? '#2E7D32' : '#C62828' }]}>
+                                                                {(result.changePercent || 0) >= 0 ? '+' : ''}{(result.changePercent || 0).toFixed(2)}%
+                                                            </Text>
+                                                        )}
+                                                    </View>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </ScrollView>
+                                </View>
+                            )}
+
+                            {/* Show popular stocks when no search */}
+                            {!compareSearchQuery && !loadingCompareAllStocks && compareAllStocks.length > 0 && (
+                                <View style={[styles.searchResults, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
+                                    <Text style={[styles.searchResultsTitle, { color: Colors.text, padding: 12, fontSize: 12, fontWeight: '600', opacity: 0.7 }]}>
+                                        Popular Stocks
+                                    </Text>
+                                    <ScrollView style={styles.searchResultsList} nestedScrollEnabled>
+                                        {compareAllStocks.map((result) => {
                                             const resultSectorColor = getSectorColor(result.sector);
                                             return (
                                                 <TouchableOpacity
@@ -782,9 +724,9 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                                             <Text style={[styles.comparisonLabel, { color: Colors.text, opacity: 0.7 }]}>Price</Text>
                                             <View style={styles.comparisonValues}>
                                                 <Text style={[styles.comparisonValue, { color: sectorColor.color }]}>
-                                                    A${currentPrice.toFixed(2)}
+                                                    A${(stock.price || 0).toFixed(2)}
                                                 </Text>
-                                                <Text style={[styles.comparisonValue, {color: getSectorColor(compareStock.sector).color}]}>
+                                                <Text style={[styles.comparisonValue, { color: getSectorColor(compareStock.sector).color }]}>
                                                     A${(compareStock.price || 0).toFixed(2)}
                                                 </Text>
                                             </View>
@@ -794,9 +736,9 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                                         <View style={styles.comparisonRow}>
                                             <Text style={[styles.comparisonLabel, { color: Colors.text, opacity: 0.7 }]}>Change %</Text>
                                             <View style={styles.comparisonValues}>
-                                                <View style={[styles.changeIndicator, { backgroundColor: priceChangePercent >= 0 ? '#E7F5E7' : '#FCE4E4' }]}>
-                                                    <Text style={[styles.comparisonValue, { color: priceChangePercent >= 0 ? '#2E7D32' : '#C62828' }]}>
-                                                        {priceChangePercent >= 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%
+                                                <View style={[styles.changeIndicator, { backgroundColor: (stock.changePercent || 0) >= 0 ? '#E7F5E7' : '#FCE4E4' }]}>
+                                                    <Text style={[styles.comparisonValue, { color: (stock.changePercent || 0) >= 0 ? '#2E7D32' : '#C62828' }]}>
+                                                        {(stock.changePercent || 0) >= 0 ? '+' : ''}{(stock.changePercent || 0).toFixed(2)}%
                                                     </Text>
                                                 </View>
                                                 <View style={[styles.changeIndicator, { backgroundColor: (compareStock.changePercent || 0) >= 0 ? '#E7F5E7' : '#FCE4E4' }]}>
@@ -913,163 +855,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    topBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 24,
-        paddingTop: 12,
-        paddingBottom: 8,
-    },
-    backButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-    },
-    headerSpacer: {
-        flex: 1,
-        marginLeft: -32,
-        marginTop: 15,
-    },
-    header: {
-        borderWidth: 1,
-        borderRadius: 16,
-        padding: 16,
-        marginHorizontal: 24,
-        marginTop: -20,
-        marginBottom: 16,
-        gap: 12,
-    },
-    headerTop: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-    },
-    stockName: {
-        fontSize: 18,
-        fontWeight: '800',
-        marginBottom: 4,
-    },
-    stockSymbol: {
-        fontSize: 14,
-        fontWeight: '700',
-    },
-    favoriteButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    priceSection: {
-        gap: 8,
-    },
-    price: {
-        fontSize: 28,
-        fontWeight: '800',
-    },
-    changeBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 8,
-        alignSelf: 'flex-start',
-    },
-    changeText: {
-        fontSize: 13,
-        fontWeight: '700',
-    },
-    sectorBadge: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 8,
-        alignSelf: 'flex-start',
-    },
-    sectorText: {
-        fontSize: 12,
-        fontWeight: '700',
-    },
-    timeframeContainer: {
-        flexDirection: 'row',
-        paddingHorizontal: 24,
-        marginBottom: 16,
-        gap: 8,
-    },
-    timeframeButton: {
-        flex: 1,
-        paddingVertical: 8,
-        borderRadius: 8,
-        alignItems: 'center',
-        backgroundColor: '#F0F0F0',
-    },
-    timeframeText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#666',
-    },
-    chartContainer: {
-        borderWidth: 1,
-        borderRadius: 16,
-        marginHorizontal: 24,
-        marginBottom: 16,
-        padding: 8,
-        position: 'relative',
-    },
-    loadingOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: 16,
-        zIndex: 10,
-        gap: 8,
-    },
-    loadingText: {
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    dataSourceBadge: {
-        position: 'absolute',
-        top: 16,
-        right: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        backgroundColor: 'white',
-        borderRadius: 6,
-        zIndex: 5,
-    },
-    dataSourceText: {
-        fontSize: 10,
-        fontWeight: '700',
-    },
-    tabContainer: {
-        flexDirection: 'row',
-        marginHorizontal: 24,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderRadius: 12,
-        overflow: 'hidden',
-    },
-    tab: {
-        flex: 1,
-        paddingVertical: 12,
-        alignItems: 'center',
-    },
-    tabText: {
-        fontSize: 13,
-        fontWeight: '700',
-    },
     tabContent: {
         paddingHorizontal: 24,
     },
@@ -1131,6 +916,10 @@ const styles = StyleSheet.create({
     },
     searchResultsList: {
         gap: 8,
+    },
+    searchResultsTitle: {
+        borderBottomWidth: 1,
+        marginTop: -10,
     },
     searchResultItem: {
         flexDirection: 'row',
