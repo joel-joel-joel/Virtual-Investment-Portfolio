@@ -15,7 +15,9 @@ import { getThemeColors } from "../../constants/colors";
 import { getSectorColor } from "@/src/services/sectorColorService";
 import { generateStockSuggestions } from "@/src/services/stockSuggestionService";
 import { useAuth } from "@/src/context/AuthContext";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "@/src/navigation";
 import type { SuggestionStock } from "@/src/types/api";
 
 const { width } = Dimensions.get("window");
@@ -27,7 +29,7 @@ const { width } = Dimensions.get("window");
 // @ts-ignore
 const SuggestionCard = ({ stock, reason, icon, sectorColor }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     const handleViewDetails = () => {
         const stockData = {
@@ -53,13 +55,7 @@ const SuggestionCard = ({ stock, reason, icon, sectorColor }) => {
             earningsPerShare: '0',
         };
 
-        router.push({
-            pathname: '/stock/[ticker]',
-            params: {
-                ticker: stock.symbol,
-                stock: JSON.stringify(stockData),
-            },
-        });
+        navigation.navigate('StockTicker', { stock: stockData });
     };
 
     return (
@@ -167,7 +163,7 @@ const SuggestionCard = ({ stock, reason, icon, sectorColor }) => {
 export const SuggestedForYou = () => {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { activeAccount } = useAuth();
 
     const [suggestions, setSuggestions] = useState<SuggestionStock[]>([]);

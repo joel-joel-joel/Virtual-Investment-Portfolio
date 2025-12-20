@@ -4,15 +4,17 @@ import { getThemeColors } from '@/src/constants/colors';
 import { HeaderSection } from '@/src/components/home/HeaderSection';
 import TransactionHistory from '@/src/components/transaction/TransactionHistory';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/src/navigation';
 
 export default function TransactionHistoryPage() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     const handleGoBack = () => {
-        router.back();
+        navigation.goBack();
     };
 
     return (

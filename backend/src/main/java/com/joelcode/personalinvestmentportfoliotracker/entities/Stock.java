@@ -30,27 +30,30 @@ public class Stock {
     // Columns
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "stock_id")
     private UUID stockId;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(name = "stock_code", nullable = false, unique = true, length = 20)
     private String stockCode;
 
-    @Column (nullable = false, unique = true, length = 100)
+    @Column(name = "company_name", nullable = false, unique = true, length = 100)
     private String companyName;
 
-    @Column (nullable = false)
+    @Column(name = "stock_value", nullable = false)
     private BigDecimal stockValue;
 
-    @Column (nullable = false)
+    @Column(name = "dividend_per_share", nullable = false)
     private BigDecimal dividendPerShare = BigDecimal.ZERO;
 
     @Column (nullable = true, length = 100)
     private String industry;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
 

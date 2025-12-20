@@ -7,8 +7,9 @@ import {
     Dimensions,
     Animated,
     TouchableOpacity,
+    GestureResponderEvent,
 } from "react-native";
-import { Svg, Polyline, Circle, Defs, LinearGradient, Stop } from "react-native-svg";
+import { Svg, Polyline, Circle, Defs, LinearGradient, RadialGradient, Stop, Line } from "react-native-svg";
 import { getThemeColors } from "../../../src/constants/colors";
 import { getAccountOverview, getPortfolioChartData } from "@/src/services/portfolioService";
 import { useAuth } from "@/src/context/AuthContext";
@@ -37,8 +38,10 @@ export const Dashboard = () => {
     const [absoluteGain, setAbsoluteGain] = useState<number | null>(null);
     const [percentageGain, setPercentageGain] = useState<number | null>(null);
     const [selectedPointIndex, setSelectedPointIndex] = useState<number | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
     const { user } = useAuth();
 
+    const chartContainerRef = useRef<View>(null);
 
     useEffect(() => {
         if (activeAccount?.accountId) {
@@ -197,9 +200,55 @@ export const Dashboard = () => {
         };
     }, [priceData]);
 
+    // ========================================================================
+    // Chart Touch/Pan Handlers (NEW)
+    // ========================================================================
+
+    const handleChartPress = (event: GestureResponderEvent) => {
+        const { locationX } = event.nativeEvent;
+        const touchX = locationX;
+
+        // Find closest point to touch
+        const closestIndex = fullPoints.reduce((closest, point, index) => {
+            const distance = Math.abs(point.x - touchX);
+            const closestDistance = Math.abs(fullPoints[closest].x - touchX);
+            return distance < closestDistance ? index : closest;
+        }, 0);
+
+        setSelectedPointIndex(closestIndex);
+        setIsDragging(true);
+    };
+
+    const handleChartMove = (event: GestureResponderEvent) => {
+        if (!isDragging) return;
+
+        const { locationX } = event.nativeEvent;
+        const touchX = locationX;
+
+        // Clamp to chart boundaries
+        const clampedX = Math.max(chartPadding, Math.min(touchX, chartWidth + chartPadding));
+
+        // Find closest point to touch
+        const closestIndex = fullPoints.reduce((closest, point, index) => {
+            const distance = Math.abs(point.x - clampedX);
+            const closestDistance = Math.abs(fullPoints[closest].x - clampedX);
+            return distance < closestDistance ? index : closest;
+        }, 0);
+
+        setSelectedPointIndex(closestIndex);
+    };
+
+    const handleChartRelease = () => {
+        setIsDragging(false);
+    };
+
+    // Get selected point for vertical line
+    const selectedPoint = selectedPointIndex !== null ? fullPoints[selectedPointIndex] : null;
+
     return (
         <View style={styles.wrapper}>
             <View style={[styles.dashboard, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
+                {/* Dashboard Text Block - UNCHANGED */}
                 <View style={styles.dashboardTextBlock}>
                     <Text style={[styles.dashboardtitle, { color: Colors.text }]}>
                         {user ? `Welcome back, ${user.fullName}` : "Welcome to Pegasus!"}
@@ -227,11 +276,18 @@ export const Dashboard = () => {
                             : `Gain: A$${absoluteGain.toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${percentageGain.toFixed(2)}%), Today`
                         }
                     </Text>
-
                 </View>
 
-                {/* SVG Line Chart */}
-                <View style={styles.chartContainer}>
+                {/* SVG Line Chart - ENHANCED WITH PANNING & GRADIENT POINTS */}
+                <View
+                    ref={chartContainerRef}
+                    style={styles.chartContainer}
+                    onStartShouldSetResponder={() => true}
+                    onMoveShouldSetResponder={() => isDragging}
+                    onResponderGrant={handleChartPress}
+                    onResponderMove={handleChartMove}
+                    onResponderRelease={handleChartRelease}
+                >
                     {priceData.length === 0 ? (
                         <View style={[styles.emptyChartContainer, { height: chartHeight }]}>
                             <Text style={[styles.emptyChartText, { color: Colors.text }]}>
@@ -246,6 +302,13 @@ export const Dashboard = () => {
                                         <Stop offset="0" stopColor={Colors.tint} stopOpacity="0.4" />
                                         <Stop offset="1" stopColor={Colors.tint} stopOpacity="0" />
                                     </LinearGradient>
+
+                                    {/* Radial gradient for selected point circle */}
+                                    <RadialGradient id="pointGradient" cx="50%" cy="50%" r="50%">
+                                        <Stop offset="0%" stopColor={Colors.tint} stopOpacity="1" />
+                                        <Stop offset="70%" stopColor={Colors.tint} stopOpacity="0.6" />
+                                        <Stop offset="100%" stopColor={Colors.tint} stopOpacity="0" />
+                                    </RadialGradient>
                                 </Defs>
 
                                 {/* Gradient area under the line */}
@@ -270,45 +333,43 @@ export const Dashboard = () => {
                                     strokeLinejoin="round"
                                 />
 
-                                {/* Data points (visual only) */}
-                                {fullPoints.map((p, index) => {
-                                    if (index >= progressIndex) return null;
-                                    const isLive = chartData[index]?.isLive || false;
-                                    const isSelected = selectedPointIndex === index;
-                                    return (
-                                        <Circle
-                                            key={index}
-                                            cx={p.x}
-                                            cy={p.y}
-                                            r={isSelected ? (isLive ? 8 : 6) : (isLive ? 6 : 4)}
-                                            fill={isLive ? "#10b981" : Colors.tint}
-                                            opacity={isSelected ? 1 : (isLive ? 1 : 0.6)}
-                                            stroke={isSelected ? Colors.text : (isLive ? "#059669" : "none")}
-                                            strokeWidth={isSelected ? 2 : (isLive ? 2 : 0)}
-                                        />
-                                    );
-                                })}
-                            </Svg>
-
-                            {/* Interactive overlay - TouchableOpacity buttons positioned over chart points */}
-                            {fullPoints.map((p, index) => {
-                                if (index >= progressIndex) return null;
-                                return (
-                                    <TouchableOpacity
-                                        key={`btn-${index}`}
-                                        onPress={() => setSelectedPointIndex(selectedPointIndex === index ? null : index)}
-                                        style={{
-                                            position: "absolute",
-                                            left: p.x - 12,
-                                            top: p.y - 12,
-                                            width: 24,
-                                            height: 24,
-                                            borderRadius: 12,
-                                            zIndex: 10,
-                                        }}
+                                {/* Vertical indicator line when dragging */}
+                                {selectedPoint && (
+                                    <Line
+                                        x1={selectedPoint.x}
+                                        y1={chartPadding}
+                                        x2={selectedPoint.x}
+                                        y2={chartHeight - chartPadding}
+                                        stroke={Colors.tint}
+                                        strokeWidth={2}
+                                        strokeDasharray="4,4"
+                                        opacity={isDragging ? 0.8 : 0.4}
                                     />
-                                );
-                            })}
+                                )}
+
+                                {/* Selected point - only show when pressed */}
+                                {selectedPoint && selectedPointIndex !== null && (
+                                    <>
+                                        {/* Outer gradient halo effect */}
+                                        <Circle
+                                            cx={selectedPoint.x}
+                                            cy={selectedPoint.y}
+                                            r={10}
+                                            fill="url(#pointGradient)"
+                                            opacity={0.8}
+                                        />
+
+                                        {/* Inner solid core */}
+                                        <Circle
+                                            cx={selectedPoint.x}
+                                            cy={selectedPoint.y}
+                                            r={6}
+                                            fill={Colors.tint}
+                                            opacity={1}
+                                        />
+                                    </>
+                                )}
+                            </Svg>
                         </View>
                     )}
 
@@ -350,24 +411,6 @@ export const Dashboard = () => {
                             </TouchableOpacity>
                         ))}
                     </View>
-
-                    {/* Legend - only show if we have data with a live point */}
-                    {priceData.length > 0 && chartData.some(point => point.isLive) && (
-                        <View style={styles.legendContainer}>
-                            <View style={styles.legendItem}>
-                                <View style={[styles.legendDot, { backgroundColor: Colors.tint }]} />
-                                <Text style={[styles.legendText, { color: Colors.text }]}>
-                                    Historical Snapshots
-                                </Text>
-                            </View>
-                            <View style={styles.legendItem}>
-                                <View style={[styles.legendDot, styles.liveDot]} />
-                                <Text style={[styles.legendText, { color: Colors.text }]}>
-                                    Live Value (Today)
-                                </Text>
-                            </View>
-                        </View>
-                    )}
                 </View>
             </View>
         </View>

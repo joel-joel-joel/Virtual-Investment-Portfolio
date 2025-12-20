@@ -8,9 +8,15 @@ import {
     useColorScheme,
     TextInput,
     ActivityIndicator,
+    Modal,
+    Image,
+    Animated,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { openBrowserAsync } from 'expo-web-browser';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/src/navigation';
 import { getThemeColors } from '@/src/constants/colors';
 import TransactionHistory from '@/src/components/transaction/TransactionHistory';
 import { getStockQuote, getCompanyProfile } from '@/src/services/entityService';
@@ -116,7 +122,7 @@ const fuzzySearchCompare = (query: string, symbol: string, companyName: string):
 };
 
 export default function StockTickerScreen({ route }: { route?: any }) {
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
 
@@ -135,6 +141,8 @@ export default function StockTickerScreen({ route }: { route?: any }) {
     const [loadingCompareAllStocks, setLoadingCompareAllStocks] = useState(false);
     const [symbolNews, setSymbolNews] = useState<NewsArticleDTO[]>([]);
     const [loadingSymbolNews, setLoadingSymbolNews] = useState(false);
+    const [selectedNews, setSelectedNews] = useState<NewsArticleDTO | null>(null);
+    const scaleAnim = useRef(new Animated.Value(0)).current;
 
     // Search management refs
     const compareSearchIdRef = useRef(0);
@@ -483,6 +491,28 @@ export default function StockTickerScreen({ route }: { route?: any }) {
 
     const sectorColor = getSectorColor(stock.sector);
 
+    const openNewsDetail = (article: NewsArticleDTO) => {
+        setSelectedNews(article);
+        Animated.spring(scaleAnim, {
+            toValue: 1,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const closeNewsDetail = () => {
+        Animated.timing(scaleAnim, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+        }).start(() => setSelectedNews(null));
+    };
+
+    const handleReadMore = async () => {
+        if (selectedNews?.url) {
+            await openBrowserAsync(selectedNews.url);
+        }
+    };
+
     return (
         <View style={[styles.container, { backgroundColor: Colors.background }]}>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -599,25 +629,30 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                             ) : symbolNews.length > 0 ? (
                                 <View style={{ gap: 12 }}>
                                     {symbolNews.map((article, index) => (
-                                        <View
+                                        <TouchableOpacity
                                             key={index}
-                                            style={[
-                                                styles.newsItemContainer,
-                                                { backgroundColor: Colors.card, borderLeftColor: getSectorColor(article.sector).color }
-                                            ]}
+                                            onPress={() => openNewsDetail(article)}
+                                            activeOpacity={0.7}
                                         >
-                                            <Text style={[styles.newsItemTitle, { color: Colors.text }]} numberOfLines={2}>
-                                                {article.title}
-                                            </Text>
-                                            <Text style={[styles.newsItemMeta, { color: Colors.text, opacity: 0.6 }]}>
-                                                {article.sector} • {new Date(article.publishedAt).toLocaleDateString()}
-                                            </Text>
-                                            {article.summary && (
-                                                <Text style={[styles.newsItemSummary, { color: Colors.text, opacity: 0.7 }]} numberOfLines={2}>
-                                                    {article.summary}
+                                            <View
+                                                style={[
+                                                    styles.newsItemContainer,
+                                                    { backgroundColor: Colors.card, borderLeftColor: getSectorColor(article.sector).color }
+                                                ]}
+                                            >
+                                                <Text style={[styles.newsItemTitle, { color: Colors.text }]} numberOfLines={2}>
+                                                    {article.title}
                                                 </Text>
-                                            )}
-                                        </View>
+                                                <Text style={[styles.newsItemMeta, { color: Colors.text, opacity: 0.6 }]}>
+                                                    {article.sector} • {new Date(article.publishedAt).toLocaleDateString()}
+                                                </Text>
+                                                {article.summary && (
+                                                    <Text style={[styles.newsItemSummary, { color: Colors.text, opacity: 0.7 }]} numberOfLines={2}>
+                                                        {article.summary}
+                                                    </Text>
+                                                )}
+                                            </View>
+                                        </TouchableOpacity>
                                     ))}
                                 </View>
                             ) : (
@@ -856,12 +891,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                 <View style={styles.actionButtonsContainer}>
                     <TouchableOpacity
                         onPress={() => {
-                            router.push({
-                                pathname: '/transaction/buy',
-                                params: {
-                                    stock: JSON.stringify(stock),
-                                },
-                            });
+                            navigation.navigate('BuyTransaction', { stock });
                         }}
                         style={[styles.actionButton, { backgroundColor: Colors.tint }]}
                     >
@@ -870,13 +900,7 @@ export default function StockTickerScreen({ route }: { route?: any }) {
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => {
-                            router.push({
-                                pathname: '/transaction/sell',
-                                params: {
-                                    stock: JSON.stringify(stock),
-                                    owned: '100',
-                                },
-                            });
+                            navigation.navigate('SellTransaction', { stock });
                         }}
                         style={[styles.actionButton, { backgroundColor: '#FCE4E4' }]}
                     >
@@ -887,6 +911,83 @@ export default function StockTickerScreen({ route }: { route?: any }) {
 
                 <View style={{ height: 24 }} />
             </ScrollView>
+
+            {/* News Detail Modal */}
+            <Modal
+                visible={selectedNews !== null}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={closeNewsDetail}
+            >
+                <View style={styles.modalOverlay}>
+                    <Animated.View
+                        style={[
+                            styles.expandedCard,
+                            {
+                                backgroundColor: Colors.background,
+                                transform: [{ scale: scaleAnim }],
+                            },
+                        ]}
+                    >
+                        {/* Close Button */}
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={closeNewsDetail}
+                        >
+                            <MaterialCommunityIcons
+                                name="close"
+                                size={24}
+                                color={Colors.text}
+                            />
+                        </TouchableOpacity>
+
+                        {/* Content */}
+                        <ScrollView style={styles.expandedContent}>
+                            {selectedNews && (
+                                <>
+                                    <Text style={[styles.expandedTitle, { color: Colors.tint }]}>
+                                        {selectedNews.title}
+                                    </Text>
+
+                                    <View style={[styles.sectorBadgeDetail, { backgroundColor: getSectorColor(selectedNews.sector).color + '20' }]}>
+                                        <MaterialCommunityIcons
+                                            name="tag"
+                                            size={12}
+                                            color={getSectorColor(selectedNews.sector).color}
+                                            style={{ marginRight: 4 }}
+                                        />
+                                        <Text style={[styles.sectorBadgeTextDetail, { color: getSectorColor(selectedNews.sector).color }]}>
+                                            {selectedNews.sector}
+                                        </Text>
+                                    </View>
+
+                                    <View style={styles.contentDivider} />
+
+                                    <Text style={[styles.expandedMetaText, { color: Colors.text, opacity: 0.6 }]}>
+                                        {new Date(selectedNews.publishedAt).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        })}
+                                    </Text>
+
+                                    <Text style={[styles.expandedContentText, { color: Colors.text }]}>
+                                        {selectedNews.summary || 'Click the button below to read the full article.'}
+                                    </Text>
+                                </>
+                            )}
+                        </ScrollView>
+
+                        {/* Action Button */}
+                        <TouchableOpacity
+                            style={[styles.readMoreButton, { backgroundColor: Colors.tint,}]}
+                            onPress={handleReadMore}
+                        >
+                            <Text style={styles.readMoreButtonText}>Read More</Text>
+                        </TouchableOpacity>
+                    </Animated.View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -1060,8 +1161,8 @@ const styles = StyleSheet.create({
     actionButtonsContainer: {
         flexDirection: 'row',
         paddingHorizontal: 24,
+        paddingVertical: 12,
         gap: 12,
-        marginTop: 24,
     },
     actionButton: {
         flex: 1,
@@ -1096,5 +1197,77 @@ const styles = StyleSheet.create({
     newsItemSummary: {
         fontSize: 12,
         lineHeight: 16,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    expandedCard: {
+        width: '85%',
+        maxHeight: '80%',
+        borderRadius: 16,
+        overflow: 'hidden',
+        height: 310,
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        zIndex: 10,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 20,
+        padding: 8,
+    },
+    expandedContent: {
+        padding: 16,
+        maxHeight: 300,
+    },
+    expandedTitle: {
+        fontSize: 18,
+        fontWeight: '800',
+        marginBottom: 12,
+        lineHeight: 24,
+    },
+    sectorBadgeDetail: {
+        flexDirection: 'row',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        marginBottom: 12,
+    },
+    sectorBadgeTextDetail: {
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    contentDivider: {
+        height: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        marginVertical: 12,
+    },
+    expandedMetaText: {
+        fontSize: 12,
+        fontWeight: '500',
+        marginBottom: 12,
+    },
+    expandedContentText: {
+        fontSize: 13,
+        lineHeight: 20,
+        marginBottom: 16,
+    },
+    readMoreButton: {
+        margin: 16,
+        paddingVertical: 12,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+
+    readMoreButtonText: {
+        fontSize: 15,
+        fontWeight: '800',
+        color: 'white',
     },
 });

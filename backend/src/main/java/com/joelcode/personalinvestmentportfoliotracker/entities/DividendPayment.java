@@ -34,18 +34,19 @@ public class DividendPayment {
     // Columns
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "payment_id")
     private UUID paymentId;
 
-    @Column(nullable = false)
+    @Column(name = "share_quantity", nullable = false)
     private BigDecimal shareQuantity;  // How many shares they owned on pay date
 
-    @Column(nullable = false)
+    @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;  // shareQuantity × amountPerShare
 
-    @Column(nullable = false)
+    @Column(name = "payment_date", nullable = false)
     private LocalDateTime paymentDate;
 
-    @Column(nullable = false)
+    @Column(name = "recorded_at", nullable = false)
     private LocalDateTime recordedAt;  // When this payment was recorded in system
 
     @Enumerated(EnumType.STRING)
@@ -61,15 +62,15 @@ public class DividendPayment {
 
     // Relationships
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "accountId", nullable = false)
+    @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stockId", nullable = false)
+    @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dividendId", nullable = false)
+    @JoinColumn(name = "dividend_id", nullable = false)
     private Dividend dividend;
 
 

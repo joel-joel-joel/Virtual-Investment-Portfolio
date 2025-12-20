@@ -30,21 +30,24 @@ public class Transaction {
     // Columns
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "transaction_id")
     private UUID transactionId;
 
-    @Column (nullable = false)
+    @Column(name = "share_quantity", nullable = false)
     private BigDecimal shareQuantity;
 
-    @Column (nullable = false)
+    @Column(name = "price_per_share", nullable = false)
     private BigDecimal pricePerShare;
 
     @Column (nullable = false)
     private BigDecimal commission;  // For broker
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public enum TransactionType {
@@ -57,15 +60,15 @@ public class Transaction {
 
     // Relationships
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stockId", nullable = false)
+    @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "accountId", nullable = false)
+    @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "transaction_type", nullable = false)
     private TransactionType transactionType;
 
 

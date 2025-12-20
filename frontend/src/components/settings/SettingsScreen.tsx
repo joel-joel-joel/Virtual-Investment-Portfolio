@@ -3,7 +3,6 @@ import {
     View,
     Text,
     StyleSheet,
-    ScrollView,
     TouchableOpacity,
     useColorScheme,
     Switch,
@@ -12,8 +11,6 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
-import {HeaderSection} from "@/src/components/home/HeaderSection";
-import {router} from "expo-router";
 
 interface NotificationSettings {
     priceAlerts: boolean;
@@ -203,7 +200,7 @@ const SelectionModal = ({
     );
 };
 
-export default function SettingsScreen({ navigation }: { navigation?: any }) {
+export default function SettingsScreen() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
 
@@ -241,371 +238,342 @@ export default function SettingsScreen({ navigation }: { navigation?: any }) {
         }));
     };
 
-    const handleGoBack = () => {
-        router.back();
-    };
-
     return (
-        <View style={[styles.container, { backgroundColor: Colors.background }]}>
-            {/* Header */}
-            <View style={[styles.topBar, { backgroundColor: Colors.background }]}>
+        <>
+            {/* APPEARANCE SECTION */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionHeader, { color: Colors.text }]}>
+                    Appearance
+                </Text>
+
+                <SettingItemSelect
+                    icon="palette"
+                    label="Theme"
+                    description="Choose your preferred appearance"
+                    value={appSettings.theme.charAt(0).toUpperCase() + appSettings.theme.slice(1)}
+                    onPress={() => setActiveModal('theme')}
+                    colors={Colors}
+                />
+            </View>
+
+            {/* GENERAL SECTION */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionHeader, { color: Colors.text }]}>
+                    General
+                </Text>
+
+                <SettingItemSelect
+                    icon="currency-usd"
+                    label="Default Currency"
+                    description="Select your preferred currency"
+                    value={appSettings.currency}
+                    onPress={() => setActiveModal('currency')}
+                    colors={Colors}
+                />
+
+                <SettingItemSelect
+                    icon="translate"
+                    label="Language"
+                    description="Choose your preferred language"
+                    value={appSettings.language}
+                    onPress={() => setActiveModal('language')}
+                    colors={Colors}
+                />
+
+                <SettingItemSelect
+                    icon="calendar-outline"
+                    label="Date Format"
+                    description="Select date display format"
+                    value={appSettings.dateFormat}
+                    onPress={() => setActiveModal('dateFormat')}
+                    colors={Colors}
+                />
+            </View>
+
+            {/* NOTIFICATIONS SECTION */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionHeader, { color: Colors.text }]}>
+                    Notifications
+                </Text>
+
+                <SettingItemToggle
+                    icon="bell-alert-outline"
+                    label="Price Alerts"
+                    description="Get notified when prices change significantly"
+                    value={notifications.priceAlerts}
+                    onToggle={() => handleNotificationToggle('priceAlerts')}
+                    colors={Colors}
+                />
+
+                <SettingItemToggle
+                    icon="chart-line-variant"
+                    label="Portfolio Updates"
+                    description="Receive daily portfolio performance updates"
+                    value={notifications.portfolioUpdates}
+                    onToggle={() => handleNotificationToggle('portfolioUpdates')}
+                    colors={Colors}
+                />
+
+                <SettingItemToggle
+                    icon="newspaper"
+                    label="Market News"
+                    description="Get the latest financial news and insights"
+                    value={notifications.marketNews}
+                    onToggle={() => handleNotificationToggle('marketNews')}
+                    colors={Colors}
+                />
+
+                <SettingItemToggle
+                    icon="cash-multiple"
+                    label="Dividend Notifications"
+                    description="Be notified about dividend payments"
+                    value={notifications.dividendNotifications}
+                    onToggle={() => handleNotificationToggle('dividendNotifications')}
+                    colors={Colors}
+                />
+
+                <SettingItemToggle
+                    icon="calendar-check"
+                    label="Earnings Season"
+                    description="Get alerts during company earnings season"
+                    value={notifications.earningSeason}
+                    onToggle={() => handleNotificationToggle('earningSeason')}
+                    colors={Colors}
+                />
+            </View>
+
+            {/* PORTFOLIO SECTION */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionHeader, { color: Colors.text }]}>
+                    Portfolio
+                </Text>
+
                 <TouchableOpacity
-                    onPress={handleGoBack}
-                    style={[styles.backButton, { backgroundColor: Colors.card }]}
+                    style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
+                    activeOpacity={0.7}
+                    onPress={() => Alert.alert('Recurring Investments', 'Coming soon!')}
                 >
+                    <View style={styles.settingLeft}>
+                        <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
+                            <MaterialCommunityIcons
+                                name="repeat"
+                                size={20}
+                                color={Colors.tint}
+                            />
+                        </View>
+                        <View style={styles.settingText}>
+                            <Text style={[styles.settingLabel, { color: Colors.text }]}>
+                                Recurring Investments
+                            </Text>
+                            <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
+                                Set up automatic investments
+                            </Text>
+                        </View>
+                    </View>
                     <MaterialCommunityIcons
-                        name="chevron-left"
-                        size={28}
+                        name="chevron-right"
+                        size={20}
                         color={Colors.text}
+                        style={{ opacity: 0.4 }}
                     />
                 </TouchableOpacity>
-                <View style={styles.headerSpacer}>
-                    <HeaderSection />
-                </View>
+
+                <TouchableOpacity
+                    style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
+                    activeOpacity={0.7}
+                    onPress={() => Alert.alert('Rebalancing', 'Coming soon!')}
+                >
+                    <View style={styles.settingLeft}>
+                        <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
+                            <MaterialCommunityIcons
+                                name="scale-balance"
+                                size={20}
+                                color={Colors.tint}
+                            />
+                        </View>
+                        <View style={styles.settingText}>
+                            <Text style={[styles.settingLabel, { color: Colors.text }]}>
+                                Rebalancing Alerts
+                            </Text>
+                            <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
+                                Get notified when portfolio needs rebalancing
+                            </Text>
+                        </View>
+                    </View>
+                    <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={20}
+                        color={Colors.text}
+                        style={{ opacity: 0.4 }}
+                    />
+                </TouchableOpacity>
             </View>
-            <Text style={styles.title}>
-                Settings
-            </Text>
 
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
-            >
-                {/* APPEARANCE SECTION */}
-                <View style={styles.section}>
-                    <Text style={[styles.sectionHeader, { color: Colors.text }]}>
-                        Appearance
-                    </Text>
+            {/* SECURITY & PRIVACY SECTION */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionHeader, { color: Colors.text }]}>
+                    Security & Privacy
+                </Text>
 
-                    <SettingItemSelect
-                        icon="palette"
-                        label="Theme"
-                        description="Choose your preferred appearance"
-                        value={appSettings.theme.charAt(0).toUpperCase() + appSettings.theme.slice(1)}
-                        onPress={() => setActiveModal('theme')}
-                        colors={Colors}
-                    />
-                </View>
-
-                {/* GENERAL SECTION */}
-                <View style={styles.section}>
-                    <Text style={[styles.sectionHeader, { color: Colors.text }]}>
-                        General
-                    </Text>
-
-                    <SettingItemSelect
-                        icon="currency-usd"
-                        label="Default Currency"
-                        description="Select your preferred currency"
-                        value={appSettings.currency}
-                        onPress={() => setActiveModal('currency')}
-                        colors={Colors}
-                    />
-
-                    <SettingItemSelect
-                        icon="translate"
-                        label="Language"
-                        description="Choose your preferred language"
-                        value={appSettings.language}
-                        onPress={() => setActiveModal('language')}
-                        colors={Colors}
-                    />
-
-                    <SettingItemSelect
-                        icon="calendar-outline"
-                        label="Date Format"
-                        description="Select date display format"
-                        value={appSettings.dateFormat}
-                        onPress={() => setActiveModal('dateFormat')}
-                        colors={Colors}
-                    />
-                </View>
-
-                {/* NOTIFICATIONS SECTION */}
-                <View style={styles.section}>
-                    <Text style={[styles.sectionHeader, { color: Colors.text }]}>
-                        Notifications
-                    </Text>
-
-                    <SettingItemToggle
-                        icon="bell-alert-outline"
-                        label="Price Alerts"
-                        description="Get notified when prices change significantly"
-                        value={notifications.priceAlerts}
-                        onToggle={() => handleNotificationToggle('priceAlerts')}
-                        colors={Colors}
-                    />
-
-                    <SettingItemToggle
-                        icon="chart-line-variant"
-                        label="Portfolio Updates"
-                        description="Receive daily portfolio performance updates"
-                        value={notifications.portfolioUpdates}
-                        onToggle={() => handleNotificationToggle('portfolioUpdates')}
-                        colors={Colors}
-                    />
-
-                    <SettingItemToggle
-                        icon="newspaper"
-                        label="Market News"
-                        description="Get the latest financial news and insights"
-                        value={notifications.marketNews}
-                        onToggle={() => handleNotificationToggle('marketNews')}
-                        colors={Colors}
-                    />
-
-                    <SettingItemToggle
-                        icon="cash-multiple"
-                        label="Dividend Notifications"
-                        description="Be notified about dividend payments"
-                        value={notifications.dividendNotifications}
-                        onToggle={() => handleNotificationToggle('dividendNotifications')}
-                        colors={Colors}
-                    />
-
-                    <SettingItemToggle
-                        icon="calendar-check"
-                        label="Earnings Season"
-                        description="Get alerts during company earnings season"
-                        value={notifications.earningSeason}
-                        onToggle={() => handleNotificationToggle('earningSeason')}
-                        colors={Colors}
-                    />
-                </View>
-
-                {/* PORTFOLIO SECTION */}
-                <View style={styles.section}>
-                    <Text style={[styles.sectionHeader, { color: Colors.text }]}>
-                        Portfolio
-                    </Text>
-
-                    <TouchableOpacity
-                        style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
-                        activeOpacity={0.7}
-                        onPress={() => Alert.alert('Recurring Investments', 'Coming soon!')}
-                    >
-                        <View style={styles.settingLeft}>
-                            <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
-                                <MaterialCommunityIcons
-                                    name="repeat"
-                                    size={20}
-                                    color={Colors.tint}
-                                />
-                            </View>
-                            <View style={styles.settingText}>
-                                <Text style={[styles.settingLabel, { color: Colors.text }]}>
-                                    Recurring Investments
-                                </Text>
-                                <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
-                                    Set up automatic investments
-                                </Text>
-                            </View>
+                <TouchableOpacity
+                    style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
+                    activeOpacity={0.7}
+                    onPress={() => Alert.alert('Two-Factor Authentication', 'Coming soon!')}
+                >
+                    <View style={styles.settingLeft}>
+                        <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
+                            <MaterialCommunityIcons
+                                name="shield-account-outline"
+                                size={20}
+                                color={Colors.tint}
+                            />
                         </View>
-                        <MaterialCommunityIcons
-                            name="chevron-right"
-                            size={20}
-                            color={Colors.text}
-                            style={{ opacity: 0.4 }}
-                        />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
-                        activeOpacity={0.7}
-                        onPress={() => Alert.alert('Rebalancing', 'Coming soon!')}
-                    >
-                        <View style={styles.settingLeft}>
-                            <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
-                                <MaterialCommunityIcons
-                                    name="scale-balance"
-                                    size={20}
-                                    color={Colors.tint}
-                                />
-                            </View>
-                            <View style={styles.settingText}>
-                                <Text style={[styles.settingLabel, { color: Colors.text }]}>
-                                    Rebalancing Alerts
-                                </Text>
-                                <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
-                                    Get notified when portfolio needs rebalancing
-                                </Text>
-                            </View>
+                        <View style={styles.settingText}>
+                            <Text style={[styles.settingLabel, { color: Colors.text }]}>
+                                Two-Factor Authentication
+                            </Text>
+                            <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
+                                Enhance account security
+                            </Text>
                         </View>
-                        <MaterialCommunityIcons
-                            name="chevron-right"
-                            size={20}
-                            color={Colors.text}
-                            style={{ opacity: 0.4 }}
-                        />
-                    </TouchableOpacity>
-                </View>
+                    </View>
+                    <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={20}
+                        color={Colors.text}
+                        style={{ opacity: 0.4 }}
+                    />
+                </TouchableOpacity>
 
-                {/* SECURITY & PRIVACY SECTION */}
-                <View style={styles.section}>
-                    <Text style={[styles.sectionHeader, { color: Colors.text }]}>
-                        Security & Privacy
-                    </Text>
-
-                    <TouchableOpacity
-                        style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
-                        activeOpacity={0.7}
-                        onPress={() => Alert.alert('Two-Factor Authentication', 'Coming soon!')}
-                    >
-                        <View style={styles.settingLeft}>
-                            <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
-                                <MaterialCommunityIcons
-                                    name="shield-account-outline"
-                                    size={20}
-                                    color={Colors.tint}
-                                />
-                            </View>
-                            <View style={styles.settingText}>
-                                <Text style={[styles.settingLabel, { color: Colors.text }]}>
-                                    Two-Factor Authentication
-                                </Text>
-                                <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
-                                    Enhance account security
-                                </Text>
-                            </View>
+                <TouchableOpacity
+                    style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
+                    activeOpacity={0.7}
+                    onPress={() => Alert.alert('Privacy Settings', 'Coming soon!')}
+                >
+                    <View style={styles.settingLeft}>
+                        <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
+                            <MaterialCommunityIcons
+                                name="lock-outline"
+                                size={20}
+                                color={Colors.tint}
+                            />
                         </View>
-                        <MaterialCommunityIcons
-                            name="chevron-right"
-                            size={20}
-                            color={Colors.text}
-                            style={{ opacity: 0.4 }}
-                        />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
-                        activeOpacity={0.7}
-                        onPress={() => Alert.alert('Privacy Settings', 'Coming soon!')}
-                    >
-                        <View style={styles.settingLeft}>
-                            <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
-                                <MaterialCommunityIcons
-                                    name="lock-outline"
-                                    size={20}
-                                    color={Colors.tint}
-                                />
-                            </View>
-                            <View style={styles.settingText}>
-                                <Text style={[styles.settingLabel, { color: Colors.text }]}>
-                                    Privacy Policy
-                                </Text>
-                                <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
-                                    View our privacy policy
-                                </Text>
-                            </View>
+                        <View style={styles.settingText}>
+                            <Text style={[styles.settingLabel, { color: Colors.text }]}>
+                                Privacy Policy
+                            </Text>
+                            <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
+                                View our privacy policy
+                            </Text>
                         </View>
-                        <MaterialCommunityIcons
-                            name="chevron-right"
-                            size={20}
-                            color={Colors.text}
-                            style={{ opacity: 0.4 }}
-                        />
-                    </TouchableOpacity>
-                </View>
+                    </View>
+                    <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={20}
+                        color={Colors.text}
+                        style={{ opacity: 0.4 }}
+                    />
+                </TouchableOpacity>
+            </View>
 
-                {/* ABOUT SECTION */}
-                <View style={styles.section}>
-                    <Text style={[styles.sectionHeader, { color: Colors.text }]}>
-                        About
-                    </Text>
+            {/* ABOUT SECTION */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionHeader, { color: Colors.text }]}>
+                    About
+                </Text>
 
-                    <TouchableOpacity
-                        style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
-                        activeOpacity={0.7}
-                        onPress={() => Alert.alert('About Pegasus', 'Pegasus Investment Portfolio v1.0.0')}
-                    >
-                        <View style={styles.settingLeft}>
-                            <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
-                                <MaterialCommunityIcons
-                                    name="information-outline"
-                                    size={20}
-                                    color={Colors.tint}
-                                />
-                            </View>
-                            <View style={styles.settingText}>
-                                <Text style={[styles.settingLabel, { color: Colors.text }]}>
-                                    About Pegasus
-                                </Text>
-                                <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
-                                    v1.0.0
-                                </Text>
-                            </View>
+                <TouchableOpacity
+                    style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
+                    activeOpacity={0.7}
+                    onPress={() => Alert.alert('About Pegasus', 'Pegasus Investment Portfolio v1.0.0')}
+                >
+                    <View style={styles.settingLeft}>
+                        <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
+                            <MaterialCommunityIcons
+                                name="information-outline"
+                                size={20}
+                                color={Colors.tint}
+                            />
                         </View>
-                        <MaterialCommunityIcons
-                            name="chevron-right"
-                            size={20}
-                            color={Colors.text}
-                            style={{ opacity: 0.4 }}
-                        />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
-                        activeOpacity={0.7}
-                        onPress={() => Alert.alert('Terms of Service', 'Coming soon!')}
-                    >
-                        <View style={styles.settingLeft}>
-                            <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
-                                <MaterialCommunityIcons
-                                    name="file-document-outline"
-                                    size={20}
-                                    color={Colors.tint}
-                                />
-                            </View>
-                            <View style={styles.settingText}>
-                                <Text style={[styles.settingLabel, { color: Colors.text }]}>
-                                    Terms of Service
-                                </Text>
-                                <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
-                                    Read our terms
-                                </Text>
-                            </View>
+                        <View style={styles.settingText}>
+                            <Text style={[styles.settingLabel, { color: Colors.text }]}>
+                                About Pegasus
+                            </Text>
+                            <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
+                                v1.0.0
+                            </Text>
                         </View>
-                        <MaterialCommunityIcons
-                            name="chevron-right"
-                            size={20}
-                            color={Colors.text}
-                            style={{ opacity: 0.4 }}
-                        />
-                    </TouchableOpacity>
+                    </View>
+                    <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={20}
+                        color={Colors.text}
+                        style={{ opacity: 0.4 }}
+                    />
+                </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
-                        activeOpacity={0.7}
-                        onPress={() => Alert.alert('Support', 'support@pegasusinvest.com')}
-                    >
-                        <View style={styles.settingLeft}>
-                            <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
-                                <MaterialCommunityIcons
-                                    name="help-circle-outline"
-                                    size={20}
-                                    color={Colors.tint}
-                                />
-                            </View>
-                            <View style={styles.settingText}>
-                                <Text style={[styles.settingLabel, { color: Colors.text }]}>
-                                    Contact Support
-                                </Text>
-                                <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
-                                    Get help and support
-                                </Text>
-                            </View>
+                <TouchableOpacity
+                    style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
+                    activeOpacity={0.7}
+                    onPress={() => Alert.alert('Terms of Service', 'Coming soon!')}
+                >
+                    <View style={styles.settingLeft}>
+                        <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
+                            <MaterialCommunityIcons
+                                name="file-document-outline"
+                                size={20}
+                                color={Colors.tint}
+                            />
                         </View>
-                        <MaterialCommunityIcons
-                            name="chevron-right"
-                            size={20}
-                            color={Colors.text}
-                            style={{ opacity: 0.4 }}
-                        />
-                    </TouchableOpacity>
-                </View>
+                        <View style={styles.settingText}>
+                            <Text style={[styles.settingLabel, { color: Colors.text }]}>
+                                Terms of Service
+                            </Text>
+                            <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
+                                Read our terms
+                            </Text>
+                        </View>
+                    </View>
+                    <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={20}
+                        color={Colors.text}
+                        style={{ opacity: 0.4 }}
+                    />
+                </TouchableOpacity>
 
-                <View style={{ height: 24 }} />
-            </ScrollView>
+                <TouchableOpacity
+                    style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
+                    activeOpacity={0.7}
+                    onPress={() => Alert.alert('Support', 'support@pegasusinvest.com')}
+                >
+                    <View style={styles.settingLeft}>
+                        <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
+                            <MaterialCommunityIcons
+                                name="help-circle-outline"
+                                size={20}
+                                color={Colors.tint}
+                            />
+                        </View>
+                        <View style={styles.settingText}>
+                            <Text style={[styles.settingLabel, { color: Colors.text }]}>
+                                Contact Support
+                            </Text>
+                            <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
+                                Get help and support
+                            </Text>
+                        </View>
+                    </View>
+                    <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={20}
+                        color={Colors.text}
+                        style={{ opacity: 0.4 }}
+                    />
+                </TouchableOpacity>
+            </View>
+
+            <View style={{ height: 24 }} />
 
             {/* Selection Modals */}
             <SelectionModal
@@ -647,53 +615,14 @@ export default function SettingsScreen({ navigation }: { navigation?: any }) {
                 onClose={() => setActiveModal(null)}
                 colors={Colors}
             />
-        </View>
+        </>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        marginTop: -5,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 24,
-        paddingVertical: 8,
-    },
-    topBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 0,
-        paddingTop: 12,
-        paddingBottom: 0,
-    },
-    backButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        marginTop: -10,
-    },
-    headerSpacer: {
-        flex: 1,
-        marginLeft: -40,
-        marginTop: 0,
-    },
-    title: {
-        fontSize: 28, fontWeight: "800", fontStyle: "italic", marginLeft: 10,
-        marginBottom: 0, marginTop: -10
-    },
-    scrollContent: {
-        paddingVertical: 20,
-        gap: 20,
-    },
     section: {
         gap: 10,
+        marginBottom: 16,
     },
     sectionHeader: {
         fontSize: 12,

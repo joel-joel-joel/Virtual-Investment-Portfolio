@@ -12,10 +12,10 @@ import {
     GestureResponderEvent,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { getThemeColors } from '@/src/constants/colors';
 import { HeaderSection } from "@/src/components/home/HeaderSection";
-import { Svg, Polyline, Circle, Defs, LinearGradient, Stop, Line } from 'react-native-svg';
+import { Svg, Polyline, Circle, Defs, LinearGradient, Stop, Line, RadialGradient} from 'react-native-svg';
 import { getStockQuote, getCompanyProfile, getOrCreateStockBySymbol } from '@/src/services/entityService';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '@/src/services';
 import type { FinnhubQuoteDTO, FinnhubMetricsDTO, FinnhubCandleDTO } from '@/src/types/api';
@@ -78,7 +78,7 @@ export const StockHeaderChart = React.memo(({
                                                 onTimeframeChange,
                                                 onTabChange,
                                             }: StockHeaderChartProps) => {
-    const router = useRouter();
+    const navigation = useNavigation();
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
 
@@ -287,7 +287,7 @@ export const StockHeaderChart = React.memo(({
     };
 
     const handleGoBack = () => {
-        router.back();
+        navigation.goBack();
     };
 
     const sectorColor = getSectorColor(stock.sector);
@@ -483,6 +483,13 @@ export const StockHeaderChart = React.memo(({
                                     <Stop offset="0" stopColor={sectorColor.color} stopOpacity="0.3" />
                                     <Stop offset="1" stopColor={sectorColor.color} stopOpacity="0" />
                                 </LinearGradient>
+
+                                {/* Radial gradient for selected point circle */}
+                                <RadialGradient id="pointGradient" cx="50%" cy="50%" r="50%">
+                                    <Stop offset="0%" stopColor={sectorColor.color} stopOpacity="1" />
+                                    <Stop offset="70%" stopColor={sectorColor.color} stopOpacity="0.6" />
+                                    <Stop offset="100%" stopColor={sectorColor.color} stopOpacity="0" />
+                                </RadialGradient>
                             </Defs>
 
                             {/* Gradient area under the line */}
@@ -523,15 +530,25 @@ export const StockHeaderChart = React.memo(({
 
                             {/* Highlight point when dragging */}
                             {selectedPoint && (
-                                <Circle
-                                    cx={selectedPoint.x}
-                                    cy={selectedPoint.y}
-                                    r={6}
-                                    fill={sectorColor.color}
-                                    opacity={1}
-                                    stroke={Colors.text}
-                                    strokeWidth={2}
-                                />
+                                <>
+                                    {/* Outer gradient halo effect */}
+                                    <Circle
+                                        cx={selectedPoint.x}
+                                        cy={selectedPoint.y}
+                                        r={10}
+                                        fill="url(#pointGradient)"
+                                        opacity={0.8}
+                                    />
+
+                                    {/* Inner solid core */}
+                                    <Circle
+                                        cx={selectedPoint.x}
+                                        cy={selectedPoint.y}
+                                        r={6}
+                                        fill={sectorColor.color}
+                                        opacity={1}
+                                    />
+                                </>
                             )}
                         </Svg>
                     </View>

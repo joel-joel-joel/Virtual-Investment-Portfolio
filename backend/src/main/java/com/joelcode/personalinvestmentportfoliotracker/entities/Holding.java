@@ -34,28 +34,31 @@ public class Holding {
     // Columns
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "holding_id")
     private UUID holdingId;
 
     @Column(nullable = false, precision = 19, scale = 8)
     private BigDecimal quantity;
 
-    @Column(nullable = false, precision = 19, scale = 4)
+    @Column(name = "average_cost_basis", nullable = false, precision = 19, scale = 4)
     private BigDecimal averageCostBasis;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(name = "total_cost_basis", nullable = false, precision = 19, scale = 2)
     private BigDecimal totalCostBasis;
 
-    @Column(precision = 19, scale = 2)
+    @Column(name = "unrealized_gain", precision = 19, scale = 2)
     private BigDecimal unrealizedGain = BigDecimal.ZERO;
 
-    @Column(precision = 19, scale = 2)
+    @Column(name = "realized_gain", precision = 19, scale = 2)
     private BigDecimal realizedGain = BigDecimal.ZERO;
 
+    @Column(name = "first_purchase_date")
     private LocalDateTime firstPurchaseDate;
 
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
 

@@ -12,7 +12,9 @@ import {
     ScrollView,
     ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/src/navigation';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
 import { createAccount } from '@/src/services/portfolioService';
@@ -28,7 +30,7 @@ interface AccountDTO {
 export default function CreateAccountScreen() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     const [accountName, setAccountName] = useState('');
     const [initialBalance, setInitialBalance] = useState('');
@@ -92,7 +94,7 @@ export default function CreateAccountScreen() {
             >
                 {/* Back Button */}
                 <TouchableOpacity
-                    onPress={() => router.back()}
+                    onPress={() => navigation.goBack()}
                     style={[styles.backButton, { backgroundColor: Colors.card, borderColor: Colors.border }]}
                 >
                     <MaterialCommunityIcons name="chevron-left" size={24} color={Colors.text} />
@@ -100,7 +102,7 @@ export default function CreateAccountScreen() {
 
                 {/* Header */}
                 <Text style={[styles.header, { color: Colors.text }]}>
-                    Create Investment Account
+                    Create Account
                 </Text>
 
                 {/* Info */}
@@ -178,7 +180,7 @@ export default function CreateAccountScreen() {
                         <View style={styles.buttonRow}>
                             <TouchableOpacity
                                 style={[styles.secondaryButton, { borderColor: Colors.tint }]}
-                                onPress={() => router.back()}
+                                onPress={() => navigation.goBack()}
                             >
                                 <MaterialCommunityIcons name="arrow-left" size={18} color={Colors.tint} />
                                 <Text style={[styles.secondaryButtonText, { color: Colors.tint }]}>
@@ -187,7 +189,7 @@ export default function CreateAccountScreen() {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.primaryButton, { backgroundColor: Colors.tint }]}
-                                onPress={() => router.push('/(tabs)')}
+                                onPress={() => navigation.navigate('MainTabs', { screen: 'Portfolio', params: {} })}
                             >
                                 <Text style={styles.primaryButtonText}>View Portfolio</Text>
                                 <MaterialCommunityIcons name="arrow-right" size={18} color="white" />

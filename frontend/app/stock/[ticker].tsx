@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, useColorScheme } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import type { RootStackParamList } from '@/src/navigation';
 import { getThemeColors } from '../../src/constants/colors';
 import StockTickerScreen from '../../src/components/stock/StockTickerScreen';
 
@@ -40,20 +42,12 @@ interface StockData {
  */
 
 export default function StockPage() {
-    const params = useLocalSearchParams<{ stock: string; ticker: string }>();
+    const route = useRoute<RouteProp<RootStackParamList, 'StockTicker'>>();
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
 
-    // Parse the stock data from JSON string
-    let stock: StockData | null = null;
-
-    if (params.stock) {
-        try {
-            stock = JSON.parse(params.stock);
-        } catch (error) {
-            console.error('Error parsing stock data:', error);
-        }
-    }
+    // Get stock data from route params (already an object, no parsing needed)
+    const stock = route.params?.stock || null;
 
     if (!stock) {
         return (

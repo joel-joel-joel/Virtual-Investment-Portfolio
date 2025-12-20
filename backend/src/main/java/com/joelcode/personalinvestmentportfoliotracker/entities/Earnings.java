@@ -24,29 +24,31 @@ public class Earnings {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "earning_id")
     private UUID earningId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
 
-    @Column(nullable = false)
+    @Column(name = "earnings_date", nullable = false)
     private LocalDate earningsDate;
 
-    @Column(precision = 19, scale = 4)
+    @Column(name = "estimated_eps", precision = 19, scale = 4)
     private BigDecimal estimatedEPS;
 
-    @Column(precision = 19, scale = 4)
+    @Column(name = "actual_eps", precision = 19, scale = 4)
     private BigDecimal actualEPS;
 
-    @Column(length = 20)
+    @Column(name = "report_time", length = 20)
     private String reportTime;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public UUID getEarningId() { return earningId; }

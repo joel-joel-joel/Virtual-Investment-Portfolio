@@ -24,6 +24,7 @@ public class Activity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "activity_id")
     private UUID activityId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,10 +34,10 @@ public class Activity {
     @Column(nullable = false)
     private String type;
 
-    @Column(length = 20)
+    @Column(name = "stock_code", length = 20)
     private String stockCode;
 
-    @Column(length = 255)
+    @Column(name = "company_name", length = 255)
     private String companyName;
 
     @Column(columnDefinition = "TEXT")
@@ -46,7 +47,7 @@ public class Activity {
     private BigDecimal amount;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     public UUID getActivityId() { return activityId; }

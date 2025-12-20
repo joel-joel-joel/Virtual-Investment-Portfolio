@@ -12,6 +12,7 @@ import {
     useColorScheme,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { openBrowserAsync } from 'expo-web-browser';
 import { getThemeColors } from '../../constants/colors';
 
 import { NewsArticleDTO } from '../../types/api';
@@ -23,6 +24,7 @@ interface NewsItem {
     image: NodeRequire | string;
     content: string;
     sector: string;
+    url: string;
 }
 
 interface ExpandableNewsCardProps {
@@ -68,6 +70,12 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
             duration: 200,
             useNativeDriver: true,
         }).start(() => setActiveNews(null));
+    };
+
+    const handleReadMore = async () => {
+        if (activeNews?.url) {
+            await openBrowserAsync(activeNews.url);
+        }
     };
 
     return (
@@ -204,7 +212,7 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
                         {/* Action Button */}
                         <TouchableOpacity
                             style={[styles.actionButton, { backgroundColor: Colors.tint }]}
-                            onPress={closeNewsDetail}
+                            onPress={handleReadMore}
                         >
                             <Text style={styles.actionButtonText}>Read More</Text>
                         </TouchableOpacity>
@@ -365,6 +373,6 @@ const styles = StyleSheet.create({
     actionButtonText: {
         color: 'white',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '800',
     },
 });

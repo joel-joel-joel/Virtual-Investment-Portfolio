@@ -32,16 +32,17 @@ public class Account {
     // Columns
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "account_id")
     private UUID accountId;
 
-    @Column(nullable = false)
+    @Column(name = "account_name", nullable = false)
     private String accountName;
 
     @Column(name = "account_balance", nullable = false)
     private BigDecimal cashBalance = BigDecimal.ZERO;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
 

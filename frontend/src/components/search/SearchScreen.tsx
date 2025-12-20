@@ -13,7 +13,9 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/src/navigation';
 import {
     addToWatchlist,
     removeFromWatchlist,
@@ -124,7 +126,7 @@ const SearchResultCard = ({
     onToggleWatchlist: (symbol: string) => void;
     isTogglingWatchlist: boolean;
 }) => {
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const isPositive = stock.changePercent >= 0;
 
     const handleNavigateToStock = () => {
@@ -151,13 +153,7 @@ const SearchResultCard = ({
             earningsPerShare: '',
         };
 
-        router.push({
-            pathname: '/stock/[ticker]',
-            params: {
-                ticker: stock.symbol,
-                stock: JSON.stringify(stockData),
-            },
-        });
+        navigation.navigate('StockTicker', { stock: stockData });
     };
 
     const handleBuyStock = () => {
@@ -184,12 +180,7 @@ const SearchResultCard = ({
             earningsPerShare: '',
         };
 
-        router.push({
-            pathname: '/transaction/buy',
-            params: {
-                stock: JSON.stringify(stockData),
-            },
-        });
+        navigation.navigate('BuyTransaction', { stock: stockData });
     };
 
     return (

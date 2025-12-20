@@ -24,6 +24,7 @@ public class PriceAlert {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "alert_id")
     private UUID alertId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,16 +38,17 @@ public class PriceAlert {
     @Column(nullable = false)
     private String type;
 
-    @Column(nullable = false)
+    @Column(name = "target_price", nullable = false)
     private BigDecimal targetPrice;
 
-    @Column(nullable = false)
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "triggered_at")
     private LocalDateTime triggeredAt;
 
     public UUID getAlertId() { return alertId; }

@@ -10,7 +10,9 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '../../constants/colors';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/src/navigation';
 
 interface QuickAction {
     id: string;
@@ -23,17 +25,17 @@ interface QuickActionsRowProps {
     actions?: QuickAction[];
 }
 
-// We'll create this inside the component to access router
-const createDefaultActions = (router: any): QuickAction[] => [
+// We'll create this inside the component to access navigation
+const createDefaultActions = (navigation: NativeStackNavigationProp<RootStackParamList>): QuickAction[] => [
     {
         id: 'add-to-wallet',
         label: 'Add to Wallet',
         icon: 'plus-circle',
         onPress: () => {
-            // Navigate to profile tab with wallet parameter
-            router.push({
-                pathname: '/(tabs)/profile',
-                params: { openWallet: 'true' }
+            // Navigate to profile tab and open wallet modal
+            navigation.navigate('MainTabs', {
+                screen: 'Profile',
+                params: { openWallet: true }
             });
         },
     },
@@ -41,19 +43,19 @@ const createDefaultActions = (router: any): QuickAction[] => [
         id: 'watchlist',
         label: 'Add to Watchlist',
         icon: 'heart-outline',
-        onPress: () => router.push('/(tabs)/watchlist'),
+        onPress: () => navigation.navigate('MainTabs', { screen: 'Watchlist' }),
     },
     {
         id: 'search',
         label: 'Search Stock',
         icon: 'magnify',
-        onPress: () => router.push('/(tabs)/search'),
+        onPress: () => navigation.navigate('MainTabs', { screen: 'Search' }),
     },
     {
         id: 'analytics',
         label: 'Analytics',
         icon: 'chart-line',
-        onPress: () => router.push('/(tabs)/portfolio'),
+        onPress: () => navigation.navigate('MainTabs', { screen: 'Portfolio' }),
     },
 ];
 
@@ -128,10 +130,10 @@ export const QuickActionsRow: React.FC<QuickActionsRowProps> = ({
                                                                 }) => {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
-    const defaultActions = createDefaultActions(router);
+    const defaultActions = createDefaultActions(navigation);
     const finalActions = actions || defaultActions;
 
     return (

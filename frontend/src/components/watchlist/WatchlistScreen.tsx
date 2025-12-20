@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/src/navigation';
 import { getWatchlist, removeFromWatchlist } from '@/src/services/portfolioService';
 import { useFocusEffect } from '@react-navigation/native';
 import { getSectorColor } from '@/src/services/sectorColorService';
@@ -46,7 +48,7 @@ const WatchlistCard = ({
     onRemove: (stockId: string) => void;
     isRemoving: boolean;
 }) => {
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const isPositive = stock.changePercent >= 0;
     const [expanded, setExpanded] = useState(false);
 
@@ -60,12 +62,7 @@ const WatchlistCard = ({
             stockId: stock.stockId,
         };
 
-        router.push({
-            pathname: '/transaction/buy',
-            params: {
-                stock: JSON.stringify(stockData),
-            },
-        });
+        navigation.navigate('BuyTransaction', { stock: stockData });
     };
 
     const handleNavigateToStock = () => {
@@ -78,13 +75,7 @@ const WatchlistCard = ({
             sector: stock.sector || 'Other',
         };
 
-        router.push({
-            pathname: '/stock/[ticker]',
-            params: {
-                ticker: stock.symbol,
-                stock: JSON.stringify(stockData),
-            },
-        });
+        navigation.navigate('StockTicker', { stock: stockData });
     };
 
     return (

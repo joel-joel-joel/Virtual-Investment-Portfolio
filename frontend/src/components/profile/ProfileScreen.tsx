@@ -12,7 +12,10 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
+import type { RootStackParamList, TabParamList } from '@/src/navigation';
 import { useAuth } from '@/src/context/AuthContext';
 import { getUserDashboard } from '@/src/services/dashboardService';
 import type { DashboardDTO } from '@/src/types/api';
@@ -78,8 +81,8 @@ const ProfileMenuOption = ({
 export default function ProfileScreen() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
-    const router = useRouter();
-    const params = useLocalSearchParams<{ openWallet?: string }>();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const route = useRoute<RouteProp<TabParamList, 'Profile'>>();
     const { user, accounts, activeAccount, switchAccount, logout, refreshAccounts, setActiveAccount } = useAuth();
 
     const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
@@ -93,15 +96,12 @@ export default function ProfileScreen() {
         }
     }, [user, activeAccount]);
 
-    // Check for openWallet parameter and open wallet modal
+    // Check if we should open wallet modal from navigation params
     useEffect(() => {
-        if (params.openWallet === 'true' && activeAccount) {
-            // Small delay to ensure screen is mounted
-            setTimeout(() => {
-                setShowWalletModal(true);
-            }, 300);
+        if (route.params?.openWallet === true && activeAccount) {
+            setShowWalletModal(true);
         }
-    }, [params.openWallet, activeAccount]);
+    }, [route.params?.openWallet, activeAccount]);
 
     const loadDashboardData = async () => {
         if (!user) return;
@@ -123,15 +123,15 @@ export default function ProfileScreen() {
     };
 
     const handleCreateAccount = () => {
-        router.push('/account/create');
+        navigation.navigate('CreateAccount');
     };
 
     const handleSettingsPress = () => {
-        router.push('/(tabs)/settings');
+        navigation.navigate('Settings');
     };
 
     const handleTransactionHistoryPress = () => {
-        router.push('/transaction/history');
+        navigation.navigate('TransactionHistory');
     };
 
     const handleLogoutPress = () => {
@@ -146,7 +146,7 @@ export default function ProfileScreen() {
                         try {
                             await apiLogout();
                             await logout();
-                            router.replace('/auth/login');
+                            // Navigation is handled by auth state change in AuthProvider
                         } catch (error) {
                             Alert.alert('Error', 'Failed to logout. Please try again.');
                         }

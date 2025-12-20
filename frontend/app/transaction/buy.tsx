@@ -13,7 +13,10 @@ import {
 import { getThemeColors } from '@/src/constants/colors';
 import { HeaderSection } from '@/src/components/home/HeaderSection';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
+import type { RootStackParamList } from '@/src/navigation';
 import { createTransaction } from '@/src/services/portfolioService';
 import { createOrder } from '@/src/services/orderService';
 import { getOrCreateStockBySymbol } from '@/src/services/entityService';
@@ -25,19 +28,12 @@ import { getSectorColor } from '@/src/services/sectorColorService';
 export default function BuyTransactionPage() {
     const colorScheme = useColorScheme();
     const Colors = getThemeColors(colorScheme);
-    const router = useRouter();
-    const params = useLocalSearchParams<{ stock?: string }>();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const route = useRoute<RouteProp<RootStackParamList, 'BuyTransaction'>>();
     const { activeAccount } = useAuth();
 
-    // Parse stock data if provided
-    let stockData = null;
-    if (params.stock) {
-        try {
-            stockData = JSON.parse(params.stock);
-        } catch (error) {
-            console.error('Error parsing stock data:', error);
-        }
-    }
+    // Get stock data from route params (already an object, no parsing needed)
+    const stockData = route.params?.stock || null;
 
     const [shares, setShares] = useState('');
     const [priceType, setPriceType] = useState<'market' | 'limit'>('market');
@@ -116,7 +112,7 @@ export default function BuyTransactionPage() {
     const sectorColor = displayStockData ? getSectorColor(displayStockData.sector) : { bgLight: '#fff', color: '#000' };
 
     const handleGoBack = () => {
-        router.back();
+        navigation.goBack();
     };
 
     const handleBuy = async () => {
@@ -201,7 +197,7 @@ export default function BuyTransactionPage() {
                                 });
 
                                 Alert.alert('Success', `Limit order placed! Your order will execute when ${stockData.symbol} reaches A$${limitPrice} or below.`);
-                                router.back();
+                                navigation.goBack();
                             } else {
                                 console.log('📊 BUY: Creating MARKET order...');
                                 // Create a market order
@@ -229,7 +225,7 @@ export default function BuyTransactionPage() {
                                 });
 
                                 Alert.alert('Success', `Successfully purchased ${shareCount} shares of ${stockData.symbol}!`);
-                                router.back();
+                                navigation.goBack();
                             }
                         } catch (error: any) {
                             console.error('❌ BUY: Error occurred:', {

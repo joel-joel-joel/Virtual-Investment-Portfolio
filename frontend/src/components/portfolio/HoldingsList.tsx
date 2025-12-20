@@ -13,7 +13,9 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '../../constants/colors';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/src/navigation';
 import { useAuth } from '@/src/context/AuthContext';
 import { getAccountHoldings } from '@/src/services/portfolioService';
 import { getStockById } from '@/src/services/entityService';
@@ -49,7 +51,7 @@ const HoldingCard = ({
     onPress?: () => void;
     sectorColor: any;
 }) => {
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [isExpanded, setIsExpanded] = React.useState(true);
     const isPositive = holding.returnPercent >= 0;
     const costPerShare = holding.amountInvested / holding.shares;
@@ -81,13 +83,7 @@ const HoldingCard = ({
         };
 
         // Navigate to stock ticker page
-        router.push({
-            pathname: '/stock/[ticker]',
-            params: {
-                ticker: holding.symbol,
-                stock: JSON.stringify(stockData),
-            },
-        });
+        navigation.navigate('StockTicker', { stock: stockData });
     };
 
     return (

@@ -58,8 +58,9 @@ export default function HomeScreen() {
                     title: article.title,
                     description: article.summary || '',
                     image: article.imageUrl || require('../../assets/images/apple.png'),
-                    content: article.summary || `Read more at: ${article.url}`,
-                    sector: article.sector
+                    content: article.summary || '',
+                    sector: article.sector,
+                    url: article.url
                 }));
                 setNewsItems(formattedNews);
             } catch (error) {

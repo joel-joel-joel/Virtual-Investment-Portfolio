@@ -25,18 +25,19 @@ public class PriceHistory {
     // Column
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "price_history_id")
     private UUID priceHistoryId;
 
-    @Column (nullable = false)
+    @Column(name = "close_date", nullable = false)
     private LocalDateTime closeDate;
 
-    @Column (nullable = false)
+    @Column(name = "close_price", nullable = false)
     private BigDecimal closePrice;
 
 
     // Relationships
     @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn (name = "stockId", nullable = false)
+    @JoinColumn (name = "stock_id", nullable = false)
     private Stock stock;
 
 

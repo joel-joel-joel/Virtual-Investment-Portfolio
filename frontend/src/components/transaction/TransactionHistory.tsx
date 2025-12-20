@@ -11,7 +11,9 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '@/src/constants/colors';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/src/navigation';
 import { useAuth } from '@/src/context/AuthContext';
 import { getAccountTransactions } from '@/src/services/portfolioService';
 import { getStockById } from '@/src/services/entityService';
@@ -41,7 +43,7 @@ interface TransactionHistoryProps {
 }
 
 const TransactionCard = ({ transaction, colors }: { transaction: Transaction; colors: any }) => {
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const sectorColor = getSectorColor(transaction.sector);
     const isBuy = transaction.type === 'buy';
 
@@ -69,13 +71,7 @@ const TransactionCard = ({ transaction, colors }: { transaction: Transaction; co
             earningsPerShare: '',
         };
 
-        router.push({
-            pathname: '/stock/[ticker]',
-            params: {
-                ticker: transaction.symbol,
-                stock: JSON.stringify(stockData),
-            },
-        });
+        navigation.navigate('StockTicker', { stock: stockData });
     };
 
     return (

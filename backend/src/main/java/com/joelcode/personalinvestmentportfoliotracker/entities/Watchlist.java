@@ -19,6 +19,7 @@ public class Watchlist {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "watchlist_id")
     private UUID watchlistId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,7 +31,7 @@ public class Watchlist {
     private Stock stock;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(name = "added_at", updatable = false)
     private LocalDateTime addedAt;
 
     public UUID getWatchlistId() { return watchlistId; }

@@ -29,21 +29,22 @@ public class Dividend {
     // Columns
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "dividend_id")
     private UUID dividendId;
 
-    @Column(nullable = false)
+    @Column(name = "dividend_per_share", nullable = false)
     private BigDecimal dividendPerShare;
 
-    @Column(nullable = false)
+    @Column(name = "pay_date", nullable = false)
     private LocalDateTime payDate;
 
-    @Column(nullable = false)
+    @Column(name = "announcement_date", nullable = false)
     private LocalDateTime announcementDate = LocalDateTime.now();
 
 
     // Relationships
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stockId", nullable = false)
+    @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
 
     // One dividend can have many payments to different accounts

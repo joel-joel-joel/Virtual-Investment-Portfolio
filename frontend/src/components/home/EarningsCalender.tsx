@@ -11,7 +11,9 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemeColors } from '../../constants/colors';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/src/navigation';
 import { getSectorColor } from '@/src/services/sectorColorService';
 import { getUpcomingEarnings } from '@/src/services/earningService';
 import type { HoldingDTO } from '@/src/types/api';
@@ -57,7 +59,7 @@ const EarningsCard = ({
     colors: any;
     sectorColor: any;
 }) => {
-    const router = useRouter();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [expanded, setExpanded] = useState(false);
 
     const handleViewDetails = () => {
@@ -84,13 +86,7 @@ const EarningsCard = ({
             earningsPerShare: item.actualEps || item.estimatedEps || '0',
         };
 
-        router.push({
-            pathname: '/stock/[ticker]',
-            params: {
-                ticker: item.stockSymbol,
-                stock: JSON.stringify(stockData),
-            },
-        });
+        navigation.navigate('StockTicker', { stock: stockData });
     };
 
     return (

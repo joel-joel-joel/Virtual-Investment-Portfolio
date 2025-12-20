@@ -41,44 +41,46 @@ public class PortfolioSnapshot {
     // Columns
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "snapshot_id")
     private UUID snapshotId;
 
-    @Column(nullable = false)
+    @Column(name = "snapshot_date", nullable = false)
     private LocalDate snapshotDate;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(name = "total_value", nullable = false, precision = 19, scale = 2)
     private BigDecimal totalValue;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(name = "cash_balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal cashBalance = BigDecimal.ZERO;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(name = "total_cost_basis", nullable = false, precision = 19, scale = 2)
     private BigDecimal totalCostBasis;
 
-    @Column(precision = 19, scale = 2)
+    @Column(name = "total_gain", precision = 19, scale = 2)
     private BigDecimal totalGain;
 
-    @Column(precision = 19, scale = 2)
+    @Column(name = "day_change", precision = 19, scale = 2)
     private BigDecimal dayChange;
 
-    @Column(precision = 10, scale = 4)
+    @Column(name = "day_change_percent", precision = 10, scale = 4)
     private BigDecimal dayChangePercent;
 
-    @Column(precision = 19, scale = 2)
+    @Column(name = "realized_gain", precision = 19, scale = 2)
     private BigDecimal realizedGain = BigDecimal.ZERO;
 
-    @Column(precision = 19, scale = 2)
+    @Column(name = "unrealized_gain", precision = 19, scale = 2)
     private BigDecimal unrealizedGain = BigDecimal.ZERO;
 
-    @Column(precision = 19, scale = 2)
+    @Column(name = "total_dividends", precision = 19, scale = 2)
     private BigDecimal totalDividends = BigDecimal.ZERO;
 
-    @Column(precision = 10, scale = 4)
+    @Column(name = "roi_percentage", precision = 10, scale = 4)
     private BigDecimal roiPercentage = BigDecimal.ZERO;
 
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
 

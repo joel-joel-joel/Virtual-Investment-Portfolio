@@ -13,24 +13,25 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "order_id")
     private UUID orderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "accountId", nullable = false)
+    @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stockId", nullable = false)
+    @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "order_type", nullable = false)
     private OrderType orderType;
 
     @Column(nullable = false)
     private BigDecimal quantity;
 
-    @Column(nullable = false)
+    @Column(name = "limit_price", nullable = false)
     private BigDecimal limitPrice;
 
     @Enumerated(EnumType.STRING)
@@ -38,12 +39,16 @@ public class Order {
     private OrderStatus status = OrderStatus.PENDING;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "executed_at")
     private LocalDateTime executedAt;
 
+    @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
 
+    @Column(name = "failure_reason", columnDefinition = "TEXT")
     private String failureReason;
 
     // Enums
