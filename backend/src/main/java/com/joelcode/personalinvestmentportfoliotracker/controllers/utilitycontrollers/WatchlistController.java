@@ -1,6 +1,7 @@
 package com.joelcode.personalinvestmentportfoliotracker.controllers.utilitycontrollers;
 
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCompanyProfileDTO;
+import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubQuoteDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.watchlist.WatchlistItemDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
@@ -51,18 +52,30 @@ public class WatchlistController {
                 .map(w -> {
                     Stock stock = w.getStock();
 
-                    // Get current price from Finnhub
-                    BigDecimal currentPrice = finnhubApiClient.getCurrentPrice(stock.getStockCode());
-                    if (currentPrice == null) {
+                    // Get full quote from Finnhub (includes change and changePercent)
+                    BigDecimal currentPrice = stock.getStockValue();
+                    BigDecimal change = BigDecimal.ZERO;
+                    BigDecimal changePercent = BigDecimal.ZERO;
+
+                    try {
+                        var quote = finnhubApiClient.getQuote(stock.getStockCode());
+                        if (quote != null) {
+                            // Use Finnhub's current price if available
+                            if (quote.getCurrentPrice() != null) {
+                                currentPrice = quote.getCurrentPrice();
+                            }
+                            // Use Finnhub's change data directly (already calculated)
+                            if (quote.getChange() != null) {
+                                change = quote.getChange();
+                            }
+                            if (quote.getChangePercent() != null) {
+                                changePercent = quote.getChangePercent();
+                            }
+                        }
+                    } catch (Exception e) {
+                        // Fallback: use stored price if API fails
                         currentPrice = stock.getStockValue();
                     }
-
-                    // Calculate change
-                    BigDecimal previousPrice = stock.getStockValue();
-                    BigDecimal change = currentPrice.subtract(previousPrice);
-                    BigDecimal changePercent = previousPrice.compareTo(BigDecimal.ZERO) > 0
-                            ? change.divide(previousPrice, 4, java.math.RoundingMode.HALF_UP).multiply(new BigDecimal(100))
-                            : BigDecimal.ZERO;
 
                     // ✅ Get sector from Finnhub profile
                     String sector = "Other";
@@ -118,15 +131,30 @@ public class WatchlistController {
         Watchlist watchlist = new Watchlist(user, stock);
         watchlistRepository.save(watchlist);
 
-        BigDecimal currentPrice = finnhubApiClient.getCurrentPrice(stock.getStockCode());
-        if (currentPrice == null) {
+        // Get full quote from Finnhub (includes change and changePercent)
+        BigDecimal currentPrice = stock.getStockValue();
+        BigDecimal change = BigDecimal.ZERO;
+        BigDecimal changePercent = BigDecimal.ZERO;
+
+        try {
+            var quote = finnhubApiClient.getQuote(stock.getStockCode());
+            if (quote != null) {
+                // Use Finnhub's current price if available
+                if (quote.getCurrentPrice() != null) {
+                    currentPrice = quote.getCurrentPrice();
+                }
+                // Use Finnhub's change data directly (already calculated)
+                if (quote.getChange() != null) {
+                    change = quote.getChange();
+                }
+                if (quote.getChangePercent() != null) {
+                    changePercent = quote.getChangePercent();
+                }
+            }
+        } catch (Exception e) {
+            // Fallback: use stored price if API fails
             currentPrice = stock.getStockValue();
         }
-        BigDecimal previousPrice = stock.getStockValue();
-        BigDecimal change = currentPrice.subtract(previousPrice);
-        BigDecimal changePercent = previousPrice.compareTo(BigDecimal.ZERO) > 0
-                ? change.divide(previousPrice, 4, java.math.RoundingMode.HALF_UP).multiply(new BigDecimal(100))
-                : BigDecimal.ZERO;
 
         WatchlistItemDTO dto = new WatchlistItemDTO(
                 watchlist.getWatchlistId(),

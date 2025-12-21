@@ -24,6 +24,12 @@ public class FinnhubQuoteDTO {
     @JsonProperty("t")
     private Long timestamp;
 
+    @JsonProperty("d")
+    private BigDecimal change;
+
+    @JsonProperty("dp")
+    private BigDecimal changePercent;
+
     public FinnhubQuoteDTO() {}
 
     public FinnhubQuoteDTO(BigDecimal currentPrice, BigDecimal highPrice, BigDecimal lowPrice,
@@ -34,6 +40,19 @@ public class FinnhubQuoteDTO {
         this.openPrice = openPrice;
         this.previousClosePrice = previousClosePrice;
         this.timestamp = timestamp;
+    }
+
+    public FinnhubQuoteDTO(BigDecimal currentPrice, BigDecimal highPrice, BigDecimal lowPrice,
+                           BigDecimal openPrice, BigDecimal previousClosePrice, Long timestamp,
+                           BigDecimal change, BigDecimal changePercent) {
+        this.currentPrice = currentPrice;
+        this.highPrice = highPrice;
+        this.lowPrice = lowPrice;
+        this.openPrice = openPrice;
+        this.previousClosePrice = previousClosePrice;
+        this.timestamp = timestamp;
+        this.change = change;
+        this.changePercent = changePercent;
     }
 
     public BigDecimal getCurrentPrice() { return currentPrice; }
@@ -53,4 +72,10 @@ public class FinnhubQuoteDTO {
 
     public Long getTimestamp() { return timestamp; }
     public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
+
+    public BigDecimal getChange() { return change; }
+    public void setChange(BigDecimal change) { this.change = change; }
+
+    public BigDecimal getChangePercent() { return changePercent; }
+    public void setChangePercent(BigDecimal changePercent) { this.changePercent = changePercent; }
 }
