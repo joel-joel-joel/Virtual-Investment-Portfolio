@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView, useColorScheme, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '../src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import SettingsScreen from "@/src/components/settings/SettingsScreen";
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,8 +10,7 @@ import {HeaderSection} from "@/src/components/home/HeaderSection";
 
 
 export default function SettingsPage() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     const handleGoBack = () => {

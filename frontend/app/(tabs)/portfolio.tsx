@@ -1,14 +1,13 @@
 import { View, useColorScheme, ScrollView } from 'react-native';
-import { getThemeColors } from '@/src/constants/colors';
 import { HeaderSection } from '@/src/components/home/HeaderSection';
 import { HoldingsList } from '@/src/components/portfolio/HoldingsList';
 import { AllocationOverview } from '@/src/components/portfolio/AllocationOverview';
 import { useAuth } from '@/src/context/AuthContext';
 import { useCallback, useState } from 'react';
+import { useTheme } from '@/src/context/ThemeContext';
 
 export default function PortfolioScreen() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const { activeAccount } = useAuth();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 

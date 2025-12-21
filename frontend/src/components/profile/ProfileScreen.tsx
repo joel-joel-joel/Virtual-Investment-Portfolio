@@ -11,7 +11,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
@@ -79,8 +79,7 @@ const ProfileMenuOption = ({
 };
 
 export default function ProfileScreen() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const route = useRoute<RouteProp<TabParamList, 'Profile'>>();
     const { user, accounts, activeAccount, switchAccount, logout, refreshAccounts, setActiveAccount } = useAuth();

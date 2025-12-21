@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, useColorScheme, ScrollView, TouchableOpacity } from 'react-native';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { HeaderSection } from '@/src/components/home/HeaderSection';
 import TransactionHistory from '@/src/components/transaction/TransactionHistory';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -9,8 +9,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
 
 export default function TransactionHistoryPage() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     const handleGoBack = () => {

@@ -1,10 +1,9 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native';
-import { getThemeColors } from '../src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 
 // Screen Imports
 import HomeScreen from './(tabs)/index';
@@ -58,8 +57,7 @@ declare global {
 
 // Tab Navigator
 function TabNavigator() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const { Colors } = useTheme();
 
     return (
         <Tab.Navigator
@@ -91,7 +89,7 @@ function TabNavigator() {
                 tabBarActiveTintColor: Colors.tint,
                 tabBarInactiveTintColor: Colors.text + '99',
                 tabBarStyle: {
-                    backgroundColor: Colors.card,
+                    backgroundColor: Colors.background,
                     borderTopColor: Colors.border,
                     borderTopWidth: 1,
                     paddingBottom: 8,
@@ -101,6 +99,7 @@ function TabNavigator() {
                     fontSize: 11,
                     fontWeight: '600',
                     marginTop: 4,
+                    color: Colors.text,
                 },
             })}
         >
@@ -145,14 +144,13 @@ function TabNavigator() {
 
 // Root Stack Navigator
 function RootStack() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const { Colors } = useTheme();
 
     return (
         <Stack.Navigator
             screenOptions={{
                 headerStyle: {
-                    backgroundColor: Colors.card,
+                    backgroundColor: Colors.background,
                 },
                 headerTintColor: Colors.text,
                 headerTitleStyle: {
@@ -212,9 +210,41 @@ function RootStack() {
 }
 
 // Navigation Container
-export function Navigation() {
+function Navigation() {
+    const { Colors, effectiveTheme } = useTheme();
+
+    console.log('🎨 Navigation Colors:', Colors);
+    console.log('🎨 effectiveTheme:', effectiveTheme);
+    console.log('🎨 Colors.background:', Colors.background);
+
+    const navigationTheme = effectiveTheme === 'dark'
+        ? {
+            ...DarkTheme,
+            colors: {
+                ...DarkTheme.colors,
+                background: Colors.background,
+                card: Colors.background, // ✅ Set card to background too
+                text: Colors.text,
+                border: Colors.border,
+                primary: Colors.tint,
+                notification: Colors.tint,
+            },
+        }
+        : {
+            ...DefaultTheme,
+            colors: {
+                ...DefaultTheme.colors,
+                background: Colors.background,
+                card: Colors.background, // ✅ Set card to background too
+                text: Colors.text,
+                border: Colors.border,
+                primary: Colors.tint,
+                notification: Colors.tint,
+            },
+        };
+
     return (
-        <NavigationContainer>
+        <NavigationContainer theme={navigationTheme}>
             <RootStack />
         </NavigationContainer>
     );

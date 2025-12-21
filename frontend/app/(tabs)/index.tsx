@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, useColorScheme } from "react-native";
-import { getThemeColors } from "@/src/constants/colors";
+import { View, ScrollView } from "react-native";
 import { HeaderSection } from "@/src/components/home/HeaderSection";
 import { Dashboard } from "@/src/components/home/Dashboard";
 import { WatchlistHighlights } from "@/src/components/home/WatchlistHighlights";
@@ -14,10 +13,11 @@ import { getAllNewsSafe } from '@/src/services/newsService';
 import { getAccountHoldings } from '@/src/services/portfolioService';
 import { useAuth } from '@/src/context/AuthContext';
 import type { NewsArticleDTO, HoldingDTO } from '@/src/types/api';
+import { useTheme } from '@/src/context/ThemeContext';
+
 
 export default function HomeScreen() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const { activeAccount } = useAuth();
 
     const [newsItems, setNewsItems] = useState<any[]>([]);

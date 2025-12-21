@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 import { View, Text, StyleSheet, useColorScheme, Dimensions } from "react-native";
-import { getThemeColors } from "../../../src/constants/colors";
 import { getSectorColor } from "@/src/services/sectorColorService";
 import Carousel from "react-native-reanimated-carousel";
 import type { HoldingDTO } from "@/src/types/api";
+import { useTheme } from '@/src/context/ThemeContext';
 
 const screenWidth = Dimensions.get("window").width - 48;
 
@@ -12,8 +12,7 @@ interface TopMoversProps {
 }
 
 export const TopMovers: React.FC<TopMoversProps> = ({ holdings }) => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
 
     // Calculate top 5 biggest movers (by absolute % change, positive or negative)
     const topMovers = useMemo(() => {

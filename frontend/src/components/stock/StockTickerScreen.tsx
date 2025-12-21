@@ -17,7 +17,7 @@ import { openBrowserAsync } from 'expo-web-browser';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import TransactionHistory from '@/src/components/transaction/TransactionHistory';
 import { getStockQuote, getCompanyProfile } from '@/src/services/entityService';
 import { searchCompaniesByName } from '@/src/services/portfolioService';
@@ -123,11 +123,10 @@ const fuzzySearchCompare = (query: string, symbol: string, companyName: string):
 
 export default function StockTickerScreen({ route }: { route?: any }) {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
 
     // State management
-    const [selectedTimeframe, setSelectedTimeframe] = useState<'1D' | '1W' | '1M' | '3M' | '1Y'>('1M');
+    const [selectedTimeframe, setSelectedTimeframe] = useState<'1D' | '1W' | '1M' | '3M' | '1Y' | '3Y' | 'ALL'>('1M');
     const [activeTab, setActiveTab] = useState<'overview' | 'news' | 'transactions' | 'compare'>('overview');
     const [compareStock, setCompareStock] = useState<CompareStockData | null>(null);
     const [compareSearchQuery, setCompareSearchQuery] = useState('');

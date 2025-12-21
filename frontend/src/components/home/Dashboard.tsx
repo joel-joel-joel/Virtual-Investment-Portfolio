@@ -3,16 +3,15 @@ import {
     View,
     Text,
     StyleSheet,
-    useColorScheme,
     Dimensions,
     Animated,
     TouchableOpacity,
     GestureResponderEvent,
 } from "react-native";
 import { Svg, Polyline, Circle, Defs, LinearGradient, RadialGradient, Stop, Line } from "react-native-svg";
-import { getThemeColors } from "../../../src/constants/colors";
 import { getAccountOverview, getPortfolioChartData } from "@/src/services/portfolioService";
 import { useAuth } from "@/src/context/AuthContext";
+import { useTheme } from "@/src/context/ThemeContext";
 
 const screenWidth = Dimensions.get("window").width - 48;
 const chartHeight = 140;
@@ -21,8 +20,7 @@ const chartPadding = 20;
 const filterOptions = ["1W", "1M", "3M", "6M", "1Y", "ALL"];
 
 export const Dashboard = () => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const { Colors } = useTheme();
     const { activeAccount } = useAuth();
 
     const chartWidth = screenWidth - chartPadding * 2;
@@ -273,7 +271,7 @@ export const Dashboard = () => {
                     <Text style={[styles.dashboarddetails, { color: Colors.text }]}>
                         {isLoading || absoluteGain === null || percentageGain === null
                             ? "Loading..."
-                            : `Gain: A$${absoluteGain.toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${percentageGain.toFixed(2)}%), Today`
+                            : `Gain: USD$${absoluteGain.toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${percentageGain.toFixed(2)}%), Today`
                         }
                     </Text>
                 </View>

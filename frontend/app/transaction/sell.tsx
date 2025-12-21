@@ -10,7 +10,7 @@ import {
     Alert,
     ActivityIndicator,
 } from 'react-native';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { HeaderSection } from '@/src/components/home/HeaderSection';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -26,8 +26,7 @@ import { getSectorColor } from '@/src/services/sectorColorService';
 
 
 export default function SellTransactionPage() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const route = useRoute<RouteProp<RootStackParamList, 'SellTransaction'>>();
     const { activeAccount } = useAuth();
@@ -317,7 +316,7 @@ export default function SellTransactionPage() {
                         <HeaderSection />
                     </View>
                 </View>
-                <Text style={styles.headerTitle}>Sell Stock</Text>
+                <Text style={[styles.headerTitle, { color: Colors.text }]}>Sell Stock</Text>
 
                 {/* Account Banner */}
                 {activeAccount && (
@@ -664,7 +663,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 0,
-        paddingTop: 12,
         paddingBottom: 0,
     },
     backButton: {
@@ -677,9 +675,7 @@ const styles = StyleSheet.create({
         marginTop: -10,
     },
     headerSpacer: {
-        flex: 1,
-        marginLeft: -32,
-        marginTop: 0,
+        marginLeft: 90,
     },
     headerTitleContainer: {
         flex: 1,

@@ -10,13 +10,14 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '../../constants/colors';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
 import { getSectorColor } from '@/src/services/sectorColorService';
 import { getUpcomingEarnings } from '@/src/services/earningService';
 import type { HoldingDTO } from '@/src/types/api';
+import { useTheme } from '@/src/context/ThemeContext';
+
 
 interface EarningsItem {
     earningsId: string;
@@ -52,11 +53,11 @@ const formatTime = (timeStr?: string) => {
 
 const EarningsCard = ({
                           item,
-                          colors,
+                          Colors,
                           sectorColor
                       }: {
     item: EarningsItem;
-    colors: any;
+    Colors: any;
     sectorColor: any;
 }) => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -95,8 +96,8 @@ const EarningsCard = ({
             style={[
                 styles.earningsCard,
                 {
-                    backgroundColor: colors.card,
-                    borderColor: colors.border,
+                    backgroundColor: Colors.card,
+                    borderColor: Colors.border,
                     borderWidth: 1,
                     maxHeight: expanded ? 280 : 100,
                 }
@@ -121,7 +122,7 @@ const EarningsCard = ({
                         <Text style={[styles.symbol, { color: sectorColor.color }]}>
                             {item.stockSymbol}
                         </Text>
-                        <Text style={[styles.company, { color: colors.text, opacity: 0.7 }]} numberOfLines={1}>
+                        <Text style={[styles.company, { color: Colors.text, opacity: 0.7 }]} numberOfLines={1}>
                             {item.companyName}
                         </Text>
                     </View>
@@ -131,10 +132,10 @@ const EarningsCard = ({
                     <MaterialCommunityIcons
                         name="clock-outline"
                         size={16}
-                        color={colors.tint}
+                        color={Colors.tint}
                         style={{ marginRight: 4 }}
                     />
-                    <Text style={[styles.time, { color: colors.text }]}>
+                    <Text style={[styles.time, { color: Colors.text }]}>
                         {formatTime(item.reportTime)}
                     </Text>
                 </View>
@@ -142,7 +143,7 @@ const EarningsCard = ({
 
             {/* Expanded Content */}
             {expanded && (
-                <View style={[styles.expandedContent, { borderTopColor: colors.border }]}>
+                <View style={[styles.expandedContent, { borderTopColor: Colors.border }]}>
                     <View style={styles.sectorBadge}>
                         <View style={[styles.sectorBadgeContent, { backgroundColor: sectorColor.bgLight }]}>
                             <MaterialCommunityIcons
@@ -160,22 +161,22 @@ const EarningsCard = ({
                         <View style={styles.epsRow}>
                             {item.estimatedEps && (
                                 <View style={styles.epsItem}>
-                                    <Text style={[styles.epsLabel, { color: colors.text, opacity: 0.6 }]}>
+                                    <Text style={[styles.epsLabel, { color: Colors.text, opacity: 0.6 }]}>
                                         Expected EPS
                                     </Text>
-                                    <Text style={[styles.epsValue, { color: colors.tint }]}>
+                                    <Text style={[styles.epsValue, { color: Colors.tint }]}>
                                         {item.estimatedEps}
                                     </Text>
                                 </View>
                             )}
                             {item.actualEps && (
                                 <>
-                                    {item.estimatedEps && <View style={[styles.separator, { backgroundColor: colors.border }]} />}
+                                    {item.estimatedEps && <View style={[styles.separator, { backgroundColor: Colors.border }]} />}
                                     <View style={styles.epsItem}>
-                                        <Text style={[styles.epsLabel, { color: colors.text, opacity: 0.6 }]}>
+                                        <Text style={[styles.epsLabel, { color: Colors.text, opacity: 0.6 }]}>
                                             Previous EPS
                                         </Text>
-                                        <Text style={[styles.epsValue, { color: colors.text }]}>
+                                        <Text style={[styles.epsValue, { color: Colors.text }]}>
                                             {item.actualEps}
                                         </Text>
                                     </View>
@@ -186,7 +187,7 @@ const EarningsCard = ({
 
                     <TouchableOpacity
                         onPress={handleViewDetails}
-                        style={[styles.viewButton, { backgroundColor: colors.tint }]}
+                        style={[styles.viewButton, { backgroundColor: Colors.tint }]}
                     >
                         <Text style={styles.viewButtonText}>View Stock Details →</Text>
                     </TouchableOpacity>
@@ -199,8 +200,7 @@ const EarningsCard = ({
 export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
                                                                       holdings,
                                                                   }) => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const [earnings, setEarnings] = useState<EarningsItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedSector, setSelectedSector] = useState<string | null>(null);
@@ -438,7 +438,7 @@ export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
                                         <EarningsCard
                                             key={item.earningsId}
                                             item={item}
-                                            colors={Colors}
+                                            Colors={Colors}
                                             sectorColor={getSectorColor(item.sector)}
                                         />
                                     ))}

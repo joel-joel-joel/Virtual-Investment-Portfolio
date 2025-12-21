@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, useColorScheme, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
-import { getThemeColors } from "../../../src/constants/colors";
 import { getSectorColor } from "@/src/services/sectorColorService";
 import Carousel from "react-native-reanimated-carousel";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getWatchlist } from "@/src/services/portfolioService";
 import type { WatchlistDTO } from "@/src/types/api";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTheme } from '@/src/context/ThemeContext';
+
 
 const screenWidth = Dimensions.get("window").width - 48;
 
 export const WatchlistHighlights = () => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
 
     const [watchlistStocks, setWatchlistStocks] = useState<WatchlistDTO[]>([]);
     const [loading, setLoading] = useState(true);
@@ -130,7 +130,7 @@ export const WatchlistHighlights = () => {
             </View>
 
             <Carousel
-                width={screenWidth / 1.2}
+                width={screenWidth / 1.1}
                 height={120}
                 data={watchlistStocks}
                 loop={watchlistStocks.length > 1}
@@ -157,7 +157,7 @@ export const WatchlistHighlights = () => {
                             </Text>
 
                             {/* Current Price */}
-                            <Text style={[styles.stockPrice, { color: Colors.text }]}>
+                            <Text style={[styles.stockPrice, { color: "black" }]}>
                                 A${(item.currentPrice ?? 0).toFixed(2)}
                             </Text>
 
@@ -220,6 +220,7 @@ const styles = StyleSheet.create({
         padding: 12,
         alignItems: "center",
         justifyContent: "center",
+        width: "100%"
     },
     stockSymbol: {
         fontSize: 14,

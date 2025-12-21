@@ -13,7 +13,7 @@ import {
     Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { updateAccount } from '@/src/services/portfolioService';
 import type { AccountDTO } from '@/src/types/api';
 
@@ -32,8 +32,7 @@ export default function WalletModal({
     account,
     onBalanceUpdate,
 }: WalletModalProps) {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme()
 
     const [transactionType, setTransactionType] = useState<TransactionType>('deposit');
     const [amount, setAmount] = useState('');

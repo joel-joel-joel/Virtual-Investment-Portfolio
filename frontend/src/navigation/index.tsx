@@ -6,7 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColorScheme, View, ActivityIndicator, Text, StyleSheet } from 'react-native';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { useAuth } from '@/src/context/AuthContext';
 
 // Auth Screen
@@ -143,8 +143,7 @@ function LoadingScreen() {
 
 // Tab Navigator
 function TabNavigator() {
-  const colorScheme = useColorScheme();
-  const Colors = getThemeColors(colorScheme);
+  const {Colors} = useTheme();
 
   return (
     <Tab.Navigator
@@ -178,7 +177,7 @@ function TabNavigator() {
         tabBarActiveTintColor: Colors.tint,
         tabBarInactiveTintColor: Colors.text + '99',
         tabBarStyle: {
-          backgroundColor: Colors.card,
+          backgroundColor: Colors.background,
           borderTopColor: Colors.border,
           borderTopWidth: 1,
           paddingBottom: 8,
@@ -232,8 +231,7 @@ function TabNavigator() {
 
 // Root Stack Navigator
 function RootStack() {
-  const colorScheme = useColorScheme();
-  const Colors = getThemeColors(colorScheme);
+  const {Colors} = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {

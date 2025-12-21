@@ -1,14 +1,14 @@
 import React from "react";
-import { View, Image, StyleSheet, useColorScheme } from "react-native";
-import { getThemeColors } from "../../../src/constants/colors";
+import { View, Image, StyleSheet } from "react-native";
 import { icons } from "../../../src/constants/icons";
+import { useTheme } from '@/src/context/ThemeContext';
+
 
 export const HeaderSection = () => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
 
     return (
-        <View style={styles.topBar}>
+        <View style={[styles.topBar, { backgroundColor: Colors.background }]}>
             <View style={styles.centerGroup}>
                 <Image
                     source={icons.pegasus}
@@ -30,6 +30,8 @@ const styles = StyleSheet.create({
     centerGroup: {
         flexDirection: "row",
         alignItems: "center",
+        maxWidth: 80,
+        justifyContent: "center",
     },
     icon: {
         width: 125,

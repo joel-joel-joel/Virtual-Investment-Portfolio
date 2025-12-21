@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions, useColorScheme, ActivityIndicator } from 'react-native';
-import { getThemeColors } from '../../constants/colors';
 import { getSectorColor } from '@/src/services/sectorColorService';
 import { getStockQuote } from '@/src/services/entityService';
 import { getCompanyProfile } from '@/src/services/entityService';
+import { useTheme } from '@/src/context/ThemeContext';
+
 
 interface TickerStock {
     symbol: string;
@@ -30,7 +31,7 @@ const POPULAR_STOCKS = [
 
 export const StockTicker: React.FC<StockTickerProps> = ({ refreshTrigger }) => {
     const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const { Colors } = useTheme();
     const [tickerStocks, setTickerStocks] = useState<TickerStock[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -137,7 +138,7 @@ export const StockTicker: React.FC<StockTickerProps> = ({ refreshTrigger }) => {
     const duplicatedStocks = [...tickerStocks, ...tickerStocks, ...tickerStocks];
 
     return (
-        <View style={[styles.tickerWrapper, { backgroundColor: 'white', borderColor: Colors.border }]}>
+        <View style={[styles.tickerWrapper, { backgroundColor: Colors.background, borderColor: Colors.border }]}>
             <View style={styles.tickerContainer}>
                 <Animated.View
                     style={[

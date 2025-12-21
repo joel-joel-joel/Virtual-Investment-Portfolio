@@ -1,13 +1,12 @@
 import React from 'react';
 import { View, ScrollView, useColorScheme } from 'react-native';
-import { getThemeColors } from '../../src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { HeaderSection } from "@/src/components/home/HeaderSection";
 import SearchScreenComponent from "@/src/components/search/SearchScreen";
 
 
 export default function SearchScreen() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.background, padding: 24 }}>

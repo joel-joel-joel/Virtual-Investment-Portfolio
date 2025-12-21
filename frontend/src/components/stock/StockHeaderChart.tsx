@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { HeaderSection } from "@/src/components/home/HeaderSection";
 import { Svg, Polyline, Circle, Defs, LinearGradient, Stop, Line, RadialGradient} from 'react-native-svg';
 import { getStockQuote, getCompanyProfile, getOrCreateStockBySymbol } from '@/src/services/entityService';
@@ -79,8 +79,7 @@ export const StockHeaderChart = React.memo(({
                                                 onTabChange,
                                             }: StockHeaderChartProps) => {
     const navigation = useNavigation();
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
 
     const [isWatchlisted, setIsWatchlisted] = useState(false);
     const [priceData, setPriceData] = useState(chartDataSets['1M']);
@@ -431,6 +430,7 @@ export const StockHeaderChart = React.memo(({
                         onPress={() => updateTimeframe(tf)}
                         style={[
                             styles.timeframeButton,
+                            { backgroundColor: Colors.card },
                             selectedTimeframe === tf && { backgroundColor: Colors.tint }
                         ]}
                     >
@@ -610,8 +610,7 @@ const styles = StyleSheet.create({
         flexShrink: 0,
     },
     headerSpacer: {
-        flex: 1,
-        marginLeft: -32,
+        marginLeft: 90,
         marginTop: 15,
     },
     header: {
@@ -685,7 +684,6 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         borderRadius: 8,
         alignItems: 'center',
-        backgroundColor: '#F0F0F0',
     },
     timeframeText: {
         fontSize: 12,

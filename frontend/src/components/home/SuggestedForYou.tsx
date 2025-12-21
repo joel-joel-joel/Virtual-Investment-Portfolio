@@ -11,7 +11,7 @@ import {
     RefreshControl,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { getThemeColors } from "../../constants/colors";
+import { useTheme } from '@/src/context/ThemeContext';
 import { getSectorColor } from "@/src/services/sectorColorService";
 import { generateStockSuggestions } from "@/src/services/stockSuggestionService";
 import { useAuth } from "@/src/context/AuthContext";
@@ -21,10 +21,6 @@ import type { RootStackParamList } from "@/src/navigation";
 import type { SuggestionStock } from "@/src/types/api";
 
 const { width } = Dimensions.get("window");
-
-// ============================================================================
-// SUGGESTION CARD COMPONENT
-// ============================================================================
 
 // @ts-ignore
 const SuggestionCard = ({ stock, reason, icon, sectorColor }) => {
@@ -161,8 +157,7 @@ const SuggestionCard = ({ stock, reason, icon, sectorColor }) => {
 // ============================================================================
 
 export const SuggestedForYou = () => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { activeAccount } = useAuth();
 

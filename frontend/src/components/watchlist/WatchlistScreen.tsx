@@ -11,7 +11,7 @@ import {
     RefreshControl,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
@@ -204,8 +204,7 @@ const WatchlistCard = ({
 };
 
 export default function WatchlistScreen() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const [watchlist, setWatchlist] = useState<WatchlistStock[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -438,13 +437,14 @@ export default function WatchlistScreen() {
                         onPress={() => toggleSortOrder('symbol')}
                         style={[
                             styles.sortButton,
+                            { backgroundColor: Colors.card }, // ✅ Add inline
                             sortBy === 'symbol' && { backgroundColor: Colors.tint }
                         ]}
                     >
                         <MaterialCommunityIcons
                             name="sort-ascending"
                             size={14}
-                            color={sortBy === 'symbol' ? 'white' : Colors.text}
+                            color={sortBy === 'symbol' ? 'white' : Colors.tint}
                         />
                         <Text style={[
                             styles.sortButtonText,
@@ -458,13 +458,14 @@ export default function WatchlistScreen() {
                         onPress={() => toggleSortOrder('price')}
                         style={[
                             styles.sortButton,
+                            { backgroundColor: Colors.card }, // ✅ Add inline
                             sortBy === 'price' && { backgroundColor: Colors.tint }
                         ]}
                     >
                         <MaterialCommunityIcons
                             name="currency-usd"
                             size={14}
-                            color={sortBy === 'price' ? 'white' : Colors.text}
+                            color={sortBy === 'price' ? 'white' : Colors.tint}
                         />
                         <Text style={[
                             styles.sortButtonText,
@@ -478,13 +479,14 @@ export default function WatchlistScreen() {
                         onPress={() => toggleSortOrder('changePercent')}
                         style={[
                             styles.sortButton,
+                            { backgroundColor: Colors.card }, // ✅ Add inline
                             sortBy === 'changePercent' && { backgroundColor: Colors.tint }
                         ]}
                     >
                         <MaterialCommunityIcons
                             name="percent"
                             size={14}
-                            color={sortBy === 'changePercent' ? 'white' : Colors.text}
+                            color={sortBy === 'changePercent' ? 'white' : Colors.tint}
                         />
                         <Text style={[
                             styles.sortButtonText,
@@ -596,7 +598,6 @@ const styles = StyleSheet.create({
         height: 40,
     },
     sortContainer: {
-        paddingHorizontal: 24,
         marginBottom: 16,
         flexDirection: 'row',
         gap: 8,
@@ -608,7 +609,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingVertical: 8,
         borderRadius: 8,
-        backgroundColor: '#F0F0F0',
         gap: 4,
     },
     sortButtonText: {

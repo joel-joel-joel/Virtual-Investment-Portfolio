@@ -12,7 +12,7 @@ import {
     RefreshControl,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '../../constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
@@ -228,8 +228,7 @@ export const HoldingsList: React.FC<HoldingsListProps> = ({
                                                               onHoldingPress,
                                                               onRefresh: onRefreshCallback,
                                                           }) => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const { user, activeAccount } = useAuth();
 
     const [internalHoldings, setInternalHoldings] = useState<Holding[]>([]);
@@ -589,7 +588,6 @@ const styles = StyleSheet.create({
     },
     sortContainer: {
         flexDirection: 'row',
-        paddingHorizontal: 12,
         marginBottom: 16,
         gap: 8,
     },

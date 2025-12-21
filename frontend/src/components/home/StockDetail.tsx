@@ -10,7 +10,7 @@ import {
     Image,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '../../constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import {LineChart} from "recharts";
 import { getSectorColor } from '../../services/sectorColorService';
 
@@ -43,12 +43,11 @@ export const StockDetailScreen: React.FC<StockDetailProps> = ({
     chartData,
     image,
 }) => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
-    const [selectedTimeframe, setSelectedTimeframe] = useState<'1D' | '1W' | '1M' | '3M' | '1Y'>('1M');
+    const {Colors} = useTheme()
+    const [selectedTimeframe, setSelectedTimeframe] = useState<'1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL'>('1M');
 
     const isPositive = change >= 0;
-    const timeframes = ['1D', '1W', '1M', '3M', '1Y'] as const;
+    const timeframes = ['1D', '1W', '1M', '3M', '1Y', 'ALL'] as const;
 
     // Get dynamic color for sector
     const sectorColor = getSectorColor(sector);

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Svg, Path, G } from 'react-native-svg';
-import { getThemeColors } from '../../constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { apiFetch } from '../../services/api';
 import type { PortfolioOverviewDTO, HoldingDTO } from '../../types/api';
 import { getSectorColorPalette } from '@/src/services/sectorColorService';
@@ -33,8 +33,7 @@ interface AllocationOverviewProps {
 }
 
 export const AllocationOverview: React.FC<AllocationOverviewProps> = ({ accountId }) => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
 
     const [allocationData, setAllocationData] = useState<AllocationItem[]>([]);
     const [chartColors, setChartColors] = useState<string[]>([]);

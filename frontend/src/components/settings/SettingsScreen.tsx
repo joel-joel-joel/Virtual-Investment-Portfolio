@@ -4,13 +4,12 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    useColorScheme,
     Switch,
     Alert,
     Modal,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 
 interface NotificationSettings {
     priceAlerts: boolean;
@@ -21,7 +20,6 @@ interface NotificationSettings {
 }
 
 interface AppSettings {
-    theme: 'light' | 'dark' | 'system';
     currency: 'AUD' | 'USD' | 'EUR';
     language: 'English' | 'Spanish' | 'French';
     dateFormat: 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
@@ -33,30 +31,30 @@ const SettingItemToggle = ({
                                description,
                                value,
                                onToggle,
-                               colors,
+                               Colors,
                            }: {
     icon: string;
     label: string;
     description: string;
     value: boolean;
     onToggle: (value: boolean) => void;
-    colors: any;
+    Colors: any;
 }) => {
     return (
-        <View style={[styles.settingItem, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}>
             <View style={styles.settingLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: colors.tint + '15' }]}>
+                <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
                     <MaterialCommunityIcons
                         name={icon as any}
                         size={20}
-                        color={colors.tint}
+                        color={Colors.tint}
                     />
                 </View>
                 <View style={styles.settingText}>
-                    <Text style={[styles.settingLabel, { color: colors.text }]}>
+                    <Text style={[styles.settingLabel, { color: Colors.text }]}>
                         {label}
                     </Text>
-                    <Text style={[styles.settingDescription, { color: colors.text, opacity: 0.6 }]}>
+                    <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
                         {description}
                     </Text>
                 </View>
@@ -64,8 +62,8 @@ const SettingItemToggle = ({
             <Switch
                 value={value}
                 onValueChange={onToggle}
-                trackColor={{ false: '#E0E0E0', true: colors.tint + '50' }}
-                thumbColor={value ? colors.tint : '#F0F0F0'}
+                trackColor={{ false: '#E0E0E0', true: Colors.tint + '50' }}
+                thumbColor={value ? Colors.tint : '#F0F0F0'}
             />
         </View>
     );
@@ -77,46 +75,46 @@ const SettingItemSelect = ({
                                description,
                                value,
                                onPress,
-                               colors,
+                               Colors,
                            }: {
     icon: string;
     label: string;
     description: string;
     value: string;
     onPress: () => void;
-    colors: any;
+    Colors: any;
 }) => {
     return (
         <TouchableOpacity
             onPress={onPress}
-            style={[styles.settingItem, { backgroundColor: colors.card, borderColor: colors.border }]}
+            style={[styles.settingItem, { backgroundColor: Colors.card, borderColor: Colors.border }]}
             activeOpacity={0.7}
         >
             <View style={styles.settingLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: colors.tint + '15' }]}>
+                <View style={[styles.iconContainer, { backgroundColor: Colors.tint + '15' }]}>
                     <MaterialCommunityIcons
                         name={icon as any}
                         size={20}
-                        color={colors.tint}
+                        color={Colors.tint}
                     />
                 </View>
                 <View style={styles.settingText}>
-                    <Text style={[styles.settingLabel, { color: colors.text }]}>
+                    <Text style={[styles.settingLabel, { color: Colors.text }]}>
                         {label}
                     </Text>
-                    <Text style={[styles.settingDescription, { color: colors.text, opacity: 0.6 }]}>
+                    <Text style={[styles.settingDescription, { color: Colors.text, opacity: 0.6 }]}>
                         {description}
                     </Text>
                 </View>
             </View>
             <View style={styles.settingRight}>
-                <Text style={[styles.settingValue, { color: colors.tint }]}>
+                <Text style={[styles.settingValue, { color: Colors.tint }]}>
                     {value}
                 </Text>
                 <MaterialCommunityIcons
                     name="chevron-right"
                     size={20}
-                    color={colors.text}
+                    color={Colors.text}
                     style={{ opacity: 0.4 }}
                 />
             </View>
@@ -131,7 +129,7 @@ const SelectionModal = ({
                             selectedValue,
                             onSelect,
                             onClose,
-                            colors,
+                            Colors,
                         }: {
     visible: boolean;
     title: string;
@@ -139,7 +137,7 @@ const SelectionModal = ({
     selectedValue: string;
     onSelect: (value: string) => void;
     onClose: () => void;
-    colors: any;
+    Colors: any;
 }) => {
     return (
         <Modal
@@ -148,9 +146,9 @@ const SelectionModal = ({
             animationType="slide"
             onRequestClose={onClose}
         >
-            <View style={[styles.modalOverlay, { backgroundColor: colors.background }]}>
-                <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-                    <Text style={[styles.modalTitle, { color: colors.text }]}>
+            <View style={[styles.modalOverlay, { backgroundColor: Colors.background }]}>
+                <View style={[styles.modalHeader, { borderBottomColor: Colors.border }]}>
+                    <Text style={[styles.modalTitle, { color: Colors.text }]}>
                         {title}
                     </Text>
                     <TouchableOpacity
@@ -160,7 +158,7 @@ const SelectionModal = ({
                         <MaterialCommunityIcons
                             name="close"
                             size={24}
-                            color={colors.text}
+                            color={Colors.text}
                         />
                     </TouchableOpacity>
                 </View>
@@ -176,20 +174,20 @@ const SelectionModal = ({
                             style={[
                                 styles.optionItem,
                                 {
-                                    backgroundColor: colors.card,
-                                    borderColor: selectedValue === option ? colors.tint : colors.border,
+                                    backgroundColor: Colors.card,
+                                    borderColor: selectedValue === option ? Colors.tint : Colors.border,
                                     borderWidth: selectedValue === option ? 2 : 1,
                                 }
                             ]}
                         >
-                            <Text style={[styles.optionText, { color: colors.text }]}>
+                            <Text style={[styles.optionText, { color: Colors.text }]}>
                                 {option}
                             </Text>
                             {selectedValue === option && (
                                 <MaterialCommunityIcons
                                     name="check-circle"
                                     size={24}
-                                    color={colors.tint}
+                                    color={Colors.tint}
                                 />
                             )}
                         </TouchableOpacity>
@@ -201,11 +199,11 @@ const SelectionModal = ({
 };
 
 export default function SettingsScreen() {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const { Colors, theme, setTheme } = useTheme(); // ✅ Use theme context
+    const [activeModal, setActiveModal] = useState<string | null>(null);
 
     // Notification Settings
-    const [notifications, setNotifications] = useState<NotificationSettings>({
+    const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
         priceAlerts: true,
         portfolioUpdates: true,
         marketNews: false,
@@ -213,19 +211,15 @@ export default function SettingsScreen() {
         earningSeason: false,
     });
 
-    // App Settings
+    // App Settings (excluding theme which is in context)
     const [appSettings, setAppSettings] = useState<AppSettings>({
-        theme: 'system',
         currency: 'AUD',
         language: 'English',
         dateFormat: 'DD/MM/YYYY',
     });
 
-    // Modal States
-    const [activeModal, setActiveModal] = useState<string | null>(null);
-
     const handleNotificationToggle = (key: keyof NotificationSettings) => {
-        setNotifications(prev => ({
+        setNotificationSettings(prev => ({
             ...prev,
             [key]: !prev[key],
         }));
@@ -236,6 +230,11 @@ export default function SettingsScreen() {
             ...prev,
             [key]: value,
         }));
+    };
+
+    const handleThemeChange = async (value: string) => {
+        const newTheme = value.toLowerCase() as 'light' | 'dark' | 'system';
+        await setTheme(newTheme);
     };
 
     return (
@@ -250,9 +249,9 @@ export default function SettingsScreen() {
                     icon="palette"
                     label="Theme"
                     description="Choose your preferred appearance"
-                    value={appSettings.theme.charAt(0).toUpperCase() + appSettings.theme.slice(1)}
+                    value={theme.charAt(0).toUpperCase() + theme.slice(1)}
                     onPress={() => setActiveModal('theme')}
-                    colors={Colors}
+                    Colors={Colors}
                 />
             </View>
 
@@ -268,7 +267,7 @@ export default function SettingsScreen() {
                     description="Select your preferred currency"
                     value={appSettings.currency}
                     onPress={() => setActiveModal('currency')}
-                    colors={Colors}
+                    Colors={Colors}
                 />
 
                 <SettingItemSelect
@@ -277,7 +276,7 @@ export default function SettingsScreen() {
                     description="Choose your preferred language"
                     value={appSettings.language}
                     onPress={() => setActiveModal('language')}
-                    colors={Colors}
+                    Colors={Colors}
                 />
 
                 <SettingItemSelect
@@ -286,7 +285,7 @@ export default function SettingsScreen() {
                     description="Select date display format"
                     value={appSettings.dateFormat}
                     onPress={() => setActiveModal('dateFormat')}
-                    colors={Colors}
+                    Colors={Colors}
                 />
             </View>
 
@@ -300,45 +299,45 @@ export default function SettingsScreen() {
                     icon="bell-alert-outline"
                     label="Price Alerts"
                     description="Get notified when prices change significantly"
-                    value={notifications.priceAlerts}
+                    value={notificationSettings.priceAlerts}
                     onToggle={() => handleNotificationToggle('priceAlerts')}
-                    colors={Colors}
+                    Colors={Colors}
                 />
 
                 <SettingItemToggle
                     icon="chart-line-variant"
                     label="Portfolio Updates"
                     description="Receive daily portfolio performance updates"
-                    value={notifications.portfolioUpdates}
+                    value={notificationSettings.portfolioUpdates}
                     onToggle={() => handleNotificationToggle('portfolioUpdates')}
-                    colors={Colors}
+                    Colors={Colors}
                 />
 
                 <SettingItemToggle
                     icon="newspaper"
                     label="Market News"
                     description="Get the latest financial news and insights"
-                    value={notifications.marketNews}
+                    value={notificationSettings.marketNews}
                     onToggle={() => handleNotificationToggle('marketNews')}
-                    colors={Colors}
+                    Colors={Colors}
                 />
 
                 <SettingItemToggle
                     icon="cash-multiple"
                     label="Dividend Notifications"
                     description="Be notified about dividend payments"
-                    value={notifications.dividendNotifications}
+                    value={notificationSettings.dividendNotifications}
                     onToggle={() => handleNotificationToggle('dividendNotifications')}
-                    colors={Colors}
+                    Colors={Colors}
                 />
 
                 <SettingItemToggle
                     icon="calendar-check"
                     label="Earnings Season"
                     description="Get alerts during company earnings season"
-                    value={notifications.earningSeason}
+                    value={notificationSettings.earningSeason}
                     onToggle={() => handleNotificationToggle('earningSeason')}
-                    colors={Colors}
+                    Colors={Colors}
                 />
             </View>
 
@@ -580,10 +579,10 @@ export default function SettingsScreen() {
                 visible={activeModal === 'theme'}
                 title="Choose Theme"
                 options={['Light', 'Dark', 'System']}
-                selectedValue={appSettings.theme.charAt(0).toUpperCase() + appSettings.theme.slice(1)}
-                onSelect={(value) => handleAppSettingChange('theme', value.toLowerCase())}
+                selectedValue={theme.charAt(0).toUpperCase() + theme.slice(1)}
+                onSelect={(value) => handleThemeChange(value)}
                 onClose={() => setActiveModal(null)}
-                colors={Colors}
+                Colors={Colors}
             />
 
             <SelectionModal
@@ -593,7 +592,7 @@ export default function SettingsScreen() {
                 selectedValue={appSettings.currency}
                 onSelect={(value) => handleAppSettingChange('currency', value)}
                 onClose={() => setActiveModal(null)}
-                colors={Colors}
+                Colors={Colors}
             />
 
             <SelectionModal
@@ -603,7 +602,7 @@ export default function SettingsScreen() {
                 selectedValue={appSettings.language}
                 onSelect={(value) => handleAppSettingChange('language', value)}
                 onClose={() => setActiveModal(null)}
-                colors={Colors}
+                Colors={Colors}
             />
 
             <SelectionModal
@@ -613,7 +612,7 @@ export default function SettingsScreen() {
                 selectedValue={appSettings.dateFormat}
                 onSelect={(value) => handleAppSettingChange('dateFormat', value)}
                 onClose={() => setActiveModal(null)}
-                colors={Colors}
+                Colors={Colors}
             />
         </>
     );

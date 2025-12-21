@@ -5,14 +5,13 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    useColorScheme,
     Animated,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '../../constants/colors';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
+import { useTheme } from '@/src/context/ThemeContext';
 
 interface QuickAction {
     id: string;
@@ -61,11 +60,11 @@ const createDefaultActions = (navigation: NativeStackNavigationProp<RootStackPar
 
 const QuickActionButton = ({
                                action,
-                               colors,
+                               Colors,
                                scaleAnim,
                            }: {
     action: QuickAction;
-    colors: any;
+    Colors: any;
     scaleAnim: Animated.Value;
 }) => {
     const animScale = React.useRef(new Animated.Value(1)).current;
@@ -93,9 +92,9 @@ const QuickActionButton = ({
                 style={[
                     styles.actionButton,
                     {
-                        backgroundColor: colors.card,
-                        borderColor: colors.tint,
-                        shadowColor: colors.tint,
+                        backgroundColor: Colors.card,
+                        borderColor: Colors.tint,
+                        shadowColor: Colors.tint,
                     },
                 ]}
                 activeOpacity={0.8}
@@ -105,13 +104,13 @@ const QuickActionButton = ({
                     <MaterialCommunityIcons
                         name={action.icon as any}
                         size={16}
-                        color={colors.tint}
+                        color={Colors.tint}
                     />
                 </View>
 
                 {/* CENTERED TEXT */}
                 <View style={styles.centerTextWrapper}>
-                    <Text style={[styles.actionLabel, { color: colors.text }]}>
+                    <Text style={[styles.actionLabel, { color: Colors.text }]}>
                         {action.label}
                     </Text>
                 </View>
@@ -128,8 +127,7 @@ const QuickActionButton = ({
 export const QuickActionsRow: React.FC<QuickActionsRowProps> = ({
                                                                     actions,
                                                                 }) => {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const { Colors } = useTheme();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
@@ -152,7 +150,7 @@ export const QuickActionsRow: React.FC<QuickActionsRowProps> = ({
                     <QuickActionButton
                         key={action.id}
                         action={action}
-                        colors={Colors}
+                        Colors = {Colors}
                         scaleAnim={scaleAnim}
                     />
                 ))}

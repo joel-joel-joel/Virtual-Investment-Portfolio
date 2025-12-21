@@ -10,7 +10,7 @@ import {
     RefreshControl,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
@@ -162,8 +162,7 @@ const TransactionCard = ({ transaction, colors }: { transaction: Transaction; co
 };
 
 export default function TransactionHistory({ stockSymbol, showHeader = true, maxTransactions }: TransactionHistoryProps) {
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
     const { user, activeAccount } = useAuth();
 
     const [transactions, setTransactions] = useState<Transaction[]>([]);

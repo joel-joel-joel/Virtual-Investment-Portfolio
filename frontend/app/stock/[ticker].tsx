@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '@/src/navigation';
-import { getThemeColors } from '../../src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import StockTickerScreen from '../../src/components/stock/StockTickerScreen';
 
 interface StockData {
@@ -43,8 +43,7 @@ interface StockData {
 
 export default function StockPage() {
     const route = useRoute<RouteProp<RootStackParamList, 'StockTicker'>>();
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme();
 
     // Get stock data from route params (already an object, no parsing needed)
     const stock = route.params?.stock || null;

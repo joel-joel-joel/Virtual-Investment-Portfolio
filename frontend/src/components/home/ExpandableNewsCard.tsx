@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { openBrowserAsync } from 'expo-web-browser';
-import { getThemeColors } from '../../constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 
 import { NewsArticleDTO } from '../../types/api';
 
@@ -52,8 +52,7 @@ const SectorBadge = ({ sector }: { sector: string }) => {
 
 export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) => {
     const [activeNews, setActiveNews] = useState<NewsItem | null>(null);
-    const colorScheme = useColorScheme();
-    const Colors = getThemeColors(colorScheme);
+    const {Colors} = useTheme()
     const scaleAnim = React.useRef(new Animated.Value(0)).current;
 
     const openNewsDetail = (item: NewsItem) => {
@@ -111,7 +110,7 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
                             style={[
                                 styles.newsCard,
                                 {
-                                    backgroundColor: "white", // Card background based on sector
+                                    backgroundColor: Colors.background, // Card background based on sector
                                     borderColor: sectorTheme.color, // Optional: border accent
                                 },
                             ]}
@@ -125,7 +124,7 @@ export const ExpandableNewsCard: React.FC<ExpandableNewsCardProps> = ({ news }) 
                             <View style={styles.newsCardContent}>
                                 <View style={styles.newsCardHeader}>
                                     <Text
-                                        style={[styles.newsTitle, { color: "black" }]} // Title uses sector color
+                                        style={[styles.newsTitle, { color: Colors.text }]} // Title uses sector color
                                         numberOfLines={2}
                                     >
                                         {item.title}

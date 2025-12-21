@@ -13,13 +13,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 import { login as apiLogin, register as apiRegister } from '@/src/services/authService';
 import { useAuth } from '@/src/context/AuthContext';
 
 export default function LoginScreen() {
-  const colorScheme = useColorScheme();
-  const Colors = getThemeColors(colorScheme);
+  const {Colors} = useTheme();
   const { login } = useAuth();
 
   const [isLogin, setIsLogin] = useState(true);

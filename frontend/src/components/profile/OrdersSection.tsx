@@ -14,13 +14,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getAccountOrders, cancelOrder } from '@/src/services/orderService';
 import type { OrderDTO, OrderStatus } from '@/src/types/api';
 import { useAuth } from '@/src/context/AuthContext';
-import { getThemeColors } from '@/src/constants/colors';
+import { useTheme } from '@/src/context/ThemeContext';
 
 type FilterType = 'all' | 'pending' | 'executed' | 'cancelled' | 'failed';
 
 export default function OrdersSection() {
-  const colorScheme = useColorScheme();
-  const Colors = getThemeColors(colorScheme);
+  const {Colors} = useTheme();
   const { activeAccount } = useAuth();
 
   const [orders, setOrders] = useState<OrderDTO[]>([]);
