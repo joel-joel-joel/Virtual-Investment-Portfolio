@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Image, StyleSheet } from "react-native";
-import { icons } from "../../../src/constants/icons";
+import { icons } from "../../../constants/icons";
 import { useTheme } from '@/src/context/ThemeContext';
 
 

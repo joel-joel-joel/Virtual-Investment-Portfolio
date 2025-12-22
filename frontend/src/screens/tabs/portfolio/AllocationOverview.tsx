@@ -10,8 +10,8 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Svg, Path, G } from 'react-native-svg';
 import { useTheme } from '@/src/context/ThemeContext';
-import { apiFetch } from '../../services/api';
-import type { PortfolioOverviewDTO, HoldingDTO } from '../../types/api';
+import { apiFetch } from '../../../services/api';
+import type { PortfolioOverviewDTO, HoldingDTO } from '../../../types/api';
 import { getSectorColorPalette } from '@/src/services/sectorColorService';
 
 interface AllocationItem {

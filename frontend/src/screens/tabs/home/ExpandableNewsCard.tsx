@@ -15,7 +15,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { openBrowserAsync } from 'expo-web-browser';
 import { useTheme } from '@/src/context/ThemeContext';
 
-import { NewsArticleDTO } from '../../types/api';
+import { NewsArticleDTO } from '../../../types/api';
 
 interface NewsItem {
     id: number;

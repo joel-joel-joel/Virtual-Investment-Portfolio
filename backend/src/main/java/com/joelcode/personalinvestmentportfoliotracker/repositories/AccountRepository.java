@@ -42,4 +42,7 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
     List<Account> findByCashBalanceLessThan(BigDecimal cashBalance);
 
     boolean existsByAccountName(String accountName);
+
+    // Check if an account with this name exists for a specific user (case-insensitive)
+    boolean existsByUser_UserIdAndAccountNameIgnoreCase(UUID userId, String accountName);
 }

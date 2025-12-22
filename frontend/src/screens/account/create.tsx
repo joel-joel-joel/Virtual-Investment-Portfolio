@@ -31,7 +31,7 @@ interface AccountDTO {
 export default function CreateAccountScreen() {
     const {Colors} = useTheme();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const { refreshAccounts } = useAuth();
+    const { refreshAccounts, accounts } = useAuth();
 
     const [accountName, setAccountName] = useState('');
     const [initialBalance, setInitialBalance] = useState('');
@@ -65,8 +65,6 @@ export default function CreateAccountScreen() {
             await refreshAccounts();
 
             // Check if this is the user's first account (onboarding)
-            const { accounts } = useAuth();
-
             if (accounts.length === 1) {
                 // This is their first account - navigate directly to MainTabs without showing success UI
                 console.log('📱 First account created - navigating to MainTabs');

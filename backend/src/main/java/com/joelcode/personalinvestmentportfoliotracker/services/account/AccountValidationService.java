@@ -21,10 +21,10 @@ public class AccountValidationService {
 
     // Validation functions
 
-    // Check account exists
-    public void validateAccountDoesNotExistByName(String accountName){
-        if(accountRepository.existsByAccountName(accountName)) {
-            throw new IllegalArgumentException("Account already exists");
+    // Check account name does not exist for this specific user
+    public void validateAccountDoesNotExistByName(UUID userId, String accountName){
+        if(accountRepository.existsByUser_UserIdAndAccountNameIgnoreCase(userId, accountName)) {
+            throw new IllegalArgumentException("You already have an account with this name");
         }
     }
 

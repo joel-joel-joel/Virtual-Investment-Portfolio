@@ -13,7 +13,7 @@ import WatchlistScreen from '@/app/(tabs)/watchlist';
 import ProfileScreen from '@/app/(tabs)/profile';
 
 // Modal/Stack Imports
-import SettingsScreen from '../src/components/settings/SettingsScreen';
+import SettingsScreen from '../src/screens/settings/SettingsScreen';
 import StockTickerPage from './stock/[ticker]';
 
 const Stack = createNativeStackNavigator();

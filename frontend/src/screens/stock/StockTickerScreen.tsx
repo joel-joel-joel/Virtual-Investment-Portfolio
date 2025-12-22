@@ -18,7 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
 import { useTheme } from '@/src/context/ThemeContext';
-import TransactionHistory from '@/src/components/transaction/TransactionHistory';
+import TransactionHistory from '@/src/screens/transaction/TransactionHistory';
 import { getStockQuote, getCompanyProfile } from '@/src/services/entityService';
 import { searchCompaniesByName } from '@/src/services/portfolioService';
 import { getNewsBySymbolSafe } from '@/src/services/newsService';

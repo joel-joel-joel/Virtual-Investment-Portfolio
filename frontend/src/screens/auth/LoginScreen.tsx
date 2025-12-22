@@ -11,11 +11,13 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+    Image,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@/src/context/ThemeContext';
 import { login as apiLogin, register as apiRegister } from '@/src/services/authService';
 import { useAuth } from '@/src/context/AuthContext';
+import {icons} from "@/src/constants/icons";
 
 export default function LoginScreen() {
   const {Colors} = useTheme();
@@ -109,11 +111,10 @@ export default function LoginScreen() {
       >
         {/* Logo/Header */}
         <View style={styles.header}>
-          <View style={[styles.logoContainer, { backgroundColor: Colors.tint }]}>
-            <MaterialCommunityIcons
-              name="chart-line"
-              size={48}
-              color="white"
+          <View style={[styles.logoContainer]}>
+            <Image
+              source={icons.pegasus}
+              style={[styles.icon, { tintColor: Colors.tint }]}
             />
           </View>
           <Text style={[styles.title, { color: Colors.text }]}>
@@ -390,6 +391,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 15,
     fontWeight: '500',
+
   },
   formContainer: {
     gap: 20,
@@ -450,4 +452,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
+    icon: {
+        width: 200,
+        height: 200,
+        resizeMode: "contain",
+    },
 });

@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, useColorScheme, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/src/context/ThemeContext';
-import { HeaderSection } from '@/src/components/home/HeaderSection';
-import TransactionHistory from '@/src/components/transaction/TransactionHistory';
+import { HeaderSection } from '@/src/screens/tabs/home/HeaderSection';
+import TransactionHistory from '@/src/screens/transaction/TransactionHistory';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -51,12 +51,13 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginBottom: 20,
         gap: 12,
     },
     topBar: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingTop: 12,
+        paddingHorizontal: 0,
         paddingBottom: 0,
     },
     backButton: {
@@ -69,9 +70,7 @@ const styles = StyleSheet.create({
         marginTop: -10,
     },
     headerSpacer: {
-        flex: 1,
-        marginLeft: -32,
-        marginTop: 0,
+        marginLeft: 90,
     },
     headerTitleContainer: {
         flex: 1,

@@ -21,8 +21,8 @@ import { getUserDashboard } from '@/src/services/dashboardService';
 import type { DashboardDTO } from '@/src/types/api';
 import { logout as apiLogout } from '@/src/services/authService';
 import { deleteAccount as apiDeleteAccount} from '@/src/services/portfolioService';
-import WalletModal from '@/src/components/wallet/WalletModal';
-import OrdersSection from '@/src/components/profile/OrdersSection';
+import WalletModal from '@/src/screens/wallet/WalletModal';
+import OrdersSection from '@/src/screens/tabs/profile/OrdersSection';
 
 
 const ProfileMenuOption = ({

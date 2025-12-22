@@ -14,7 +14,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/src/context/ThemeContext';
-import { HeaderSection } from "@/src/components/home/HeaderSection";
+import { HeaderSection } from "@/src/screens/tabs/home/HeaderSection";
 import { Svg, Polyline, Circle, Defs, LinearGradient, Stop, Line, RadialGradient} from 'react-native-svg';
 import { getStockQuote, getCompanyProfile, getOrCreateStockBySymbol } from '@/src/services/entityService';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '@/src/services';

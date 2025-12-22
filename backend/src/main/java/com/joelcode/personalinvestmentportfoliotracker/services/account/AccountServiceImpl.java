@@ -18,6 +18,7 @@ import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.Pri
 import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryServiceImpl;
 import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
 import org.springframework.context.annotation.Profile;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -65,15 +66,15 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDTO createAccount(AccountCreateRequest request) {
 
-        // 1. Check account name not duplicated
-        accountValidationService.validateAccountDoesNotExistByName(request.getAccountName());
-
-        // 2. Get currently logged-in user
+        // 1. Get currently logged-in user
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
         User user = userDetails.getUser();
+
+        // 2. Check account name not duplicated for this user
+        accountValidationService.validateAccountDoesNotExistByName(user.getUserId(), request.getAccountName());
 
         // 3. Map request to entity
         Account account = AccountMapper.toEntity(request);
@@ -82,7 +83,14 @@ public class AccountServiceImpl implements AccountService {
         account.setUser(user);
 
         // 5. Save to DB
-        account = accountRepository.save(account);
+        try {
+            account = accountRepository.save(account);
+        } catch (DataIntegrityViolationException e) {
+            if (e.getMessage() != null && e.getMessage().contains("uq_accounts_user_account_name")) {
+                throw new IllegalArgumentException("You already have an account with this name");
+            }
+            throw e;
+        }
 
         // 6. Optional: send WebSocket update
         WebSocketController.PortfolioUpdateMessage updateMessage = new WebSocketController.PortfolioUpdateMessage(

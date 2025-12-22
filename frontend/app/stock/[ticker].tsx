@@ -4,7 +4,7 @@ import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '@/src/navigation';
 import { useTheme } from '@/src/context/ThemeContext';
-import StockTickerScreen from '../../src/components/stock/StockTickerScreen';
+import StockTickerScreen from '../../src/screens/stock/StockTickerScreen';
 
 interface StockData {
     symbol: string;

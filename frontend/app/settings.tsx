@@ -2,11 +2,11 @@ import React from 'react';
 import { View, ScrollView, useColorScheme, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@/src/context/ThemeContext';
-import SettingsScreen from "@/src/components/settings/SettingsScreen";
+import SettingsScreen from "@/src/screens/settings/SettingsScreen";
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
-import {HeaderSection} from "@/src/components/home/HeaderSection";
+import {HeaderSection} from "@/src/screens/tabs/home/HeaderSection";
 
 
 export default function SettingsPage() {

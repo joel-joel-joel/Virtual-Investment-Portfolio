@@ -12,7 +12,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@/src/context/ThemeContext';
 import {LineChart} from "recharts";
-import { getSectorColor } from '../../services/sectorColorService';
+import { getSectorColor } from '../../../services/sectorColorService';
 
 interface StockDetailProps {
     symbol: string;

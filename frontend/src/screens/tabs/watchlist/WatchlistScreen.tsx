@@ -80,8 +80,8 @@ const WatchlistCard = ({
 
     return (
         <TouchableOpacity
-            onPress={() => !isRemoving && setExpanded(!expanded)}
-            onLongPress={handleNavigateToStock}
+            onPress={handleNavigateToStock}
+            onLongPress={() => !isRemoving && setExpanded(!expanded)}
             style={[
                 styles.watchlistCard,
                 {

@@ -1,6 +1,6 @@
 'use strict';
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { NavigationContainer, NavigationContainerRef, CompositeNavigationProp, NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -22,11 +22,11 @@ import ProfileScreen from '@/app/(tabs)/profile';
 
 // Other screens
 import StockTickerPage from '@/app/stock/[ticker]';
-import BuyTransactionPage from '@/app/transaction/buy';
-import SellTransactionPage from '@/app/transaction/sell';
-import HistoryScreen from '@/app/transaction/history';
+import BuyTransactionPage from '@/src/screens/transaction/buy';
+import SellTransactionPage from '@/src/screens/transaction/sell';
+import HistoryScreen from '@/src/screens/transaction/history';
 import SettingsPage from '@/app/settings';
-import CreateAccountScreen from '@/app/account/create';
+import CreateAccountScreen from '@/src/screens/account/create';
 
 // Navigation types - Define TabParamList first for forward reference
 export type TabParamList = {
@@ -232,14 +232,27 @@ function TabNavigator() {
 // Root Stack Navigator
 function RootStack() {
   const {Colors} = useTheme();
-  const { isAuthenticated, isLoading, accounts } = useAuth();
+  const { isAuthenticated, isLoading, accounts, isLoadingAccounts } = useAuth();
+  const previousNeedsAccountSetup = useRef(false);
+
+  // Check if authenticated user has no accounts (new user)
+  // Only consider this true after accounts have finished loading
+  const needsAccountSetup = isAuthenticated && !isLoadingAccounts && accounts.length === 0;
+
+  // When needsAccountSetup becomes true (new user after registration), navigate to CreateAccount
+  useEffect(() => {
+    if (needsAccountSetup && !previousNeedsAccountSetup.current) {
+      console.log('🎯 New user detected - navigating to CreateAccount');
+      navigationRef.current?.navigate('CreateAccount' as never);
+      previousNeedsAccountSetup.current = true;
+    } else if (!needsAccountSetup && previousNeedsAccountSetup.current) {
+      previousNeedsAccountSetup.current = false;
+    }
+  }, [needsAccountSetup]);
 
   if (isLoading) {
     return <LoadingScreen />;
   }
-
-  // Check if authenticated user has no accounts (new user)
-  const needsAccountSetup = isAuthenticated && accounts.length === 0;
 
   return (
     <Stack.Navigator
@@ -258,6 +271,7 @@ function RootStack() {
         },
       }}
       initialRouteName={
+        isLoadingAccounts ? 'MainTabs' :
         needsAccountSetup ? 'CreateAccount' :
         isAuthenticated ? 'MainTabs' :
         'Login'

@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, ScrollView, useColorScheme } from 'react-native';
 import { useTheme } from '@/src/context/ThemeContext';
-import { HeaderSection } from "@/src/components/home/HeaderSection";
-import SearchScreenComponent from "@/src/components/search/SearchScreen";
+import { HeaderSection } from "@/src/screens/tabs/home/HeaderSection";
+import SearchScreenComponent from "@/src/screens/tabs/search/SearchScreen";
 
 
 export default function SearchScreen() {

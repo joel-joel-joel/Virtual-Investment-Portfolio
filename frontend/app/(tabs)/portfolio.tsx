@@ -1,7 +1,7 @@
 import { View, useColorScheme, ScrollView } from 'react-native';
-import { HeaderSection } from '@/src/components/home/HeaderSection';
-import { HoldingsList } from '@/src/components/portfolio/HoldingsList';
-import { AllocationOverview } from '@/src/components/portfolio/AllocationOverview';
+import { HeaderSection } from '@/src/screens/tabs/home/HeaderSection';
+import { HoldingsList } from '@/src/screens/tabs/portfolio/HoldingsList';
+import { AllocationOverview } from '@/src/screens/tabs/portfolio/AllocationOverview';
 import { useAuth } from '@/src/context/AuthContext';
 import { useCallback, useState } from 'react';
 import { useTheme } from '@/src/context/ThemeContext';

@@ -13,6 +13,7 @@ interface AuthContextType {
   activeAccount: AccountDTO | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isLoadingAccounts: boolean;
   setUser: (user: UserDTO | null) => void;
   setAccounts: (accounts: AccountDTO[]) => void;
   setActiveAccount: (account: AccountDTO | null) => void;
@@ -31,6 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [accounts, setAccounts] = useState<AccountDTO[]>([]);
   const [activeAccount, setActiveAccount] = useState<AccountDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
 
   const isAuthenticated = user !== null;
 
@@ -82,8 +84,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(currentUser);
 
       // Get user's accounts
+      setIsLoadingAccounts(true);
       const userAccounts = await getAllAccounts();
       setAccounts(userAccounts);
+      setIsLoadingAccounts(false);
 
       // Set active account (from storage or first account)
       const savedAccountId = await SecureStore.getItemAsync(ACTIVE_ACCOUNT_KEY);
@@ -97,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     } catch (error) {
       console.error('Failed to login with token:', error);
+      setIsLoadingAccounts(false);
       // Clear invalid token
       await SecureStore.deleteItemAsync(TOKEN_KEY).catch(() => {});
       throw error;
@@ -128,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(null);
       setAccounts([]);
       setActiveAccount(null);
+      setIsLoadingAccounts(false);
 
       // Remove token from SecureStore
       await SecureStore.deleteItemAsync(TOKEN_KEY);
@@ -147,6 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const refreshAccounts = async () => {
       try {
           console.log('🔄 AuthContext: Refreshing accounts...');
+          setIsLoadingAccounts(true);
           const userAccounts = await getAllAccounts();
           console.log('📊 Got accounts from API:', userAccounts.map(a => ({
               id: a.accountId,
@@ -178,8 +185,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               setActiveAccount(userAccounts[0]);
               await SecureStore.setItemAsync(ACTIVE_ACCOUNT_KEY, userAccounts[0].accountId);
           }
+          setIsLoadingAccounts(false);
       } catch (error) {
           console.error('❌ refreshAccounts failed:', error);
+          setIsLoadingAccounts(false);
           throw error;
       }
   };
@@ -202,6 +211,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         activeAccount,
         isAuthenticated,
         isLoading,
+        isLoadingAccounts,
         setUser,
         setAccounts,
         setActiveAccount,

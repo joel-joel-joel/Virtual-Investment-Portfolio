@@ -11,7 +11,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@/src/context/ThemeContext';
-import { HeaderSection } from '@/src/components/home/HeaderSection';
+import { HeaderSection } from '@/src/screens/tabs/home/HeaderSection';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
