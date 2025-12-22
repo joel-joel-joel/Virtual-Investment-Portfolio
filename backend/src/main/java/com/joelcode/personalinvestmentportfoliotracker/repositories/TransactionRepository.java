@@ -23,6 +23,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
 
     List<Transaction> findByAccount_AccountIdOrderByCreatedAtDesc(UUID accountId);
 
+    // Security fix: Filter transactions by user through account relationship
+    List<Transaction> findByAccount_User_UserId(UUID userId);
 
     // By stock
     List<Transaction> findByStock(Stock stock);

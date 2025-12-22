@@ -34,6 +34,8 @@ public interface PortfolioSnapshotRepository extends JpaRepository<PortfolioSnap
 
     List<PortfolioSnapshot> findByAccount_AccountIdOrderBySnapshotDateDesc(UUID accountId);
 
+    // Security fix: Filter snapshots by user through account relationship
+    List<PortfolioSnapshot> findByAccount_User_UserId(UUID userId);
 
     // Find by date
     Optional<PortfolioSnapshot> findByAccountAndSnapshotDate(Account account, LocalDate snapshotDate);

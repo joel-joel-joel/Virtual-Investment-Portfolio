@@ -3,9 +3,12 @@ package com.joelcode.personalinvestmentportfoliotracker.services.transaction;
 import com.joelcode.personalinvestmentportfoliotracker.dto.transaction.TransactionDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.transaction.TransactionCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Transaction;
+import com.joelcode.personalinvestmentportfoliotracker.entities.User;
+import com.joelcode.personalinvestmentportfoliotracker.model.CustomUserDetails;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.TransactionMapper;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.TransactionRepository;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,7 +55,15 @@ public class TransactionServiceImpl implements TransactionService {
     // Generate a list of all the transactions inclusive of their information
     @Override
     public List<TransactionDTO> getAllTransactions() {
-        return transactionRepository.findAll()
+        // SECURITY FIX: Get currently logged-in user
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        User user = userDetails.getUser();
+
+        // Filter transactions by user ID only
+        return transactionRepository.findByAccount_User_UserId(user.getUserId())
                 .stream()
                 .map(TransactionMapper::toDTO)
                 .collect(Collectors.toList());

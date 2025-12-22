@@ -26,6 +26,8 @@ public interface DividendPaymentRepository extends JpaRepository<DividendPayment
 
     Optional<DividendPayment> findByAccount_AccountIdAndDividend_DividendId(UUID accountId, UUID dividendId);
 
+    // Security fix: Filter dividend payments by user through account → user relationship
+    List<DividendPayment> findByAccount_User_UserId(UUID userId);
 
     // Check if payment exists
     boolean existsByAccountAndDividend(Account account, Dividend dividend);

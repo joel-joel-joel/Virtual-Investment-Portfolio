@@ -10,7 +10,9 @@ import com.joelcode.personalinvestmentportfoliotracker.services.mapping.Dividend
 import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import com.joelcode.personalinvestmentportfoliotracker.model.CustomUserDetails;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -268,8 +270,15 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
     // Get all payments
     @Override
     public List<DividendPaymentDTO> getAllDividendPayments() {
-        // Fetch all dividend payment entities
-        List<DividendPayment> payments = paymentRepository.findAll();
+        // SECURITY FIX: Get currently logged-in user
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        User user = userDetails.getUser();
+
+        // Fetch dividend payments for the authenticated user only
+        List<DividendPayment> payments = paymentRepository.findByAccount_User_UserId(user.getUserId());
 
         // Map each entity to a DTO
         return payments.stream()

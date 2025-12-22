@@ -4,10 +4,13 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.portfoliosnapshot.Por
 import com.joelcode.personalinvestmentportfoliotracker.dto.portfoliosnapshot.PortfolioSnapshotDTO;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.PortfolioSnapshot;
+import com.joelcode.personalinvestmentportfoliotracker.entities.User;
+import com.joelcode.personalinvestmentportfoliotracker.model.CustomUserDetails;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.PortfolioSnapshotRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.PortfolioSnapshotMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -68,7 +71,15 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
     // Get all snapshots
     @Override
     public List<PortfolioSnapshotDTO> getAllSnapshots() {
-        return snapshotRepository.findAll()
+        // SECURITY FIX: Get currently logged-in user
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        User user = userDetails.getUser();
+
+        // Filter snapshots by user ID only
+        return snapshotRepository.findByAccount_User_UserId(user.getUserId())
                 .stream()
                 .map(PortfolioSnapshotMapper::toDTO)
                 .collect(Collectors.toList());

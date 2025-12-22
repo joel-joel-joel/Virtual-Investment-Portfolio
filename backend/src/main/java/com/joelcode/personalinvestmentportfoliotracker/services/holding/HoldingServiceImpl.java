@@ -8,6 +8,8 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.transaction.Transacti
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Holding;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Stock;
+import com.joelcode.personalinvestmentportfoliotracker.entities.User;
+import com.joelcode.personalinvestmentportfoliotracker.model.CustomUserDetails;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.HoldingRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountValidationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.HoldingMapper;
@@ -15,6 +17,7 @@ import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.Pri
 import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -109,7 +112,15 @@ public class HoldingServiceImpl implements HoldingService {
     // Get all holdings
     @Override
     public List<HoldingDTO> getAllHoldings() {
-        return holdingRepository.findAll()
+        // SECURITY FIX: Get currently logged-in user
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        User user = userDetails.getUser();
+
+        // Filter holdings by user ID only
+        return holdingRepository.findByAccount_User_UserId(user.getUserId())
                 .stream()
                 .map(holding -> HoldingMapper.toDTO(holding, holding.getStock().getStockValue()))
                 .collect(Collectors.toList());

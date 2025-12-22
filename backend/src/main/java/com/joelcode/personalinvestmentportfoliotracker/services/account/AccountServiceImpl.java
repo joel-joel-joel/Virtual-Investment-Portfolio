@@ -18,6 +18,7 @@ import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.Pri
 import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryServiceImpl;
 import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -108,7 +109,15 @@ public class AccountServiceImpl implements AccountService {
     // Generate a list of all the accounts inclusive of their information
     @Override
     public List<AccountDTO> getAllAccounts() {
-        return accountRepository.findAll().stream()
+        // SECURITY FIX: Get currently logged-in user
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        User user = userDetails.getUser();
+
+        // Filter accounts by user ID only
+        return accountRepository.findByUser_UserId(user.getUserId(), Pageable.unpaged()).stream()
                 .map(AccountMapper::toDTO)
                 .toList();
     }

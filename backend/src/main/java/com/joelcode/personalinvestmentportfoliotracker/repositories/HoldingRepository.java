@@ -41,6 +41,9 @@ public interface HoldingRepository extends JpaRepository<Holding, UUID> {
 
     List<Holding> findByStock_CompanyNameContainingIgnoreCase(String name);
 
+    // Security fix: Filter holdings by user through account relationship
+    List<Holding> findByAccount_User_UserId(UUID userId);
+
 
     // Find specific id
     Optional<Holding> findByHoldingId(UUID holdingId);

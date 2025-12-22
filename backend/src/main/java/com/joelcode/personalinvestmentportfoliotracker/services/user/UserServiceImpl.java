@@ -10,6 +10,7 @@ import com.joelcode.personalinvestmentportfoliotracker.repositories.UserReposito
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.AccountMapper;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.UserMapper;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +71,7 @@ public class UserServiceImpl implements UserService{
 
     // Generate a list of all the users inclusive of their information
     @Override
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(UserMapper::toDTO)
