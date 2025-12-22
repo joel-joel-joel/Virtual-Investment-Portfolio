@@ -171,6 +171,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                   console.log('⚠️ Active account not found, switching to first');
                   setActiveAccount(userAccounts[0] || null);
               }
+          } else if (userAccounts.length > 0) {
+              // NEW: No active account but we have accounts - set first one
+              // This handles new users creating their first account
+              console.log('✅ Setting first account as active for new user');
+              setActiveAccount(userAccounts[0]);
+              await SecureStore.setItemAsync(ACTIVE_ACCOUNT_KEY, userAccounts[0].accountId);
           }
       } catch (error) {
           console.error('❌ refreshAccounts failed:', error);

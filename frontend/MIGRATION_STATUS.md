@@ -146,7 +146,7 @@ Once all 18 files are updated and tested:
 
 ```bash
 rm -rf app/_layout.tsx
-rm -rf app/(tabs)/_layout.tsx
+rm -rf app/((tabs))/_layout.tsx
 rm -rf app/auth/_layout.tsx
 rm -rf app/auth/login.tsx
 ```

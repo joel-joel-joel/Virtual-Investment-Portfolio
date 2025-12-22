@@ -231,7 +231,7 @@ Once all components are updated:
 1. **Delete old Expo Router files:**
 ```bash
 rm -rf app/_layout.tsx
-rm -rf app/(tabs)/_layout.tsx
+rm -rf app/((tabs))/_layout.tsx
 rm -rf app/auth/_layout.tsx
 rm -rf app/auth/login.tsx
 # Keep app/transaction and app/stock for now, can move later

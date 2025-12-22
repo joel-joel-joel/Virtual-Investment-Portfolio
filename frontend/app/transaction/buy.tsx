@@ -227,13 +227,7 @@ export default function BuyTransactionPage() {
                                 navigation.goBack();
                             }
                         } catch (error: any) {
-                            console.error('❌ BUY: Error occurred:', {
-                              message: error.message,
-                              code: error.code,
-                              status: error.status,
-                              fullError: error,
-                            });
-                            Alert.alert('Error', error.message || 'Failed to complete transaction');
+                            Alert.alert('Insufficient Funds', `Insufficient funds to complete transaction. You need A${effectivePrice.toFixed(2)} more to purchase ${shareCount} shares of ${stockData.symbol}.`);
                         } finally {
                             setLoading(false);
                         }

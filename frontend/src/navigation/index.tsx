@@ -232,11 +232,14 @@ function TabNavigator() {
 // Root Stack Navigator
 function RootStack() {
   const {Colors} = useTheme();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, accounts } = useAuth();
 
   if (isLoading) {
     return <LoadingScreen />;
   }
+
+  // Check if authenticated user has no accounts (new user)
+  const needsAccountSetup = isAuthenticated && accounts.length === 0;
 
   return (
     <Stack.Navigator
@@ -254,7 +257,11 @@ function RootStack() {
           backgroundColor: Colors.background,
         },
       }}
-      initialRouteName={isAuthenticated ? 'MainTabs' : 'Login'}
+      initialRouteName={
+        needsAccountSetup ? 'CreateAccount' :
+        isAuthenticated ? 'MainTabs' :
+        'Login'
+      }
     >
       {isAuthenticated ? (
         <>
@@ -330,7 +337,11 @@ function RootStack() {
             <Stack.Screen
               name="CreateAccount"
               component={CreateAccountScreen}
-              options={{
+              options={needsAccountSetup ? {
+                headerShown: true,
+                headerTitle: 'Create Your First Account',
+                headerLeft: () => null, // Disable back button for onboarding
+              } : {
                 headerShown: false,
               }}
             />

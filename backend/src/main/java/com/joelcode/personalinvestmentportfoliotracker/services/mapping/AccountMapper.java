@@ -6,6 +6,8 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountUpdate
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class AccountMapper {
 
@@ -13,6 +15,14 @@ public class AccountMapper {
     public static Account toEntity(AccountCreateRequest request) {
         Account account = new Account();
         account.setAccountName(request.getAccountName());
+
+        // Set cash balance from request (default to ZERO if not provided)
+        if (request.getCashBalance() != null) {
+            account.setCashBalance(request.getCashBalance());
+        } else {
+            account.setCashBalance(BigDecimal.ZERO);
+        }
+
         return account;
     }
 

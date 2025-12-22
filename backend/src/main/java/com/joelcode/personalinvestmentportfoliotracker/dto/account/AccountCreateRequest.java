@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class AccountCreateRequest {
@@ -18,13 +19,18 @@ public class AccountCreateRequest {
     @NotNull(message = "User id is required")
     private UUID userId;
 
+    // Initial cash balance (optional, defaults to 0)
+    private BigDecimal cashBalance;
+
     // Jackson-compatible constructor
     @JsonCreator
     public AccountCreateRequest(
             @JsonProperty("accountName") String accountName,
-            @JsonProperty("userId") UUID userId) {
+            @JsonProperty("userId") UUID userId,
+            @JsonProperty("cashBalance") BigDecimal cashBalance) {
         this.accountName = accountName;
         this.userId = userId;
+        this.cashBalance = cashBalance;
     }
 
     public AccountCreateRequest() {}
@@ -38,8 +44,14 @@ public class AccountCreateRequest {
         return userId;
     }
 
+    public BigDecimal getCashBalance() {
+        return cashBalance;
+    }
+
     public void setAccountName(String accountName) {this.accountName = accountName;}
 
     public void setUserId(UUID userId) {this.userId = userId;}
+
+    public void setCashBalance(BigDecimal cashBalance) {this.cashBalance = cashBalance;}
 
 }

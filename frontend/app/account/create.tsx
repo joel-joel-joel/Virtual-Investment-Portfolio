@@ -17,6 +17,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@/src/context/ThemeContext';
+import { useAuth } from '@/src/context/AuthContext';
 import { createAccount } from '@/src/services/portfolioService';
 
 // Type for your account DTO
@@ -30,6 +31,7 @@ interface AccountDTO {
 export default function CreateAccountScreen() {
     const {Colors} = useTheme();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { refreshAccounts } = useAuth();
 
     const [accountName, setAccountName] = useState('');
     const [initialBalance, setInitialBalance] = useState('');
@@ -59,11 +61,26 @@ export default function CreateAccountScreen() {
                 cashBalance: balance,
             });
 
-            // Update local state to show toggle
-            // @ts-ignore
-            setCreatedAccount(newAccount);
+            // Refresh accounts in AuthContext to update state
+            await refreshAccounts();
 
-            Alert.alert('Success', `Account "${accountName}" created successfully!`);
+            // Check if this is the user's first account (onboarding)
+            const { accounts } = useAuth();
+
+            if (accounts.length === 1) {
+                // This is their first account - navigate directly to MainTabs without showing success UI
+                console.log('📱 First account created - navigating to MainTabs');
+                (navigation as any).reset({
+                    index: 0,
+                    routes: [{ name: 'MainTabs' }],
+                });
+            } else {
+                // Additional account - show success UI
+                console.log('📱 Additional account created - showing success UI');
+                // @ts-ignore
+                setCreatedAccount(newAccount);
+                Alert.alert('Success', `Account "${accountName}" created successfully!`);
+            }
         } catch (error: any) {
             Alert.alert('Error', error.message || 'Failed to create account. Please try again.');
         } finally {
@@ -188,7 +205,15 @@ export default function CreateAccountScreen() {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.primaryButton, { backgroundColor: Colors.tint }]}
-                                onPress={() => navigation.navigate('MainTabs', { screen: 'Portfolio', params: {} })}
+                                onPress={() => {
+                                    // Replace the navigation stack to go to MainTabs
+                                    // The back button is removed and the stack is replaced, so new users
+                                    // can't go back to account creation
+                                    (navigation as any).reset({
+                                        index: 0,
+                                        routes: [{ name: 'MainTabs' }],
+                                    });
+                                }}
                             >
                                 <Text style={styles.primaryButtonText}>View Portfolio</Text>
                                 <MaterialCommunityIcons name="arrow-right" size={18} color="white" />

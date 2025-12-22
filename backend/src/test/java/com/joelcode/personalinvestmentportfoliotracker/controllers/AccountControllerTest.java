@@ -118,8 +118,8 @@ class AccountControllerTest {
         // Setup create request and expected account
         UUID accountId = UUID.randomUUID();
         UserDTO user = new UserDTO(UUID.randomUUID(), "testuser", "joel Ong","<EMAIL>", LocalDateTime.now());
-        AccountCreateRequest request = new AccountCreateRequest("Checking",UUID.randomUUID());
-        AccountDTO created = new AccountDTO( "Checking", accountId, user, BigDecimal.valueOf(5000));
+        AccountCreateRequest request = new AccountCreateRequest("Checking", UUID.randomUUID(), BigDecimal.valueOf(5000));
+        AccountDTO created = new AccountDTO("Checking", accountId, user, BigDecimal.valueOf(5000));
 
         // Map method return value to setup
         when(accountService.createAccount(request)).thenReturn(created);

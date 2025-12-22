@@ -6,11 +6,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@/src/context/ThemeContext';
 
 // Screen Imports
-import HomeScreen from './(tabs)/index';
-import PortfolioScreen from './(tabs)/portfolio';
-import SearchScreen from './(tabs)/search';
-import WatchlistScreen from './(tabs)/watchlist';
-import ProfileScreen from './(tabs)/profile';
+import HomeScreen from '@/app/(tabs)/index';
+import PortfolioScreen from '@/app/(tabs)/portfolio';
+import SearchScreen from '@/app/(tabs)/search';
+import WatchlistScreen from '@/app/(tabs)/watchlist';
+import ProfileScreen from '@/app/(tabs)/profile';
 
 // Modal/Stack Imports
 import SettingsScreen from '../src/components/settings/SettingsScreen';

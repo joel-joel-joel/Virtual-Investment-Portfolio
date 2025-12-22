@@ -20,17 +20,18 @@ import { useAuth } from '@/src/context/AuthContext';
 import { getUserDashboard } from '@/src/services/dashboardService';
 import type { DashboardDTO } from '@/src/types/api';
 import { logout as apiLogout } from '@/src/services/authService';
+import { deleteAccount as apiDeleteAccount} from '@/src/services/portfolioService';
 import WalletModal from '@/src/components/wallet/WalletModal';
 import OrdersSection from '@/src/components/profile/OrdersSection';
 
 
 const ProfileMenuOption = ({
-    icon,
-    label,
-    value,
-    onPress,
-    colors,
-}: {
+                               icon,
+                               label,
+                               value,
+                               onPress,
+                               colors,
+                           }: {
     icon: string;
     label: string;
     value?: string;
@@ -88,6 +89,7 @@ export default function ProfileScreen() {
     const [showWalletModal, setShowWalletModal] = useState(false);
     const [dashboardData, setDashboardData] = useState<DashboardDTO | null>(null);
     const [loading, setLoading] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         if (user && activeAccount) {
@@ -123,6 +125,38 @@ export default function ProfileScreen() {
 
     const handleCreateAccount = () => {
         navigation.navigate('CreateAccount');
+    };
+
+    const handleDeleteAccount = () => {
+        Alert.alert(
+            'Delete Account',
+            `Are you sure you want to delete "${activeAccount?.accountName}"? This action cannot be undone.`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    onPress: async () => {
+                        if (!activeAccount) return;
+
+                        try {
+                            setDeleting(true);
+                            await apiDeleteAccount(activeAccount.accountId);
+
+                            // Refresh accounts after deletion
+                            await refreshAccounts();
+
+                            Alert.alert('Success', 'Account deleted successfully');
+                        } catch (error) {
+                            console.error('Failed to delete account:', error);
+                            Alert.alert('Error', 'Failed to delete account. Please try again.');
+                        } finally {
+                            setDeleting(false);
+                        }
+                    },
+                    style: 'destructive',
+                },
+            ]
+        );
     };
 
     const handleSettingsPress = () => {
@@ -269,36 +303,62 @@ export default function ProfileScreen() {
                         </View>
                     </View>
 
-                    {/* Account Switcher and Create Account Buttons */}
-                    <View style={styles.accountButtons}>
-                        {accounts.length > 1 && (
+                    {/* Account Switcher, Create Account, and Delete Account Buttons */}
+                    <View style={styles.accountButtonsContainer}>
+                        <View style={styles.accountButtons}>
+                            {accounts.length > 1 && (
+                                <TouchableOpacity
+                                    onPress={() => setShowAccountSwitcher(true)}
+                                    style={[styles.accountButton, { backgroundColor: Colors.background, borderColor: Colors.border, flex: 1 }]}
+                                >
+                                    <MaterialCommunityIcons
+                                        name="account-switch-outline"
+                                        size={16}
+                                        color={Colors.tint}
+                                    />
+                                    <Text style={[styles.accountButtonText, { color: Colors.tint }]}>
+                                        Switch Account
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
                             <TouchableOpacity
-                                onPress={() => setShowAccountSwitcher(true)}
-                                style={[styles.accountButton, { backgroundColor: Colors.background, borderColor: Colors.border, flex: 1 }]}
+                                onPress={handleCreateAccount}
+                                style={[styles.accountButton, { backgroundColor: Colors.tint, flex: accounts.length > 1 ? 1 : undefined }]}
                             >
                                 <MaterialCommunityIcons
-                                    name="account-switch-outline"
+                                    name="plus-circle"
                                     size={16}
-                                    color={Colors.tint}
+                                    color="white"
                                 />
-                                <Text style={[styles.accountButtonText, { color: Colors.tint }]}>
-                                    Switch Account
+                                <Text style={[styles.accountButtonText, { color: 'white' }]}>
+                                    Create Account
                                 </Text>
                             </TouchableOpacity>
+                        </View>
+
+                        {/* Delete Account Button - Only show if user has more than 1 account */}
+                        {accounts.length > 1 && (
+                            <TouchableOpacity
+                                onPress={handleDeleteAccount}
+                                disabled={deleting}
+                                style={[styles.deleteAccountButton, { opacity: deleting ? 0.6 : 1 }]}
+                            >
+                                {deleting ? (
+                                    <ActivityIndicator size="small" color="#C62828" />
+                                ) : (
+                                    <>
+                                        <MaterialCommunityIcons
+                                            name="trash-can-outline"
+                                            size={16}
+                                            color="#C62828"
+                                        />
+                                        <Text style={[styles.deleteAccountButtonText, { color: '#C62828' }]}>
+                                            Delete Account
+                                        </Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
                         )}
-                        <TouchableOpacity
-                            onPress={handleCreateAccount}
-                            style={[styles.accountButton, { backgroundColor: Colors.tint, flex: accounts.length > 1 ? 1 : undefined }]}
-                        >
-                            <MaterialCommunityIcons
-                                name="plus-circle"
-                                size={16}
-                                color="white"
-                            />
-                            <Text style={[styles.accountButtonText, { color: 'white' }]}>
-                                Create Account
-                            </Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
 
@@ -623,6 +683,9 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '600',
     },
+    accountButtonsContainer: {
+        gap: 10,
+    },
     accountButtons: {
         flexDirection: 'row',
         gap: 10,
@@ -637,6 +700,22 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     accountButtonText: {
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    deleteAccountButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 10,
+        backgroundColor: '#FCE4E4',
+        borderWidth: 1,
+        borderColor: '#FFB3B3',
+    },
+    deleteAccountButtonText: {
         fontSize: 12,
         fontWeight: '700',
     },
