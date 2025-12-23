@@ -3,6 +3,8 @@ package com.joelcode.personalinvestmentportfoliotracker.services.mapping;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserUpdateRequest;
+import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserPreferencesDTO;
+import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserPreferencesUpdateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
 import org.springframework.stereotype.Component;
 
@@ -30,5 +32,37 @@ public class UserMapper {
     public static UserDTO toDTO(User user) {
         if (user == null) return null;
         return new UserDTO(user);
+    }
+
+    // Convert user entity to preferences DTO
+    public static UserPreferencesDTO toPreferencesDTO(User user) {
+        if (user == null) return null;
+
+        return new UserPreferencesDTO(
+            user.getPriceAlerts(),
+            user.getPortfolioUpdates(),
+            user.getMarketNews(),
+            user.getDividendNotifications(),
+            user.getEarningSeason()
+        );
+    }
+
+    // Update user entity from preferences update request
+    public static void updatePreferences(User user, UserPreferencesUpdateRequest request) {
+        if (request.getPriceAlerts() != null) {
+            user.setPriceAlerts(request.getPriceAlerts());
+        }
+        if (request.getPortfolioUpdates() != null) {
+            user.setPortfolioUpdates(request.getPortfolioUpdates());
+        }
+        if (request.getMarketNews() != null) {
+            user.setMarketNews(request.getMarketNews());
+        }
+        if (request.getDividendNotifications() != null) {
+            user.setDividendNotifications(request.getDividendNotifications());
+        }
+        if (request.getEarningSeason() != null) {
+            user.setEarningSeason(request.getEarningSeason());
+        }
     }
 }

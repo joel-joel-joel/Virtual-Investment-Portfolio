@@ -4,6 +4,8 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserUpdateRequest;
+import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserPreferencesDTO;
+import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserPreferencesUpdateRequest;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,4 +23,12 @@ public interface UserService {
     void deleteUser(UUID userId);
 
     List<AccountDTO> getAllAccountsForUser(UUID userId);
+
+    UserPreferencesDTO getUserPreferences(UUID userId);
+
+    UserPreferencesDTO updateUserPreferences(UUID userId, UserPreferencesUpdateRequest request);
+
+    UserPreferencesDTO getCurrentUserPreferences();
+
+    UserPreferencesDTO updateCurrentUserPreferences(UserPreferencesUpdateRequest request);
 }

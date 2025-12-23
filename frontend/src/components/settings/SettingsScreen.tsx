@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -10,11 +10,6 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@/src/context/ThemeContext';
-import {
-  getUserPreferences,
-  updateUserPreferences,
-  NotificationPreferences
-} from '@/src/services/userPreferencesService';
 
 interface NotificationSettings {
     priceAlerts: boolean;
@@ -207,51 +202,27 @@ export default function SettingsScreen() {
     const { Colors, theme, setTheme } = useTheme(); // ✅ Use theme context
     const [activeModal, setActiveModal] = useState<string | null>(null);
 
-    // Notification Preferences - API backed
-    const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
-    const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+    // Notification Settings
+    const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
+        priceAlerts: true,
+        portfolioUpdates: true,
+        marketNews: false,
+        dividendNotifications: true,
+        earningSeason: false,
+    });
 
-    // App Settings (excluding theme which is in context) - local only
+    // App Settings (excluding theme which is in context)
     const [appSettings, setAppSettings] = useState<AppSettings>({
         currency: 'AUD',
         language: 'English',
         dateFormat: 'DD/MM/YYYY',
     });
 
-    // Load preferences on mount
-    useEffect(() => {
-        loadPreferences();
-    }, []);
-
-    const loadPreferences = async () => {
-        try {
-            setIsLoadingPreferences(true);
-            const prefs = await getUserPreferences();
-            setPreferences(prefs);
-        } catch (error) {
-            console.error('Failed to load preferences:', error);
-            Alert.alert('Error', 'Failed to load your settings');
-        } finally {
-            setIsLoadingPreferences(false);
-        }
-    };
-
-    const handleNotificationToggle = async (key: keyof NotificationPreferences) => {
-        if (!preferences) return;
-
-        const newValue = !preferences[key];
-
-        // Optimistic update
-        setPreferences(prev => prev ? { ...prev, [key]: newValue } : prev);
-
-        try {
-            await updateUserPreferences({ [key]: newValue });
-        } catch (error) {
-            console.error('Failed to update preference:', error);
-            // Revert on error
-            setPreferences(prev => prev ? { ...prev, [key]: !newValue } : prev);
-            Alert.alert('Error', 'Failed to save setting');
-        }
+    const handleNotificationToggle = (key: keyof NotificationSettings) => {
+        setNotificationSettings(prev => ({
+            ...prev,
+            [key]: !prev[key],
+        }));
     };
 
     const handleAppSettingChange = (key: keyof AppSettings, value: any) => {
@@ -324,58 +295,50 @@ export default function SettingsScreen() {
                     Notifications
                 </Text>
 
-                {isLoadingPreferences ? (
-                    <Text style={[styles.settingLabel, { color: Colors.text }]}>
-                        Loading settings...
-                    </Text>
-                ) : (
-                    <>
-                        <SettingItemToggle
-                            icon="bell-alert-outline"
-                            label="Price Alerts"
-                            description="Get notified when prices change significantly"
-                            value={preferences?.priceAlerts ?? true}
-                            onToggle={() => handleNotificationToggle('priceAlerts')}
-                            Colors={Colors}
-                        />
+                <SettingItemToggle
+                    icon="bell-alert-outline"
+                    label="Price Alerts"
+                    description="Get notified when prices change significantly"
+                    value={notificationSettings.priceAlerts}
+                    onToggle={() => handleNotificationToggle('priceAlerts')}
+                    Colors={Colors}
+                />
 
-                        <SettingItemToggle
-                            icon="chart-line-variant"
-                            label="Portfolio Updates"
-                            description="Receive daily portfolio performance updates"
-                            value={preferences?.portfolioUpdates ?? true}
-                            onToggle={() => handleNotificationToggle('portfolioUpdates')}
-                            Colors={Colors}
-                        />
+                <SettingItemToggle
+                    icon="chart-line-variant"
+                    label="Portfolio Updates"
+                    description="Receive daily portfolio performance updates"
+                    value={notificationSettings.portfolioUpdates}
+                    onToggle={() => handleNotificationToggle('portfolioUpdates')}
+                    Colors={Colors}
+                />
 
-                        <SettingItemToggle
-                            icon="newspaper"
-                            label="Market News"
-                            description="Get the latest financial news and insights"
-                            value={preferences?.marketNews ?? false}
-                            onToggle={() => handleNotificationToggle('marketNews')}
-                            Colors={Colors}
-                        />
+                <SettingItemToggle
+                    icon="newspaper"
+                    label="Market News"
+                    description="Get the latest financial news and insights"
+                    value={notificationSettings.marketNews}
+                    onToggle={() => handleNotificationToggle('marketNews')}
+                    Colors={Colors}
+                />
 
-                        <SettingItemToggle
-                            icon="cash-multiple"
-                            label="Dividend Notifications"
-                            description="Be notified about dividend payments"
-                            value={preferences?.dividendNotifications ?? true}
-                            onToggle={() => handleNotificationToggle('dividendNotifications')}
-                            Colors={Colors}
-                        />
+                <SettingItemToggle
+                    icon="cash-multiple"
+                    label="Dividend Notifications"
+                    description="Be notified about dividend payments"
+                    value={notificationSettings.dividendNotifications}
+                    onToggle={() => handleNotificationToggle('dividendNotifications')}
+                    Colors={Colors}
+                />
 
-                        <SettingItemToggle
-                            icon="calendar-check"
-                            label="Earnings Season"
-                            description="Get alerts during company earnings season"
-                            value={preferences?.earningSeason ?? false}
-                            onToggle={() => handleNotificationToggle('earningSeason')}
-                            Colors={Colors}
-                        />
-                    </>
-                )}
+                <SettingItemToggle
+                    icon="calendar-check"
+                    label="Earnings Season"
+                    description="Get alerts during company earnings season"
+                    value={notificationSettings.earningSeason}
+                    onToggle={() => handleNotificationToggle('earningSeason')}
+                    Colors={Colors}
+                />
             </View>
 
             {/* PORTFOLIO SECTION */}

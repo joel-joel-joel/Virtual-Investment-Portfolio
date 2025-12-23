@@ -55,6 +55,22 @@ public class User {
     @Column(nullable = false)
     private Role roles = Role.ROLE_USER;
 
+    // Notification Preferences
+    @Column(name = "price_alerts", nullable = false)
+    private Boolean priceAlerts = true;
+
+    @Column(name = "portfolio_updates", nullable = false)
+    private Boolean portfolioUpdates = true;
+
+    @Column(name = "market_news", nullable = false)
+    private Boolean marketNews = false;
+
+    @Column(name = "dividend_notifications", nullable = false)
+    private Boolean dividendNotifications = true;
+
+    @Column(name = "earning_season", nullable = false)
+    private Boolean earningSeason = false;
+
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
@@ -117,6 +133,22 @@ public class User {
     public Role getRoles() {return roles;}
 
     public void setRoles(Role role) {this.roles = role;}
+
+    // Notification Preferences Getters/Setters
+    public Boolean getPriceAlerts() { return priceAlerts; }
+    public void setPriceAlerts(Boolean priceAlerts) { this.priceAlerts = priceAlerts; }
+
+    public Boolean getPortfolioUpdates() { return portfolioUpdates; }
+    public void setPortfolioUpdates(Boolean portfolioUpdates) { this.portfolioUpdates = portfolioUpdates; }
+
+    public Boolean getMarketNews() { return marketNews; }
+    public void setMarketNews(Boolean marketNews) { this.marketNews = marketNews; }
+
+    public Boolean getDividendNotifications() { return dividendNotifications; }
+    public void setDividendNotifications(Boolean dividendNotifications) { this.dividendNotifications = dividendNotifications; }
+
+    public Boolean getEarningSeason() { return earningSeason; }
+    public void setEarningSeason(Boolean earningSeason) { this.earningSeason = earningSeason; }
 
     public LocalDateTime getCreatedAt() {return createdAt;}
 

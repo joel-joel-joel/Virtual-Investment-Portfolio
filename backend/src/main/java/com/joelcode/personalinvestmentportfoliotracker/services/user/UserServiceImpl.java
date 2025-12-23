@@ -4,13 +4,17 @@ import com.joelcode.personalinvestmentportfoliotracker.dto.account.AccountDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserCreateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserUpdateRequest;
+import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserPreferencesDTO;
+import com.joelcode.personalinvestmentportfoliotracker.dto.user.UserPreferencesUpdateRequest;
 import com.joelcode.personalinvestmentportfoliotracker.entities.Account;
 import com.joelcode.personalinvestmentportfoliotracker.entities.User;
+import com.joelcode.personalinvestmentportfoliotracker.model.CustomUserDetails;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.UserRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.AccountMapper;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.UserMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -115,5 +119,50 @@ public class UserServiceImpl implements UserService{
                 .map(AccountMapper::toDTO)  // use your mapper
                 .collect(Collectors.toList());
         return accountDTOs;
+    }
+
+    // Get user preferences
+    @Override
+    public UserPreferencesDTO getUserPreferences(UUID userId) {
+        User user = userValidationService.validateUserExists(userId);
+        return UserMapper.toPreferencesDTO(user);
+    }
+
+    // Update user preferences
+    @Override
+    public UserPreferencesDTO updateUserPreferences(UUID userId, UserPreferencesUpdateRequest request) {
+        User user = userValidationService.validateUserExists(userId);
+
+        UserMapper.updatePreferences(user, request);
+        user = userRepository.save(user);
+
+        return UserMapper.toPreferencesDTO(user);
+    }
+
+    // Get current authenticated user's preferences
+    @Override
+    public UserPreferencesDTO getCurrentUserPreferences() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        User user = userDetails.getUser();
+
+        return UserMapper.toPreferencesDTO(user);
+    }
+
+    // Update current authenticated user's preferences
+    @Override
+    public UserPreferencesDTO updateCurrentUserPreferences(UserPreferencesUpdateRequest request) {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        User user = userDetails.getUser();
+
+        UserMapper.updatePreferences(user, request);
+        user = userRepository.save(user);
+
+        return UserMapper.toPreferencesDTO(user);
     }
 }
