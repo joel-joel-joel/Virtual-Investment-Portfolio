@@ -10,12 +10,15 @@ import com.joelcode.personalinvestmentportfoliotracker.repositories.TransactionR
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Profile("!test")
+@Transactional(readOnly = true)
 public class TransactionServiceImpl implements TransactionService {
 
     // Define key fields
@@ -35,6 +38,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     // Create a new transaction and show essential information
     @Override
+    @Transactional(readOnly = false)
     public TransactionDTO createTransaction(TransactionCreateRequest request) {
         transactionValidationService.validateTransactionType(request.getTransactionType());
 
@@ -71,6 +75,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     // Delete transaction
     @Override
+    @Transactional(readOnly = false)
     public void deleteTransaction(UUID transactionId) {
         Transaction transaction = transactionValidationService.validateTransactionExists(transactionId);
         transactionRepository.delete(transaction);

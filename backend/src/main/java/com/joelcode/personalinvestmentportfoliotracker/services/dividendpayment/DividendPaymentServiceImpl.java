@@ -7,11 +7,11 @@ import com.joelcode.personalinvestmentportfoliotracker.entities.*;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.*;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.DividendPaymentMapper;
-import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.joelcode.personalinvestmentportfoliotracker.model.CustomUserDetails;
 
 import java.math.BigDecimal;
@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Profile("!test")
+@Transactional(readOnly = true)
 public class DividendPaymentServiceImpl implements DividendPaymentService {
 
     // Define key fields
@@ -59,7 +60,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
 
     // Create response dividend payment dto from request dto
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public DividendPaymentDTO createDividendPayment(DividendPaymentCreateRequest request) {
 
         // Validate request
@@ -224,7 +225,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
 
     // Process payment for dividend
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public void processPaymentsForDividend(UUID dividendId) {
         // When a dividend is announced, automatically create payment records
         // for all accounts that hold this stock
@@ -261,7 +262,7 @@ public class DividendPaymentServiceImpl implements DividendPaymentService {
 
     // Delete payment
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public void deleteDividendPayment(UUID paymentId) {
         DividendPayment payment = validationService.validatePaymentExists(paymentId);
         paymentRepository.delete(payment);

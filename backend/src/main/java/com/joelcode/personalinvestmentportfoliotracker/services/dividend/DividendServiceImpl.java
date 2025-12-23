@@ -9,10 +9,10 @@ import com.joelcode.personalinvestmentportfoliotracker.repositories.DividendRepo
 import com.joelcode.personalinvestmentportfoliotracker.repositories.StockRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentService;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.DividendMapper;
-import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Profile("!test")
+@Transactional(readOnly = true)
 public class DividendServiceImpl implements DividendService {
 
     // Define key fields
@@ -52,7 +53,7 @@ public class DividendServiceImpl implements DividendService {
 
     // Create dividend DTO from request dto
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public DividendDTO createDividend(DividendCreateRequest request) {
 
         // Validate fields
@@ -124,7 +125,7 @@ public class DividendServiceImpl implements DividendService {
 
     // Delete dividend
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public void deleteDividend(UUID dividendId) {
         Dividend dividend = dividendValidationService.validateDividendExists(dividendId);
 

@@ -11,6 +11,7 @@ import com.joelcode.personalinvestmentportfoliotracker.services.finnhub.FinnhubA
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.StockMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ import java.util.UUID;
 
 @Service
 @Profile("!test")
+@Transactional(readOnly = true)
 public class StockServiceImpl implements StockService {
 
     // Define key fields
@@ -42,6 +44,7 @@ public class StockServiceImpl implements StockService {
 
     // Create a new stock and show essential information
     @Override
+    @Transactional(readOnly = false)
     public StockDTO createStock(StockCreateRequest request) {
 
         // Check that code is unique and request is valid
@@ -86,6 +89,7 @@ public class StockServiceImpl implements StockService {
 
     // Update stock entity by given stockId
     @Override
+    @Transactional(readOnly = false)
     public StockDTO updateStock (UUID id, StockUpdateRequest request) {
         // Validate stock exists
         Stock stock = stockValidationService.validateStockExists(id);
@@ -109,6 +113,7 @@ public class StockServiceImpl implements StockService {
 
     // Get current price
     @Override
+    @Transactional(readOnly = false)
     public BigDecimal getCurrentPrice(UUID stockId) {
 
         // Validate stock exists
@@ -157,6 +162,7 @@ public class StockServiceImpl implements StockService {
 
     // Helper method to fetch and populate missing industry data from FinnHub
     @Override
+    @Transactional(readOnly = false)
     public void populateMissingIndustryData(Stock stock) {
         if (stock == null || stock.getIndustry() != null) {
             return; // Skip if stock is null or industry is already set
@@ -178,6 +184,7 @@ public class StockServiceImpl implements StockService {
 
     // Delete stock
     @Override
+    @Transactional(readOnly = false)
     public void deleteStock(UUID id) {
         Stock stock = stockValidationService.validateStockExists(id);
         stockRepository.delete(stock);

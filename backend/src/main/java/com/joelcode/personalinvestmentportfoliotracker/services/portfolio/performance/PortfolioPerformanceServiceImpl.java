@@ -16,10 +16,10 @@ import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
 import com.joelcode.personalinvestmentportfoliotracker.dto.portfolio.PortfolioPerformanceDTO;
 import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidationService;
-import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -29,6 +29,7 @@ import java.util.UUID;
 
 @Service
 @Profile("!test")
+@Transactional(readOnly = true)
 public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceService{
 
     // Define key fields
@@ -70,7 +71,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
 
     // Calculate performance for a portfolio
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public PortfolioPerformanceDTO calculatePortfolioPerformance(UUID accountId){
         // Find account and retrieve holdings
         Account account = accountRepository.findByAccountId(accountId)
@@ -140,7 +141,7 @@ public class PortfolioPerformanceServiceImpl implements PortfolioPerformanceServ
 
     // Create a portfolio snapshot
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public void createPortfolioSnapshot(UUID accountId){
         PortfolioPerformanceDTO performance = calculatePortfolioPerformance(accountId);
 

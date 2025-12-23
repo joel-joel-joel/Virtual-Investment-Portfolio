@@ -11,12 +11,12 @@ import com.joelcode.personalinvestmentportfoliotracker.services.account.AccountS
 import com.joelcode.personalinvestmentportfoliotracker.services.dividendpayment.DividendPaymentCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingService;
-import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,6 +26,7 @@ import java.util.UUID;
 
 @Service
 @Profile("!test")
+@Transactional
 public class TransactionProcessorServiceImpl implements TransactionProcessorService {
 
     private static final Logger logger = LoggerFactory.getLogger(TransactionProcessorServiceImpl.class);
@@ -60,7 +61,6 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
 
 
     @Override
-    @Transactional
     public TransactionDTO processTransaction(TransactionCreateRequest request) {
 
         // Retrieve account

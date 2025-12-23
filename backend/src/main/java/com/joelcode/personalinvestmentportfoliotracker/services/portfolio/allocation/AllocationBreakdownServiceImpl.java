@@ -8,6 +8,7 @@ import com.joelcode.personalinvestmentportfoliotracker.services.holding.HoldingC
 import com.joelcode.personalinvestmentportfoliotracker.services.user.UserValidationService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Profile("!test")
+@Transactional(readOnly = true)
 public class AllocationBreakdownServiceImpl implements AllocationBreakdownService {
 
     // Define key fields

@@ -7,8 +7,10 @@ import com.joelcode.personalinvestmentportfoliotracker.entities.PriceHistory;
 import com.joelcode.personalinvestmentportfoliotracker.exceptions.CustomAuthenticationException;
 import com.joelcode.personalinvestmentportfoliotracker.repositories.PriceHistoryRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.PriceHistoryMapper;
+import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,6 +20,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Profile("!test")
+@Transactional(readOnly = true)
 public class PriceHistoryServiceImpl implements PriceHistoryService{
 
     // Define key fields
@@ -43,6 +47,7 @@ public class PriceHistoryServiceImpl implements PriceHistoryService{
 
     // Create price history entity from request dto
     @Override
+    @Transactional(readOnly = false)
     public PriceHistoryDTO createPriceHistory(PriceHistoryCreateRequest request) {
 
         // Check that creation request is calid
@@ -76,6 +81,7 @@ public class PriceHistoryServiceImpl implements PriceHistoryService{
 
     // Delete price history
     @Override
+    @Transactional(readOnly = false)
     public void deletePriceHistory(UUID priceHistoryId) {
         PriceHistory priceHistory = validationService.validatePriceHistoryExists(priceHistoryId);
         priceHistoryRepository.delete(priceHistory);

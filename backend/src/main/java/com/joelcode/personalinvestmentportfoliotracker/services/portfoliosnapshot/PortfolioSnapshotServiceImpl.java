@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Profile("!test")
+@Transactional(readOnly = true)
 public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
 
     // Define key fields
@@ -37,6 +39,7 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
 
     // Create snapshot entity from request dto
     @Override
+    @Transactional(readOnly = false)
     public PortfolioSnapshotDTO createSnapshot(PortfolioSnapshotCreateRequest request) {
 
         // Validate fields and relationships
@@ -118,6 +121,7 @@ public class PortfolioSnapshotServiceImpl implements PortfolioSnapshotService {
 
     // Delete snapshot
     @Override
+    @Transactional(readOnly = false)
     public void deleteSnapshot(UUID snapshotId) {
         PortfolioSnapshot snapshot = snapshotValidationService.validateSnapshotExists(snapshotId);
         snapshotRepository.delete(snapshot);

@@ -10,6 +10,7 @@ import com.joelcode.personalinvestmentportfoliotracker.repositories.OrderReposit
 import com.joelcode.personalinvestmentportfoliotracker.repositories.StockRepository;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.OrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Profile("!test")
+@Transactional(readOnly = true)
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
@@ -37,7 +40,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public OrderDTO createOrder(CreateOrderRequest request) {
         // Validate account exists
         Account account = accountRepository.findByAccountId(request.getAccountId())
@@ -93,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public OrderDTO cancelOrder(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
@@ -118,7 +121,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public void markOrderAsExecuted(UUID orderId, UUID transactionId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
@@ -132,7 +135,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public void markOrderAsFailed(UUID orderId, String reason) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
