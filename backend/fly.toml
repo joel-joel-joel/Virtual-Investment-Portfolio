@@ -1,0 +1,79 @@
+# Fly.io Configuration for Personal Investment Portfolio Tracker Backend
+app = "portfolio-tracker-backend"
+primary_region = "lhr"  # London (closest to Supabase EU West 1)
+
+# Build configuration
+[build]
+  dockerfile = "Dockerfile.flyio"
+
+# Environment variables (non-secrets)
+[env]
+  SERVER_PORT = "8080"
+  SPRING_PROFILES_ACTIVE = "prod"
+  TZ = "UTC"
+
+# HTTP service configuration
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0  # Scale to zero when idle (saves costs)
+  processes = ["app"]
+
+# VM Resources - Optimized for Spring Boot Java Application
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 1024  # 1GB RAM for Spring Boot
+
+# Service configuration
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+  processes = ["app"]
+
+  # Public HTTP/HTTPS ports
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  # Connection limits
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+  # TCP health checks
+  [[services.tcp_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "60s"
+
+  # HTTP health checks using Spring Boot Actuator
+  [[services.http_checks]]
+    interval = "30s"
+    timeout = "10s"
+    grace_period = "60s"
+    method = "GET"
+    path = "/actuator/health"
+    protocol = "http"
+    restart_limit = 3
+    tls_skip_verify = false
+    [services.http_checks.headers]
+      User-Agent = "Fly-Health-Check"
+
+# Deployment strategy
+[deploy]
+  strategy = "rolling"
+  max_unavailable = 0.5
+
+# Metrics and monitoring
+[metrics]
+  port = 8080
+  path = "/actuator/prometheus"

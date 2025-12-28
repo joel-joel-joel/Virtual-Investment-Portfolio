@@ -8,12 +8,15 @@
     "scheme": "portfolio-tracker",
     "userInterfaceStyle": "automatic",
     "description": "Track your investments, monitor stock performance, and manage your virtual portfolio with real-time market data",
-    "owner": "joelcode",
+    "owner": "joeljoeljoel",
     "privacy": "unlisted",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.joelcode.portfoliotracker"
+      "bundleIdentifier": "com.joelcode.portfoliotracker",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.joelcode.portfoliotracker",
@@ -57,15 +60,14 @@
     },
     "extra": {
       "eas": {
-        "projectId": "your-project-id-here"
-      }
+        "projectId": "5d02e27c-4257-46cb-9c7c-309fe3276a1d"
+      },
+      "router": {}
     },
     "updates": {
       "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/your-project-id-here"
+      "url": "https://u.expo.dev/5d02e27c-4257-46cb-9c7c-309fe3276a1d"
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
+    "runtimeVersion": "1.0.0"
   }
 }
