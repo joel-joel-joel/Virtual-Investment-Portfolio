@@ -76,6 +76,16 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+    @PostLoad
+    public void postLoad() {
+        // Ensure all preference fields are never null after loading from database
+        // Safety net in case of data inconsistencies
+        if (this.priceAlerts == null) this.priceAlerts = true;
+        if (this.portfolioUpdates == null) this.portfolioUpdates = true;
+        if (this.marketNews == null) this.marketNews = false;
+        if (this.dividendNotifications == null) this.dividendNotifications = true;
+        if (this.earningSeason == null) this.earningSeason = false;
+    }
 
     public enum Role {
         ROLE_USER,
@@ -187,6 +197,13 @@ public class User {
                     .substring(0, 12);
             this.email = "user-" + random + "@auto.local";
         }
+
+        // Initialize preference defaults for new users
+        if (this.priceAlerts == null) this.priceAlerts = true;
+        if (this.portfolioUpdates == null) this.portfolioUpdates = true;
+        if (this.marketNews == null) this.marketNews = false;
+        if (this.dividendNotifications == null) this.dividendNotifications = true;
+        if (this.earningSeason == null) this.earningSeason = false;
     }
 
 

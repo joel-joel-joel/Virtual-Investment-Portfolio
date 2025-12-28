@@ -4,7 +4,7 @@
  */
 
 // Base API utilities
-export { API_BASE_URL, setAuthToken, removeAuthToken, apiFetch } from './api';
+export { setAuthToken, removeAuthToken, apiFetch } from './api';
 
 // Stock/Entity services (✅ Backend implemented)
 export * from './entityService';
@@ -50,7 +50,6 @@ export type {
   FinnhubQuoteDTO,
   FinnhubCompanyProfileDTO,
   NewsArticleDTO,
-  FrontendSector,
   UserDTO,
   AccountDTO,
   CreateAccountRequest,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -10,6 +10,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Svg, Path, G } from 'react-native-svg';
 import { useTheme } from '@/src/context/ThemeContext';
+import { useFocusEffect } from '@react-navigation/native';
 import { apiFetch } from '../../../services/api';
 import type { PortfolioOverviewDTO, HoldingDTO } from '../../../types/api';
 import { getSectorColorPalette } from '@/src/services/sectorColorService';
@@ -41,60 +42,68 @@ export const AllocationOverview: React.FC<AllocationOverviewProps> = ({ accountI
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch portfolio overview and calculate allocation from holdings
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!accountId) {
-                console.log('⚠️ AllocationOverview: No accountId provided');
+    // Extract fetch logic into a memoized callback (used by both useEffect and useFocusEffect)
+    const fetchData = useCallback(async () => {
+        if (!accountId) {
+            console.log('⚠️ AllocationOverview: No accountId provided');
+            setIsLoading(false);
+            setError('No account selected');
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            console.log('🔄 AllocationOverview: Fetching portfolio overview for account:', accountId);
+
+            const overview = await apiFetch<PortfolioOverviewDTO>(
+                `/api/portfolio/overview/account/${accountId}`,
+                {
+                    method: 'GET',
+                    requireAuth: true,
+                }
+            );
+
+            console.log('✅ AllocationOverview: Got portfolio overview:', overview);
+
+            if (!overview || !overview.holdings || overview.holdings.length === 0) {
+                console.log('ℹ️ AllocationOverview: No holdings in portfolio');
+                setAllocationData([]);
                 setIsLoading(false);
-                setError('No account selected');
                 return;
             }
 
-            try {
-                setIsLoading(true);
-                setError(null);
+            // Calculate allocation from holdings
+            const allocations = calculateAllocation(overview.holdings);
+            console.log('📊 AllocationOverview: Calculated allocations:', allocations);
 
-                console.log('🔄 AllocationOverview: Fetching portfolio overview for account:', accountId);
+            setAllocationData(allocations);
+        } catch (err: any) {
+            console.error('❌ AllocationOverview: Error fetching portfolio overview');
+            console.error('  Error:', err.message);
 
-                const overview = await apiFetch<PortfolioOverviewDTO>(
-                    `/api/portfolio/overview/account/${accountId}`,
-                    {
-                        method: 'GET',
-                        requireAuth: true,
-                    }
-                );
-
-                console.log('✅ AllocationOverview: Got portfolio overview:', overview);
-
-                if (!overview || !overview.holdings || overview.holdings.length === 0) {
-                    console.log('ℹ️ AllocationOverview: No holdings in portfolio');
-                    setAllocationData([]);
-                    setIsLoading(false);
-                    return;
-                }
-
-                // Calculate allocation from holdings
-                const allocations = calculateAllocation(overview.holdings);
-                console.log('📊 AllocationOverview: Calculated allocations:', allocations);
-
-                setAllocationData(allocations);
-            } catch (err: any) {
-                console.error('❌ AllocationOverview: Error fetching portfolio overview');
-                console.error('  Error:', err.message);
-
-                const errorMessage = err.response?.data?.message ||
-                    err.message ||
-                    'Failed to load allocation data';
-                setError(errorMessage);
-                setAllocationData([]);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
+            const errorMessage = err.response?.data?.message ||
+                err.message ||
+                'Failed to load allocation data';
+            setError(errorMessage);
+            setAllocationData([]);
+        } finally {
+            setIsLoading(false);
+        }
     }, [accountId]);
+
+    // Fetch on mount and when account changes
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    // Reload when screen comes into focus (after purchases, navigation, etc.)
+    useFocusEffect(
+        useCallback(() => {
+            fetchData();
+        }, [fetchData])
+    );
 
 // Calculate allocation percentages from holdings
     const calculateAllocation = (holdings: HoldingDTO[]): AllocationItem[] => {

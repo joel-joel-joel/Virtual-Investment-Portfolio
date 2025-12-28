@@ -1,5 +1,4 @@
-import { API_BASE_URL } from './api';
-import { getStoredToken } from '../context/AuthContext';
+import { apiFetch } from './api';
 
 export interface NotificationPreferences {
   priceAlerts: boolean;
@@ -18,39 +17,27 @@ export interface UserPreferencesUpdateRequest {
   earningSeason?: boolean;
 }
 
+/**
+ * Get user notification preferences
+ * GET /api/users/me/preferences
+ */
 export const getUserPreferences = async (): Promise<NotificationPreferences> => {
-  const token = await getStoredToken();
-  const response = await fetch(`${API_BASE_URL}/users/me/preferences`, {
+  return apiFetch<NotificationPreferences>('/api/users/me/preferences', {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+    requireAuth: true,
   });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch user preferences');
-  }
-
-  return await response.json();
 };
 
+/**
+ * Update user notification preferences
+ * PUT /api/users/me/preferences
+ */
 export const updateUserPreferences = async (
   preferences: UserPreferencesUpdateRequest
 ): Promise<NotificationPreferences> => {
-  const token = await getStoredToken();
-  const response = await fetch(`${API_BASE_URL}/users/me/preferences`, {
+  return apiFetch<NotificationPreferences>('/api/users/me/preferences', {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+    requireAuth: true,
     body: JSON.stringify(preferences),
   });
-
-  if (!response.ok) {
-    throw new Error('Failed to update user preferences');
-  }
-
-  return await response.json();
 };

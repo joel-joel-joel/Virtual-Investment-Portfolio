@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@/src/context/ThemeContext';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
 import { useAuth } from '@/src/context/AuthContext';
@@ -304,6 +304,15 @@ export const HoldingsList: React.FC<HoldingsListProps> = ({
             fetchHoldings();
         }
     }, [fetchHoldings, providedHoldings]);
+
+    // Reload holdings when screen comes into focus (after purchases, navigation, etc.)
+    useFocusEffect(
+        useCallback(() => {
+            if (!providedHoldings) {
+                fetchHoldings();
+            }
+        }, [fetchHoldings, providedHoldings])
+    );
 
     // Pull to refresh
     const onRefresh = useCallback(() => {

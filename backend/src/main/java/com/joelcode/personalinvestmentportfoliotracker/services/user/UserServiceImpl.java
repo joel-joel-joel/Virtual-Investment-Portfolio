@@ -14,6 +14,8 @@ import com.joelcode.personalinvestmentportfoliotracker.services.mapping.AccountM
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.UserMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -144,27 +146,96 @@ public class UserServiceImpl implements UserService{
     // Get current authenticated user's preferences
     @Override
     public UserPreferencesDTO getCurrentUserPreferences() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
-        User user = userDetails.getUser();
+        try {
+            // Check SecurityContext exists
+            SecurityContext context = SecurityContextHolder.getContext();
+            if (context == null) {
+                throw new RuntimeException("Security context not available");
+            }
 
-        return UserMapper.toPreferencesDTO(user);
+            // Check Authentication exists
+            Authentication authentication = context.getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                throw new RuntimeException("User not authenticated");
+            }
+
+            // Check Principal is valid CustomUserDetails
+            Object principal = authentication.getPrincipal();
+            if (!(principal instanceof CustomUserDetails)) {
+                throw new RuntimeException("Invalid authentication principal");
+            }
+
+            CustomUserDetails userDetails = (CustomUserDetails) principal;
+
+            // Check User entity exists
+            User user = userDetails.getUser();
+            if (user == null) {
+                throw new RuntimeException("User entity not found in authentication");
+            }
+
+            // Ensure preferences are not null (defensive)
+            ensurePreferencesNotNull(user);
+
+            return UserMapper.toPreferencesDTO(user);
+
+        } catch (ClassCastException e) {
+            throw new RuntimeException("Authentication principal is not a CustomUserDetails instance", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to retrieve user preferences: " + e.getMessage(), e);
+        }
     }
 
     // Update current authenticated user's preferences
     @Override
     public UserPreferencesDTO updateCurrentUserPreferences(UserPreferencesUpdateRequest request) {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
-        User user = userDetails.getUser();
+        try {
+            // Check SecurityContext exists
+            SecurityContext context = SecurityContextHolder.getContext();
+            if (context == null) {
+                throw new RuntimeException("Security context not available");
+            }
 
-        UserMapper.updatePreferences(user, request);
-        user = userRepository.save(user);
+            // Check Authentication exists
+            Authentication authentication = context.getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                throw new RuntimeException("User not authenticated");
+            }
 
-        return UserMapper.toPreferencesDTO(user);
+            // Check Principal is valid CustomUserDetails
+            Object principal = authentication.getPrincipal();
+            if (!(principal instanceof CustomUserDetails)) {
+                throw new RuntimeException("Invalid authentication principal");
+            }
+
+            CustomUserDetails userDetails = (CustomUserDetails) principal;
+
+            // Check User entity exists
+            User user = userDetails.getUser();
+            if (user == null) {
+                throw new RuntimeException("User entity not found in authentication");
+            }
+
+            // Ensure preferences are not null before updating (defensive)
+            ensurePreferencesNotNull(user);
+
+            UserMapper.updatePreferences(user, request);
+            user = userRepository.save(user);
+
+            return UserMapper.toPreferencesDTO(user);
+
+        } catch (ClassCastException e) {
+            throw new RuntimeException("Authentication principal is not a CustomUserDetails instance", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update user preferences: " + e.getMessage(), e);
+        }
+    }
+
+    // Helper method to ensure preferences have valid values
+    private void ensurePreferencesNotNull(User user) {
+        if (user.getPriceAlerts() == null) user.setPriceAlerts(true);
+        if (user.getPortfolioUpdates() == null) user.setPortfolioUpdates(true);
+        if (user.getMarketNews() == null) user.setMarketNews(false);
+        if (user.getDividendNotifications() == null) user.setDividendNotifications(true);
+        if (user.getEarningSeason() == null) user.setEarningSeason(false);
     }
 }

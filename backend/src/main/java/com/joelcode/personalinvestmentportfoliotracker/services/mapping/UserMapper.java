@@ -39,11 +39,11 @@ public class UserMapper {
         if (user == null) return null;
 
         return new UserPreferencesDTO(
-            user.getPriceAlerts(),
-            user.getPortfolioUpdates(),
-            user.getMarketNews(),
-            user.getDividendNotifications(),
-            user.getEarningSeason()
+            user.getPriceAlerts() != null ? user.getPriceAlerts() : true,
+            user.getPortfolioUpdates() != null ? user.getPortfolioUpdates() : true,
+            user.getMarketNews() != null ? user.getMarketNews() : false,
+            user.getDividendNotifications() != null ? user.getDividendNotifications() : true,
+            user.getEarningSeason() != null ? user.getEarningSeason() : false
         );
     }
 

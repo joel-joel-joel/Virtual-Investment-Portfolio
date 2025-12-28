@@ -43,6 +43,7 @@ public class WatchlistController {
     // GET /api/watchlist - Get user's watchlist
     @GetMapping
     @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<WatchlistItemDTO>> getWatchlist(Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         User user = userDetails.getUser();
