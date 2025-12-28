@@ -459,7 +459,7 @@ This project is private and intended for portfolio demonstration purposes.
 **Joel ng**
 Full-Stack Software Engineer
 
-Github: https://github.com/joel-joel-joel | LinkedIn: https://linkedin.com/in/yourprofile](https://www.linkedin.com/in/joel-ong-2b82a3362/
+Github: https://github.com/joel-joel-joel | LinkedIn: https://www.linkedin.com/in/joel-ong-2b82a3362/
 
 ---
 
