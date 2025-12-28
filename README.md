@@ -1,4 +1,4 @@
-# Pegasus - Personal Investment Portfolio Tracker
+# Pegasus - Virtual Investment Portfolio Tracker
 
 A production-ready, full-stack mobile application for real-time investment portfolio management, featuring multi-account support, limit order execution, and comprehensive market analytics.
 
@@ -456,11 +456,12 @@ This project is private and intended for portfolio demonstration purposes.
 
 ## Author
 
-**Joel Long**
+**Joel ng**
 Full-Stack Software Engineer
-[GitHub](https://github.com/yourusername) | [LinkedIn](https://linkedin.com/in/yourprofile)
+
+Github: https://github.com/joel-joel-joel | LinkedIn: https://linkedin.com/in/yourprofile](https://www.linkedin.com/in/joel-ong-2b82a3362/
 
 ---
 
 **Built with:**
-Spring Boot • React Native • PostgreSQL • Docker • Fly.io • Expo • TypeScript • Java
+Spring Boot • React Native • PostgreSQL • Docker • Fly.io • Supabase • Expo • TypeScript • Java
