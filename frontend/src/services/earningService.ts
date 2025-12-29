@@ -6,7 +6,7 @@
 import { apiFetch } from './api';
 
 export interface EarningsBackendDTO {
-    earningsId: string;
+    earningId: string;
     stockId: string;
     stockCode: string;
     companyName: string;

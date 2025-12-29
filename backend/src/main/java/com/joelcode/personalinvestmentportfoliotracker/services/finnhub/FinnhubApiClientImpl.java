@@ -34,9 +34,25 @@ public class FinnhubApiClientImpl implements FinnhubApiClient {
     public FinnhubQuoteDTO getQuote(String symbol) {
         try {
             String url = String.format("%s/quote?symbol=%s&token=%s", baseUrl, symbol.toUpperCase(), apiKey);
-            return restTemplate.getForObject(url, FinnhubQuoteDTO.class);
+            System.err.println("📡 [FinnhubApiClient] Fetching quote for: " + symbol);
+            System.err.println("   URL: " + url.replace(apiKey, "***"));
+
+            FinnhubQuoteDTO result = restTemplate.getForObject(url, FinnhubQuoteDTO.class);
+
+            System.err.println("✅ [FinnhubApiClient] Quote fetched successfully for: " + symbol);
+            return result;
         } catch (RestClientException e) {
-            throw new RuntimeException("Failed to fetch quote for symbol: " + symbol, e);
+            // Log the actual exception with full details
+            System.err.println("❌ [FinnhubApiClient] RestClientException for " + symbol + ":");
+            System.err.println("   Type: " + e.getClass().getSimpleName());
+            System.err.println("   Message: " + e.getMessage());
+            if (e.getCause() != null) {
+                System.err.println("   Cause: " + e.getCause().getClass().getSimpleName() + " - " + e.getCause().getMessage());
+            }
+            e.printStackTrace();
+
+            // Re-throw as-is to preserve exception type
+            throw e;
         }
     }
 
@@ -44,9 +60,25 @@ public class FinnhubApiClientImpl implements FinnhubApiClient {
     public FinnhubCompanyProfileDTO getCompanyProfile(String symbol) {
         try {
             String url = String.format("%s/stock/profile2?symbol=%s&token=%s", baseUrl, symbol.toUpperCase(), apiKey);
-            return restTemplate.getForObject(url, FinnhubCompanyProfileDTO.class);
+            System.err.println("📡 [FinnhubApiClient] Fetching company profile for: " + symbol);
+            System.err.println("   URL: " + url.replace(apiKey, "***"));
+
+            FinnhubCompanyProfileDTO result = restTemplate.getForObject(url, FinnhubCompanyProfileDTO.class);
+
+            System.err.println("✅ [FinnhubApiClient] Company profile fetched successfully for: " + symbol);
+            return result;
         } catch (RestClientException e) {
-            throw new RuntimeException("Failed to fetch company profile for symbol: " + symbol, e);
+            // Log the actual exception with full details
+            System.err.println("❌ [FinnhubApiClient] RestClientException for company profile " + symbol + ":");
+            System.err.println("   Type: " + e.getClass().getSimpleName());
+            System.err.println("   Message: " + e.getMessage());
+            if (e.getCause() != null) {
+                System.err.println("   Cause: " + e.getCause().getClass().getSimpleName() + " - " + e.getCause().getMessage());
+            }
+            e.printStackTrace();
+
+            // Re-throw as-is to preserve exception type
+            throw e;
         }
     }
 
@@ -54,9 +86,25 @@ public class FinnhubApiClientImpl implements FinnhubApiClient {
     public FinnhubMetricsDTO getMetrics(String symbol) {
         try {
             String url = String.format("%s/stock/metric?symbol=%s&metric=all&token=%s", baseUrl, symbol.toUpperCase(), apiKey);
-            return restTemplate.getForObject(url, FinnhubMetricsDTO.class);
+            System.err.println("📡 [FinnhubApiClient] Fetching metrics for: " + symbol);
+            System.err.println("   URL: " + url.replace(apiKey, "***"));
+
+            FinnhubMetricsDTO result = restTemplate.getForObject(url, FinnhubMetricsDTO.class);
+
+            System.err.println("✅ [FinnhubApiClient] Metrics fetched successfully for: " + symbol);
+            return result;
         } catch (RestClientException e) {
-            throw new RuntimeException("Failed to fetch metrics for symbol: " + symbol, e);
+            // Log the actual exception with full details
+            System.err.println("❌ [FinnhubApiClient] RestClientException for metrics " + symbol + ":");
+            System.err.println("   Type: " + e.getClass().getSimpleName());
+            System.err.println("   Message: " + e.getMessage());
+            if (e.getCause() != null) {
+                System.err.println("   Cause: " + e.getCause().getClass().getSimpleName() + " - " + e.getCause().getMessage());
+            }
+            e.printStackTrace();
+
+            // Re-throw as-is to preserve exception type
+            throw e;
         }
     }
 
@@ -65,9 +113,25 @@ public class FinnhubApiClientImpl implements FinnhubApiClient {
         try {
             String url = String.format("%s/stock/candle?symbol=%s&resolution=%s&from=%d&to=%d&token=%s",
                     baseUrl, symbol.toUpperCase(), resolution, from, to, apiKey);
-            return restTemplate.getForObject(url, FinnhubCandleDTO.class);
+            System.err.println("📡 [FinnhubApiClient] Fetching candles for: " + symbol);
+            System.err.println("   URL: " + url.replace(apiKey, "***"));
+
+            FinnhubCandleDTO result = restTemplate.getForObject(url, FinnhubCandleDTO.class);
+
+            System.err.println("✅ [FinnhubApiClient] Candles fetched successfully for: " + symbol);
+            return result;
         } catch (RestClientException e) {
-            throw new RuntimeException("Failed to fetch candles for symbol: " + symbol, e);
+            // Log the actual exception with full details
+            System.err.println("❌ [FinnhubApiClient] RestClientException for candles " + symbol + ":");
+            System.err.println("   Type: " + e.getClass().getSimpleName());
+            System.err.println("   Message: " + e.getMessage());
+            if (e.getCause() != null) {
+                System.err.println("   Cause: " + e.getCause().getClass().getSimpleName() + " - " + e.getCause().getMessage());
+            }
+            e.printStackTrace();
+
+            // Re-throw as-is to preserve exception type
+            throw e;
         }
     }
 

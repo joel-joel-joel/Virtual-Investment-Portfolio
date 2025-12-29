@@ -126,9 +126,11 @@ public class StockController {
                 return ResponseEntity.status(429).body("Rate limit exceeded for symbol: " + symbol);
             }
             System.err.println("⚠️ [StockController] API error for " + symbol + ": " + errorMsg);
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error fetching quote for symbol: " + symbol + " - " + errorMsg);
         } catch (Exception e) {
             System.err.println("❌ [StockController] Unexpected error for " + symbol + ": " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body("Unexpected error for symbol: " + symbol);
         }
     }
@@ -147,9 +149,11 @@ public class StockController {
                 return ResponseEntity.status(429).body("Rate limit exceeded for symbol: " + symbol);
             }
             System.err.println("⚠️ [StockController] API error fetching profile for " + symbol + ": " + errorMsg);
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error fetching profile for symbol: " + symbol + " - " + errorMsg);
         } catch (Exception e) {
             System.err.println("❌ [StockController] Unexpected error fetching profile for " + symbol + ": " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body("Unexpected error for symbol: " + symbol);
         }
     }

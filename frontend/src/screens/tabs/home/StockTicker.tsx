@@ -170,7 +170,7 @@ export const StockTicker: React.FC<StockTickerProps> = ({ refreshTrigger }) => {
                         const isPositive = !stock.change.startsWith('-');
 
                         return (
-                            <View key={index} style={styles.tickerItem}>
+                            <View key={`${stock.symbol}-${index}`} style={styles.tickerItem}>
                                 <Text style={[styles.tickerSymbol, { color: sectorColor.color }]}>
                                     {stock.symbol}
                                 </Text>

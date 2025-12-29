@@ -20,7 +20,7 @@ import { useTheme } from '@/src/context/ThemeContext';
 
 
 interface EarningsItem {
-    earningsId: string;
+    earningId: string;
     stockId: string;
     stockSymbol: string;
     companyName: string;
@@ -253,7 +253,7 @@ export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
                         const holding = holdings.find(h => h.stockSymbol === e.stockCode);
                         console.log(`   - Enriching ${e.stockCode}: sector=${holding?.sector || 'Unknown'}`);
                         return {
-                            earningsId: e.earningsId,
+                            earningId: e.earningId,
                             stockId: e.stockId,
                             stockSymbol: e.stockCode,
                             companyName: e.companyName,
@@ -433,12 +433,12 @@ export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
 
                             return (
                                 <View key={date} style={styles.dateGroup}>
-                                    <Text style={[styles.dateGroupHeader, { color: sectorColor.color }]}>
+                                    <Text key={`header-${date}`} style={[styles.dateGroupHeader, { color: sectorColor.color }]}>
                                         {getDayOfWeek(date).toUpperCase()} • {getFormattedDate(date)}
                                     </Text>
                                     {items.map((item) => (
                                         <EarningsCard
-                                            key={item.earningsId}
+                                            key={item.earningId}
                                             item={item}
                                             Colors={Colors}
                                             sectorColor={getSectorColor(item.sector)}

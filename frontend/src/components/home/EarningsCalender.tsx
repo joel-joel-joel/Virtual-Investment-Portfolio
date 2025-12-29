@@ -440,7 +440,7 @@ export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
 
                             return (
                                 <View key={date} style={styles.dateGroup}>
-                                    <Text style={[styles.dateGroupHeader, { color: sectorColor.color }]}>
+                                    <Text key={`header-${date}`} style={[styles.dateGroupHeader, { color: sectorColor.color }]}>
                                         {getDayOfWeek(date).toUpperCase()} • {getFormattedDate(date)}
                                     </Text>
                                     {items.map((item) => (
