@@ -18,7 +18,6 @@ import type { RootStackParamList } from '@/src/navigation';
 import { getWatchlist, removeFromWatchlist } from '@/src/services/portfolioService';
 import { useFocusEffect } from '@react-navigation/native';
 import { getSectorColor } from '@/src/services/sectorColorService';
-import {StockDTO} from "@/src/types/api";
 
 interface WatchlistStock {
     watchlistId: string;
@@ -59,6 +58,21 @@ const WatchlistCard = ({
             price: stock.price,
             change: stock.change,
             changePercent: stock.changePercent,
+            sector: stock.sector || 'Unknown',
+            marketCap: '0',
+            peRatio: '0',
+            dividend: '0',
+            dayHigh: stock.price,
+            dayLow: stock.price,
+            yearHigh: stock.price,
+            yearLow: stock.price,
+            description: '',
+            employees: '',
+            founded: '',
+            website: '',
+            nextEarningsDate: '',
+            nextDividendDate: '',
+            earningsPerShare: '',
             stockId: stock.stockId,
         };
 
@@ -72,7 +86,21 @@ const WatchlistCard = ({
             price: stock.price,
             change: stock.change,
             changePercent: stock.changePercent,
-            sector: stock.sector || 'Other',
+            sector: stock.sector || 'Unknown',
+            marketCap: '0',
+            peRatio: '0',
+            dividend: '0',
+            dayHigh: stock.price,
+            dayLow: stock.price,
+            yearHigh: stock.price,
+            yearLow: stock.price,
+            description: '',
+            employees: '',
+            founded: '',
+            website: '',
+            nextEarningsDate: '',
+            nextDividendDate: '',
+            earningsPerShare: '',
         };
 
         navigation.navigate('StockTicker', { stock: stockData });
