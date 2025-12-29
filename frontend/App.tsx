@@ -8,10 +8,13 @@ import { initializeSectorColors } from '@/src/services/sectorColorService';
 import Navigation from '@/src/navigation';
 import { ThemeProvider } from '@/src/context/ThemeContext';
 import { useTheme } from '@/src/context/ThemeContext';
+import { LogBox } from 'react-native';
 
 // Inner component that uses theme (must be inside ThemeProvider)
 function AppContent() {
     const { Colors, effectiveTheme } = useTheme();
+    LogBox.ignoreAllLogs();
+
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.background }}>

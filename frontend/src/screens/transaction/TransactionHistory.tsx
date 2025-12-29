@@ -227,13 +227,14 @@ export default function TransactionHistory({ stockSymbol, showHeader = true, max
                     // Fetch stock details to get symbol and company name
                     let stockSymbol = 'UNKNOWN';
                     let companyName = `Stock ${String(stockId).substring(0, 8)}`;
-                    let sector = 'Technology';
+                    let sector = 'Other';
+
 
                     try {
                         const stockDetails = await getStockById(String(stockId));
                         stockSymbol = stockDetails.stockCode;
                         companyName = stockDetails.companyName;
-                        sector = 'Technology'; // Backend StockDTO doesn't include sector
+                        sector = stockDetails.industry || 'Other'; // Backend StockDTO doesn't include sector
                     } catch (error) {
                         console.warn(`Failed to fetch stock details for ${stockId}:`, error);
                         // Use fallback values

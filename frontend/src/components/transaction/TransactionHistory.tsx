@@ -233,7 +233,24 @@ export default function TransactionHistory({ stockSymbol, showHeader = true, max
                         const stockDetails = await getStockById(String(stockId));
                         stockSymbol = stockDetails.stockCode;
                         companyName = stockDetails.companyName;
-                        sector = 'Technology'; // Backend StockDTO doesn't include sector
+
+                        // Use backend industry field, or fetch from Finnhub if needed
+                        sector = stockDetails.industry || 'Unknown';
+
+                        // If backend doesn't have industry, fetch from Finnhub as fallback
+                        if (sector === 'Unknown' && stockSymbol !== 'UNKNOWN') {
+                            try {
+                                const apiUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+                                const profileResponse = await fetch(`${apiUrl}/api/stocks/finnhub/profile/${stockSymbol}`);
+
+                                if (profileResponse.ok) {
+                                    const profile = await profileResponse.json();
+                                    sector = profile.finnhubIndustry || 'Unknown';
+                                }
+                            } catch (finnhubError) {
+                                console.warn(`Failed to fetch Finnhub profile for ${stockSymbol}:`, finnhubError);
+                            }
+                        }
                     } catch (error) {
                         console.warn(`Failed to fetch stock details for ${stockId}:`, error);
                         // Use fallback values

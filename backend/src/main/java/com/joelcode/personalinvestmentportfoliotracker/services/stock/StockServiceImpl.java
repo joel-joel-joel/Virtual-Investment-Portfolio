@@ -57,6 +57,9 @@ public class StockServiceImpl implements StockService {
         // Save to db
         stock = stockRepository.save(stock);
 
+        // ✅ Option 1 Implementation: Create initial price history record
+        savePriceHistory(stock, stock.getStockValue());
+
         // Map entity to dto
         return StockMapper.toDTO(stock);
     }

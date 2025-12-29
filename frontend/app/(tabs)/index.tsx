@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import { View, ScrollView } from "react-native";
 import { HeaderSection } from "@/src/screens/tabs/home/HeaderSection";
 import { Dashboard } from "@/src/screens/tabs/home/Dashboard";
@@ -25,28 +26,30 @@ export default function HomeScreen() {
     const [holdings, setHoldings] = useState<HoldingDTO[]>([]);
     const [loadingHoldings, setLoadingHoldings] = useState(true);
 
-    // Fetch holdings for TopMovers
-    useEffect(() => {
-        const fetchHoldings = async () => {
-            if (!activeAccount?.accountId) {
-                setLoadingHoldings(false);
-                return;
-            }
+    // Fetch holdings for TopMovers - refresh whenever screen comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            const fetchHoldings = async () => {
+                if (!activeAccount?.accountId) {
+                    setLoadingHoldings(false);
+                    return;
+                }
 
-            try {
-                setLoadingHoldings(true);
-                const data = await getAccountHoldings(activeAccount.accountId);
-                setHoldings(data || []);
-            } catch (error) {
-                console.error('Failed to fetch holdings:', error);
-                setHoldings([]);
-            } finally {
-                setLoadingHoldings(false);
-            }
-        };
+                try {
+                    setLoadingHoldings(true);
+                    const data = await getAccountHoldings(activeAccount.accountId);
+                    setHoldings(data || []);
+                } catch (error) {
+                    console.error('Failed to fetch holdings:', error);
+                    setHoldings([]);
+                } finally {
+                    setLoadingHoldings(false);
+                }
+            };
 
-        fetchHoldings();
-    }, [activeAccount?.accountId]);
+            fetchHoldings();
+        }, [activeAccount?.accountId])
+    );
 
     // Fetch news from API
     useEffect(() => {

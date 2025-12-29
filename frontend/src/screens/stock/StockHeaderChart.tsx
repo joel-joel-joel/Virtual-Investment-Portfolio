@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
         flexShrink: 0,
     },
     headerSpacer: {
-        marginLeft: 90,
+        marginLeft: 110,
         marginTop: 15,
     },
     header: {

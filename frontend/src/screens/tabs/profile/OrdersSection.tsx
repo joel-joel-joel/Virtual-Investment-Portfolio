@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -51,6 +52,13 @@ export default function OrdersSection() {
   useEffect(() => {
     loadOrders();
   }, [loadOrders]);
+
+  // Refresh orders when Profile screen comes into focus (after creating new orders, navigation, etc.)
+  useFocusEffect(
+    useCallback(() => {
+      loadOrders();
+    }, [loadOrders])
+  );
 
   const handleCancelOrder = async (orderId: string, stockSymbol: string) => {
     Alert.alert(
