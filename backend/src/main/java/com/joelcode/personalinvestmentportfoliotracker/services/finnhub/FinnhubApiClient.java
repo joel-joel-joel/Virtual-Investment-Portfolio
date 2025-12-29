@@ -2,6 +2,7 @@ package com.joelcode.personalinvestmentportfoliotracker.services.finnhub;
 
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCandleDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCompanyProfileDTO;
+import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubEarningsCalendarDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubMetricsDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubQuoteDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubSearchResponseDTO;
@@ -22,4 +23,13 @@ public interface FinnhubApiClient {
     BigDecimal getCurrentPrice(String symbol);
 
     FinnhubSearchResponseDTO searchCompanies(String query);
+
+    /**
+     * Get earnings calendar from Finnhub for a specific date range and optional stock symbol
+     * @param from Start date in YYYY-MM-DD format
+     * @param to End date in YYYY-MM-DD format
+     * @param symbol Optional stock symbol filter (can be null)
+     * @return Earnings calendar data containing upcoming earnings events
+     */
+    FinnhubEarningsCalendarDTO getEarningsCalendar(String from, String to, String symbol);
 }

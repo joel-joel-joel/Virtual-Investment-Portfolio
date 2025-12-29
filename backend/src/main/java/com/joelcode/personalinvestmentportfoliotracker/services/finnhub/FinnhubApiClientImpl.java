@@ -2,6 +2,7 @@ package com.joelcode.personalinvestmentportfoliotracker.services.finnhub;
 
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCandleDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubCompanyProfileDTO;
+import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubEarningsCalendarDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubMetricsDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubQuoteDTO;
 import com.joelcode.personalinvestmentportfoliotracker.dto.finnhub.FinnhubSearchResponseDTO;
@@ -108,6 +109,43 @@ public class FinnhubApiClientImpl implements FinnhubApiClient {
             System.out.println("    📝 Message: " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Failed to search companies for query: " + query, e);
+        }
+    }
+
+    @Override
+    public FinnhubEarningsCalendarDTO getEarningsCalendar(String from, String to, String symbol) {
+        try {
+            System.out.println("  📡 FinnhubApiClientImpl.getEarningsCalendar()");
+            System.out.println("    From: " + from + ", To: " + to + ", Symbol: " + symbol);
+
+            // Use UriComponentsBuilder to properly encode parameters
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl + "/calendar/earnings")
+                    .queryParam("token", apiKey);
+
+            if (from != null && !from.isEmpty()) {
+                builder.queryParam("from", from);
+            }
+            if (to != null && !to.isEmpty()) {
+                builder.queryParam("to", to);
+            }
+            if (symbol != null && !symbol.isEmpty()) {
+                builder.queryParam("symbol", symbol.toUpperCase());
+            }
+
+            URI uri = builder.build().toUri();
+
+            System.out.println("    🔗 Built URI: " + uri.toString());
+            System.out.println("    🚀 Calling Finnhub API...");
+
+            FinnhubEarningsCalendarDTO response = restTemplate.getForObject(uri, FinnhubEarningsCalendarDTO.class);
+
+            System.out.println("    ✅ Response received");
+            return response;
+        } catch (Exception e) {
+            System.out.println("    ❌ Finnhub API Error: " + e.getClass().getSimpleName());
+            System.out.println("    📝 Message: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch earnings calendar from Finnhub", e);
         }
     }
 }

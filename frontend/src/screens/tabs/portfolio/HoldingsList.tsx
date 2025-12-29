@@ -6,7 +6,6 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    useColorScheme,
     Image,
     ActivityIndicator,
     RefreshControl,
@@ -18,7 +17,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
 import { useAuth } from '@/src/context/AuthContext';
 import { getAccountHoldings } from '@/src/services/portfolioService';
-import { getStockById } from '@/src/services/entityService';
 
 interface Holding {
     id: string;
