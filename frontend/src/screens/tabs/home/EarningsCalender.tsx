@@ -15,7 +15,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
 import { getSectorColor } from '@/src/services/sectorColorService';
 import { getUpcomingEarnings } from '@/src/services/earningService';
-import type { HoldingDTO } from '@/src/types/api';
+import type { HoldingDTO, AccountDTO } from '@/src/types/api';
 import { useTheme } from '@/src/context/ThemeContext';
 
 
@@ -33,6 +33,7 @@ interface EarningsItem {
 
 interface EarningsCalendarProps {
     holdings: HoldingDTO[];
+    activeAccount: AccountDTO | null;
 }
 
 const getDayOfWeek = (dateString: string) => {
@@ -199,6 +200,7 @@ const EarningsCard = ({
 
 export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
                                                                       holdings,
+                                                                      activeAccount,
                                                                   }) => {
     const {Colors} = useTheme();
     const [earnings, setEarnings] = useState<EarningsItem[]>([]);

@@ -14,6 +14,7 @@ import com.joelcode.personalinvestmentportfoliotracker.repositories.AccountRepos
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.AccountMapper;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.HoldingMapper;
 import com.joelcode.personalinvestmentportfoliotracker.services.mapping.TransactionMapper;
+import com.joelcode.personalinvestmentportfoliotracker.services.portfoliosnapshot.PortfolioSnapshotCalculationService;
 import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryService;
 import com.joelcode.personalinvestmentportfoliotracker.services.pricehistory.PriceHistoryServiceImpl;
 import com.joelcode.personalinvestmentportfoliotracker.services.stock.StockService;
@@ -44,6 +45,7 @@ public class AccountServiceImpl implements AccountService {
     private final PriceHistoryService priceHistoryService;
     private final SimpMessagingTemplate messagingTemplate;
     private final StockService stockService;
+    private final PortfolioSnapshotCalculationService snapshotCalculationService;
 
 
     // Constructor
@@ -51,7 +53,8 @@ public class AccountServiceImpl implements AccountService {
                               TransactionMapper transactionMapper, HoldingMapper holdingMapper,
                               PriceHistoryService priceHistoryService,
                               SimpMessagingTemplate messagingTemplate,
-                              StockService stockService) {
+                              StockService stockService,
+                              PortfolioSnapshotCalculationService snapshotCalculationService) {
         this.accountRepository = accountRepository;
         this.accountValidationService = accountValidationService;
         this.transactionMapper = transactionMapper;
@@ -59,6 +62,7 @@ public class AccountServiceImpl implements AccountService {
         this.priceHistoryService = priceHistoryService;
         this.messagingTemplate = messagingTemplate;
         this.stockService = stockService;
+        this.snapshotCalculationService = snapshotCalculationService;
     }
 
 
@@ -94,7 +98,19 @@ public class AccountServiceImpl implements AccountService {
             throw e;
         }
 
-        // 6. Optional: send WebSocket update
+        // 6. Generate initial portfolio snapshot for the account
+        try {
+            System.out.println("📊 [AccountService] Generating initial snapshot for new account: " + account.getAccountId());
+            snapshotCalculationService.generateSnapshotForToday(account.getAccountId());
+            System.out.println("✅ [AccountService] Initial snapshot created successfully");
+        } catch (Exception e) {
+            // Log error but don't fail account creation
+            System.err.println("⚠️ [AccountService] Failed to generate initial snapshot: " + e.getMessage());
+            e.printStackTrace();
+            // Account creation still succeeds even if snapshot fails
+        }
+
+        // 7. Optional: send WebSocket update
         WebSocketController.PortfolioUpdateMessage updateMessage = new WebSocketController.PortfolioUpdateMessage(
                 account.getAccountId(),
                 BigDecimal.ZERO,
@@ -103,7 +119,7 @@ public class AccountServiceImpl implements AccountService {
         );
         messagingTemplate.convertAndSend("/topic/portfolio/" + account.getAccountId(), updateMessage);
 
-        // 7. Return DTO
+        // 8. Return DTO
         return AccountMapper.toDTO(account);
     }
 

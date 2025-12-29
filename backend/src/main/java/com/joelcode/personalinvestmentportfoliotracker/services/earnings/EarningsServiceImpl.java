@@ -99,11 +99,11 @@ public class EarningsServiceImpl implements EarningsService {
 
                             // Map to EarningsDTO
                             EarningsDTO dto = new EarningsDTO(
-                                    UUID.randomUUID().toString(),  // earningId (not persisted)
+                                    UUID.randomUUID(),  // earningId (not persisted)
                                     stock.getStockId(),
                                     stock.getStockCode(),
                                     stock.getCompanyName(),
-                                    event.getDate(),
+                                    LocalDate.parse(event.getDate(), DATE_FORMATTER),
                                     event.getEpsEstimate(),
                                     event.getEpsActual(),
                                     mapReportTime(event.getHour())
