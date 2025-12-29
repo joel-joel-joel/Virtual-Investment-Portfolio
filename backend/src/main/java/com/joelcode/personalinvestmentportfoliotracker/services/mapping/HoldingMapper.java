@@ -47,6 +47,11 @@ public class HoldingMapper {
             return null;  // Return null to filter out
         }
 
+        // ✅ SAFEGUARD: Skip if currentPrice is null (prevents NullPointerException)
+        if (currentPrice == null) {
+            return null;  // Return null to filter out
+        }
+
         BigDecimal currentValue = holding.getCurrentValue(currentPrice);
         BigDecimal unrealizedGain = holding.getUnrealizedGain(currentPrice);
         BigDecimal unrealizedGainPercent = holding.getUnrealizedGainPercent(currentPrice);

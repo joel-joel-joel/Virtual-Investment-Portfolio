@@ -258,7 +258,14 @@ export const HoldingsList: React.FC<HoldingsListProps> = ({
 
             // Transform backend data to component format
             const transformedData: Holding[] = data
-                .filter((item) => item.quantity > 0) // ✅ ADD THIS LINE - Filter out zero shares
+                .filter((item) => {
+                    // Guard against null/undefined items and ensure valid data
+                    return item &&
+                           item.quantity != null &&
+                           item.quantity > 0 &&
+                           item.currentPrice != null &&
+                           item.currentValue != null;
+                })
                 .map((item) => {
                     console.log(`🔍 Processing ${item.stockSymbol}:`, {
                         companyName: item.companyName,

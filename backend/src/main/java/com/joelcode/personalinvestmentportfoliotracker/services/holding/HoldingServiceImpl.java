@@ -204,7 +204,12 @@ public class HoldingServiceImpl implements HoldingService {
         holding.setRealizedGain(holding.getRealizedGain().add(realizedGain));
         holding.setTotalCostBasis(holding.getAverageCostBasis().multiply(holding.getQuantity()));
 
-        holdingRepository.save(holding);
+        // ✅ NEW: Auto-delete if quantity reaches zero
+        if (holding.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+            holdingRepository.delete(holding);
+        } else {
+            holdingRepository.save(holding);
+        }
 
         WebSocketController.HoldingUpdateMessage updateMessage = new WebSocketController.HoldingUpdateMessage(
                 holding.getAccount().getAccountId(),
