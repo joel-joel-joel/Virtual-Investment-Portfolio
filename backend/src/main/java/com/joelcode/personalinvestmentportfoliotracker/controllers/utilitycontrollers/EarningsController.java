@@ -102,6 +102,76 @@ public class EarningsController {
         }
     }
 
+    // GET /api/earnings/upcoming/account/{accountId} - Get upcoming earnings for a specific account's holdings
+    @GetMapping("/upcoming/account/{accountId}")
+    public ResponseEntity<List<EarningsDTO>> getUpcomingEarningsForAccount(@PathVariable UUID accountId) {
+        try {
+            // Get current user
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            UUID userId = userDetails.getUser().getUserId();
+            System.out.println("🎯 [EarningsController] getUpcomingEarningsForAccount called for accountId: " + accountId + ", userId: " + userId);
+
+            // Verify account exists and belongs to user
+            var account = accountRepository.findById(accountId);
+            if (account.isEmpty()) {
+                System.out.println("❌ [EarningsController] Account not found: " + accountId);
+                return ResponseEntity.status(404).body(List.of());
+            }
+
+            var foundAccount = account.get();
+            if (!foundAccount.getUser().getUserId().equals(userId)) {
+                System.out.println("⚠️ [EarningsController] Account does not belong to user. AccountId: " + accountId + ", UserId: " + userId);
+                return ResponseEntity.status(403).body(List.of());
+            }
+
+            System.out.println("✅ [EarningsController] Account verified for user");
+
+            // Get holdings for specific account only
+            List<Holding> holdings = holdingRepository.findByAccount_AccountId(accountId);
+            System.out.println("📋 [EarningsController] Holdings count for account: " + holdings.size());
+
+            if (holdings.isEmpty()) {
+                System.out.println("ℹ️ [EarningsController] No holdings found for account");
+                return ResponseEntity.ok(List.of());
+            }
+
+            // Extract stock IDs from holdings
+            List<UUID> stockIds = holdings.stream()
+                    .map(h -> h.getStock().getStockId())
+                    .distinct()
+                    .collect(Collectors.toList());
+            System.out.println("🔍 [EarningsController] Distinct stock IDs for account: " + stockIds.size());
+            stockIds.forEach(id -> System.out.println("   - " + id));
+
+            // Fetch earnings for these stocks
+            LocalDate today = LocalDate.now();
+            LocalDate in90Days = today.plusDays(90);
+            System.out.println("📅 [EarningsController] Date range: " + today + " to " + in90Days);
+
+            List<Earnings> earnings = earningsRepository.findUpcomingEarningsForStocks(stockIds, today, in90Days);
+            System.out.println("✅ [EarningsController] Earnings found for account: " + earnings.size());
+
+            List<EarningsDTO> earningsDTOs = earnings.stream()
+                    .map(e -> new EarningsDTO(
+                            e.getEarningId(),
+                            e.getStock().getStockId(),
+                            e.getStock().getStockCode(),
+                            e.getStock().getCompanyName(),
+                            e.getEarningsDate(),
+                            e.getEstimatedEPS(),
+                            e.getActualEPS(),
+                            e.getReportTime()
+                    ))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(earningsDTOs);
+        } catch (Exception e) {
+            System.err.println("❌ [EarningsController] Error fetching earnings for account: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(List.of());
+        }
+    }
+
     // GET /api/earnings/by-stock/{stockId} - Get earnings for a specific stock
     @GetMapping("/by-stock/{stockId}")
     public ResponseEntity<List<EarningsDTO>> getEarningsByStock(@PathVariable UUID stockId) {
