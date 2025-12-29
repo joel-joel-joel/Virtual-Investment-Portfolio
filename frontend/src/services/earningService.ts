@@ -46,6 +46,36 @@ export const getUpcomingEarnings = async (): Promise<EarningsBackendDTO[]> => {
 };
 
 /**
+ * Get upcoming earnings for a specific account's holdings
+ * @param accountId - UUID of the account
+ * @returns Array of upcoming earnings for the account
+ */
+export const getUpcomingEarningsForAccount = async (accountId: string): Promise<EarningsBackendDTO[]> => {
+    console.log('🎯 [earningService] getUpcomingEarningsForAccount called with accountId:', accountId);
+    try {
+        console.log(`📡 [earningService] Calling API: GET /api/earnings/upcoming/account/${accountId}`);
+        const result = await apiFetch<EarningsBackendDTO[]>(`/api/earnings/upcoming/account/${accountId}`, {
+            method: 'GET',
+            requireAuth: true,
+        });
+        console.log('✅ [earningService] API response received');
+        console.log('📊 [earningService] Earnings count:', result?.length || 0);
+        if (result && result.length > 0) {
+            console.log('📋 [earningService] First earnings:', result[0]);
+            console.log('📋 [earningService] Last earnings:', result[result.length - 1]);
+        } else {
+            console.warn('⚠️ [earningService] No earnings data received for account');
+        }
+        return result || [];
+    } catch (error: any) {
+        console.error(`❌ [earningService] Error fetching upcoming earnings for account ${accountId}:`, error);
+        console.error('   Error message:', error?.message);
+        console.error('   Error details:', error);
+        throw error;
+    }
+};
+
+/**
  * Get earnings for a specific stock
  * @param stockId - UUID of the stock
  * @returns Array of earnings for the stock

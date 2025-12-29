@@ -17,7 +17,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, TabParamList } from '@/src/navigation';
 import { useAuth } from '@/src/context/AuthContext';
-import { getUserDashboard } from '@/src/services/dashboardService';
+import { getAccountDashboard } from '@/src/services/dashboardService';
 import type { DashboardDTO } from '@/src/types/api';
 import { logout as apiLogout } from '@/src/services/authService';
 import { deleteAccount as apiDeleteAccount} from '@/src/services/portfolioService';
@@ -95,7 +95,7 @@ export default function ProfileScreen() {
         if (user && activeAccount) {
             loadDashboardData();
         }
-    }, [user, activeAccount]);
+    }, [user?.userId, activeAccount?.accountId]);
 
     // Check if we should open wallet modal from navigation params
     useEffect(() => {
@@ -105,11 +105,11 @@ export default function ProfileScreen() {
     }, [route.params?.openWallet, activeAccount]);
 
     const loadDashboardData = async () => {
-        if (!user) return;
+        if (!user || !activeAccount) return;
 
         try {
             setLoading(true);
-            const data = await getUserDashboard(user.userId);
+            const data = await getAccountDashboard(activeAccount.accountId);
             setDashboardData(data);
         } catch (error) {
             console.error('Failed to load dashboard data:', error);

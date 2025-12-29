@@ -116,7 +116,7 @@ export default function HomeScreen() {
                 <StockTicker refreshTrigger={refreshTicker} />
                 <WatchlistHighlights />
                 <TopMovers holdings={holdings} />
-                <EarningsCalendar holdings={holdings} />
+                <EarningsCalendar holdings={holdings} activeAccount={activeAccount} />
                 <ExpandableNewsCard news={newsItems} />
                 <SuggestedForYou />
             </ScrollView>

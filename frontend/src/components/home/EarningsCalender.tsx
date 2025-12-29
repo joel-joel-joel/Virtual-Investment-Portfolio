@@ -14,7 +14,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/navigation';
 import { getSectorColor } from '@/src/services/sectorColorService';
-import { getUpcomingEarnings } from '@/src/services/earningService';
+import { getUpcomingEarnings, getUpcomingEarningsForAccount } from '@/src/services/earningService';
+import { useAuth } from '@/src/context/AuthContext';
 import type { HoldingDTO } from '@/src/types/api';
 import { useTheme } from '@/src/context/ThemeContext';
 
@@ -33,6 +34,7 @@ interface EarningsItem {
 
 interface EarningsCalendarProps {
     holdings: HoldingDTO[];
+    activeAccount?: any;
 }
 
 const getDayOfWeek = (dateString: string) => {
@@ -199,6 +201,7 @@ const EarningsCard = ({
 
 export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
                                                                       holdings,
+                                                                      activeAccount,
                                                                   }) => {
     const {Colors} = useTheme();
     const [earnings, setEarnings] = useState<EarningsItem[]>([]);
@@ -223,10 +226,16 @@ export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
             try {
                 setLoading(true);
 
-                // Fetch upcoming earnings
-                console.log('🔄 [EarningsCalendar] Calling getUpcomingEarnings...');
-                const upcomingEarnings = await getUpcomingEarnings();
-                console.log('✅ [EarningsCalendar] getUpcomingEarnings returned:', upcomingEarnings?.length || 0, 'items');
+                // Fetch upcoming earnings for the active account
+                console.log('🔄 [EarningsCalendar] Calling getUpcomingEarningsForAccount...');
+                if (!activeAccount?.accountId) {
+                    console.warn('⚠️ [EarningsCalendar] No active account provided, skipping earnings fetch');
+                    setEarnings([]);
+                    setLoading(false);
+                    return;
+                }
+                const upcomingEarnings = await getUpcomingEarningsForAccount(activeAccount.accountId);
+                console.log('✅ [EarningsCalendar] getUpcomingEarningsForAccount returned:', upcomingEarnings?.length || 0, 'items');
 
                 if (!upcomingEarnings || upcomingEarnings.length === 0) {
                     console.warn('⚠️ [EarningsCalendar] No upcoming earnings data received');
@@ -281,7 +290,7 @@ export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
         };
 
         fetchEarningsData();
-    }, [holdings]);
+    }, [holdings, activeAccount?.accountId]);
 
     // Filter earnings by sector if selected
     const filteredEarnings = selectedSector
