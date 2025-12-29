@@ -118,8 +118,18 @@ public class StockController {
         try {
             FinnhubQuoteDTO quote = finnhubApiClient.getQuote(symbol);
             return ResponseEntity.ok(quote);
+        } catch (org.springframework.web.client.RestClientException e) {
+            // Check for rate limiting or specific API errors
+            String errorMsg = e.getMessage();
+            if (errorMsg != null && (errorMsg.contains("429") || errorMsg.contains("rate limit"))) {
+                System.err.println("⚠️ [StockController] Rate limit exceeded for symbol: " + symbol);
+                return ResponseEntity.status(429).body("Rate limit exceeded for symbol: " + symbol);
+            }
+            System.err.println("⚠️ [StockController] API error for " + symbol + ": " + errorMsg);
+            return ResponseEntity.badRequest().body("Error fetching quote for symbol: " + symbol + " - " + errorMsg);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error fetching quote for symbol: " + symbol);
+            System.err.println("❌ [StockController] Unexpected error for " + symbol + ": " + e.getMessage());
+            return ResponseEntity.internalServerError().body("Unexpected error for symbol: " + symbol);
         }
     }
 
@@ -129,8 +139,18 @@ public class StockController {
         try {
             FinnhubCompanyProfileDTO profile = finnhubApiClient.getCompanyProfile(symbol);
             return ResponseEntity.ok(profile);
+        } catch (org.springframework.web.client.RestClientException e) {
+            // Check for rate limiting or specific API errors
+            String errorMsg = e.getMessage();
+            if (errorMsg != null && (errorMsg.contains("429") || errorMsg.contains("rate limit"))) {
+                System.err.println("⚠️ [StockController] Rate limit exceeded for profile: " + symbol);
+                return ResponseEntity.status(429).body("Rate limit exceeded for symbol: " + symbol);
+            }
+            System.err.println("⚠️ [StockController] API error fetching profile for " + symbol + ": " + errorMsg);
+            return ResponseEntity.badRequest().body("Error fetching profile for symbol: " + symbol + " - " + errorMsg);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error fetching profile for symbol: " + symbol);
+            System.err.println("❌ [StockController] Unexpected error fetching profile for " + symbol + ": " + e.getMessage());
+            return ResponseEntity.internalServerError().body("Unexpected error for symbol: " + symbol);
         }
     }
 

@@ -43,11 +43,20 @@ export const StockTicker: React.FC<StockTickerProps> = ({ refreshTrigger }) => {
             try {
                 setLoading(true);
 
-                // Randomly select 8-12 stocks from popular list
+                // Randomly select exactly 8 stocks from popular list
                 const shuffled = [...POPULAR_STOCKS].sort(() => 0.5 - Math.random());
-                const selectedStocks = shuffled.slice(0, Math.floor(Math.random() * 5) + 8);
+                const selectedStocks = shuffled.slice(0, 8);
 
-                const tickerData = await Promise.all(selectedStocks.map(async (symbol) => {
+                // Throttle API requests to avoid rate limiting
+                // Fetch in batches of 3 with 200ms delay between batches
+                const tickerData: (TickerStock | null)[] = [];
+                const batchSize = 3;
+                const delayMs = 200;
+
+                for (let i = 0; i < selectedStocks.length; i += batchSize) {
+                    const batch = selectedStocks.slice(i, i + batchSize);
+
+                    const batchResults = await Promise.all(batch.map(async (symbol) => {
                         try {
                             // Fetch real-time quote
                             const quote = await getStockQuote(symbol);
@@ -77,8 +86,15 @@ export const StockTicker: React.FC<StockTickerProps> = ({ refreshTrigger }) => {
                             // Return null on error, we'll filter these out
                             return null;
                         }
-                    })
-                );
+                    }));
+
+                    tickerData.push(...batchResults);
+
+                    // Add delay between batches (except after the last batch)
+                    if (i + batchSize < selectedStocks.length) {
+                        await new Promise(resolve => setTimeout(resolve, delayMs));
+                    }
+                }
 
                 // Filter out failed requests
                 const validData = tickerData.filter((stock): stock is TickerStock => stock !== null);

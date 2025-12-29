@@ -351,11 +351,7 @@ function RootStack() {
             <Stack.Screen
               name="CreateAccount"
               component={CreateAccountScreen}
-              options={needsAccountSetup ? {
-                headerShown: true,
-                headerTitle: 'Create Your First Account',
-                headerLeft: () => null, // Disable back button for onboarding
-              } : {
+              options={{
                 headerShown: false,
               }}
             />
