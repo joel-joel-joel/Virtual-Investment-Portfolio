@@ -236,7 +236,7 @@ export const scoreAndRankStocks = async (
     holdings: HoldingDTO[]
 ): Promise<ScoredStock[]> => {
     const scored: ScoredStock[] = [];
-    const heldSymbols = new Set(holdings.map((h) => h.stockSymbol.toUpperCase()));
+    const heldSymbols = new Set(holdings.filter(h => h != null).map((h) => h.stockSymbol.toUpperCase()));
 
     // Add 60ms delay between requests to respect Finnhub rate limits (60 calls/min)
     const delayBetweenRequests = 60; // ms
@@ -279,7 +279,7 @@ export const scoreAndRankStocks = async (
             );
 
             // Diversification: How different is this sector from current holdings?
-            const holdingSectors = new Set(holdings.map((h) => h.sector));
+            const holdingSectors = new Set(holdings.filter(h => h != null).map((h) => h.sector));
             const diversificationScore = holdingSectors.has(profile.finnhubIndustry)
                 ? 30
                 : 100;
@@ -287,7 +287,7 @@ export const scoreAndRankStocks = async (
 
             // Correlation: Do holdings have the same sector?
             const correlatedHoldings = holdings.filter(
-                (h) => h.sector === profile.industry
+                (h) => h != null && h.sector === profile.industry
             );
             const correlationScore =
                 correlatedHoldings.length === 0

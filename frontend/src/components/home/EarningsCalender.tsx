@@ -221,7 +221,7 @@ export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
                 return;
             }
 
-            console.log('📊 [EarningsCalendar] Holdings symbols:', holdings.map(h => h.stockSymbol).join(', '));
+            console.log('📊 [EarningsCalendar] Holdings symbols:', holdings.filter(h => h != null).map(h => h.stockSymbol).join(', '));
 
             try {
                 setLoading(true);
@@ -244,7 +244,7 @@ export const EarningsCalendar: React.FC<EarningsCalendarProps> = ({
                 }
 
                 // Filter earnings for holdings only and enrich with sector data
-                const holdingSymbols = new Set(holdings.map(h => h.stockSymbol));
+                const holdingSymbols = new Set(holdings.filter(h => h != null).map(h => h.stockSymbol));
                 console.log('🔍 [EarningsCalendar] Holding symbols set:', Array.from(holdingSymbols).join(', '));
 
                 const enrichedEarnings = upcomingEarnings
